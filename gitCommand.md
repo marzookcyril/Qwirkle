@@ -1,4 +1,4 @@
-#Commandes git 
+# Commandes git 
 
 ## Recevoir les modifications
 ` git pull origin master `
