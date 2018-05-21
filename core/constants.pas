@@ -1,0 +1,5 @@
+UNIT constants;
+INTERFACE
+
+IMPLEMENTATION
+END.
