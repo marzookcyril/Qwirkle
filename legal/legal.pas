@@ -1,0 +1,15 @@
+UNIT legal;
+INTERFACE
+
+
+
+
+IMPLEMENTATION
+
+
+
+
+
+
+
+END.
