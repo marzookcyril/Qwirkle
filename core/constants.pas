@@ -13,6 +13,7 @@ INTERFACE
 		COULEUR_JAUNE  = 4;
 		COULEUR_VIOLET = 5;
 		COULEUR_BLEU   = 6;
+		COULEUR_NUL    = 0;
 		
 		FORME_ROND     = 1;
 		FORME_TREFLE   = 2;
@@ -20,7 +21,8 @@ INTERFACE
 		FORME_CROIX    = 4;
 		FORME_CARRE    = 5;
 		FORME_LOSANGE  = 6;
-		
+		FORME_NUL      = 0;
+
 		stopRender     = False;
 
 

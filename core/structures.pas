@@ -20,5 +20,11 @@ INTERFACE
 		mainJoueur = ARRAY [0..6 - 1] OF pion;
 		pioche     = ARRAY OF pion;
 		
+		position = RECORD
+			x : INTEGER;
+			y : INTEGER;
+		END;
+		
+		
 IMPLEMENTATION
 END.
