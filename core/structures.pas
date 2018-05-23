@@ -10,7 +10,7 @@ INTERFACE
 		- mainJoueur : pioche générale
 	}
 	
-	TYPE 	
+	TYPE 
 		pion = RECORD
 			couleur : INTEGER;
 			forme   : INTEGER;

@@ -2,11 +2,19 @@ UNIT constants;
 INTERFACE
 	
 	CONST
-		WIDTH          = 100;
-		HEIGHT         = 30;
+		// CONSTANTES DU MOTEUR D'AFFICHAGE
+				
+		COL_TAB : ARRAY [0..6] OF INTEGER = (4,2,6,14,5,1,0);
+		FOR_TAB : ARRAY [0..5] OF STRING  = ('{}','**','++','[]','##','  ');
+
+		NUMBERED_COLS    = FALSE;
+
+		TAILLE_GRILLE    = 25;
+		WIDTH            = 90;
+		HEIGHT           = TAILLE_GRILLE + 4;
+		OFFSET_NUMBEROPT = 2;
 		
-		TAILLE_GRILLE  = 25;
-		
+		// CONSTANTES DU MOTEUR DE JEU
 		COULEUR_ROUGE  = 1; 
 		COULEUR_VERT   = 2;
 		COULEUR_ORANGE = 3;
@@ -38,11 +46,7 @@ INTERFACE
 		COL_LRED     = 12;
 		COL_LMAGENTA = 13;
 		COL_YELLOW   = 14;
-		COL_WHITE    = 15;
-		
-		COL_TAB : ARRAY [0..6] OF INTEGER = (4,2,6,14,5,1,0);
-		COL_FOR : ARRAY [0..5] OF STRING  = ('{}','**','++','[]','##','  ');
-		
+		COL_WHITE    = 15;		
 
 
 IMPLEMENTATION

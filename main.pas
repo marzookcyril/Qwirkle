@@ -1,10 +1,9 @@
 PROGRAM main;
 	
 USES console in 'uix/consoleUI/console.pas', crt,
-	 constants in 'core/constants.pas';
+	 constants in 'core/constants.pas',
+	 structures in 'core/structure.pas';
 
-VAR
-	i : INTEGER;
 BEGIN
 	clrscr;
 	clearScreen(COL_BLACK);
