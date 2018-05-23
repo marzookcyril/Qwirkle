@@ -4,9 +4,8 @@ INTERFACE
 USES constants  in '../core/constants.pas', crt,
 	 structures in '../core/structures.pas';
 
-FUNCTION check(x,y : INTEGER ; g : grille) : BOOLEAN ;
 FUNCTION remplirGrille(g : grille): grille;
-FUNCTION rules(g : grille; x,y : INTEGER ):BOOLEAN ;
+FUNCTION rules(g : grille; pos: position ):BOOLEAN ;
 
 
 
@@ -66,22 +65,27 @@ END;
 
 
 FUNCTION rules(g : grille; pos: position ):BOOLEAN ;
-VAR  temp : INTEGER;
+VAR  //temp : INTEGER;
 	p : position;
 BEGIN
-		;
-		IF (g[pos.x,pos.y-1].couleur + g[pos.x,pos.y+1].couleur + g[pos.x-1,pos.y].couleur + g[pos.x+1,pos.y].couleur < 2) AND  (g[pos.x,pos.y-1].couleur + g[pos.x,pos.y+1].couleur + g[pos.x-1,pos.y].couleur + g[pos.x+1,pos.y].couleur > 0)THEN
+		
+		IF ((g[pos.x,pos.y-1].couleur + g[pos.x,pos.y+1].couleur + g[pos.x-1,pos.y].couleur + g[pos.x+1,pos.y].couleur < 2) AND  (g[pos.x,pos.y-1].couleur + g[pos.x,pos.y+1].couleur + g[pos.x-1,pos.y].couleur + g[pos.x+1,pos.y].couleur > 0))THEN
 		BEGIN
 			p := unVoisin(g ,pos);
-			IF (( g[p.x,p.y].couleur = g[pos.x,pos.y].couleur AND g[p.x,p.y].forme <> g[pos.x,pos.y].forme) OR (g[p.x,p.y].couleur <> g[pos.x,pos.y].couleur AND g[p.x,p.y].forme = g[pos.x,pos.y].forme)) THEN 
+			IF ((( (g[p.x,p.y].couleur = g[pos.x,pos.y].couleur) AND (g[p.x,p.y].forme <> g[pos.x,pos.y].forme)) OR ((g[p.x,p.y].couleur <> g[pos.x,pos.y].couleur) AND (g[p.x,p.y].forme = g[pos.x,pos.y].forme)))) THEN 
 				rules := TRUE
 			ELSE 
 				rules := FALSE;
 		END
 		ELSE
-
-
+		BEGIN
+		END;
+			
 END;
+
+
+
+
 
 
 END.
