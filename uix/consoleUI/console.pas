@@ -9,16 +9,23 @@ TYPE
 		x,y : INTEGER;
 	END;
 	
+	printable = RECORD
+		chr   : CHAR;
+		tCol  : BYTE;
+		bgCol : BYTE;
+	END;
+	
 	rRectangle = ARRAY [0..4 - 1] OF point;
 	
-	FUNCTION  requestMunuRender : INTEGER;
 	PROCEDURE render;
-	PROCEDURE clearScreen;
+	PROCEDURE renderGame;
+	PROCEDURE renderMenuBorder();
+	PROCEDURE clearScreen (bgColor :  BYTE);
 
 IMPLEMENTATION
 	VAR
 		// Surface principale
-		globalScreen : ARRAY [0..WIDTH - 1, 0..HEIGHT - 1] OF CHAR;
+		globalScreen : ARRAY [0..WIDTH - 1, 0..HEIGHT - 1] OF printable;
 	
 	// Fait le rendu à la console. Utilise la surface screen pour faire
 	// le rendu.
@@ -30,98 +37,109 @@ IMPLEMENTATION
 		BEGIN
 			FOR x := 0 TO WIDTH - 1 DO
 			BEGIN
-				write(globalScreen[x,y]);
+				textcolor(globalScreen[x,y].tCol);
+				TextBackground(globalScreen[x,y].bgCol);
+				write(globalScreen[x,y].chr);
+				textcolor(7);
+				TextBackground(0);
 			END;
 			writeln;
 		END;
 	END;
 	
-	// Créer les bordures du menu. Fait le rendu dans la surface globalScreen
-	PROCEDURE renderMenuBorder();
+	PROCEDURE renderLine(x1, y1, x2, y2, tCol, bgCol : INTEGER);
 	VAR
 		x : INTEGER;
 	BEGIN
-		// Barres du haut et du bas
-		FOR x := 1 TO WIDTH - 2 DO 
+		// ligne horizontale
+		IF (x1 <> x2) and (y1 = y2) THEN
 		BEGIN
-			globalScreen[x,          0] := '-';
-			globalScreen[x, HEIGHT - 1] := '-';
-		END;
-		
-		// Barres sur les côtés
-		FOR x := 1 TO HEIGHT - 2 DO
-		BEGIN
-			globalScreen[0         , x] := '|';
-			globalScreen[WIDTH - 1 , x] := '|';
-		END;
-		
-		globalScreen[0         ,          0] := '+';
-		globalScreen[0         , HEIGHT - 1] := '+';
-		globalScreen[WIDTH - 1 ,          0] := '+';
-		globalScreen[WIDTH - 1 , HEIGHT - 1] := '+';
-	END;
-	
-	PROCEDURE renderText(text : STRING; x,y : INTEGER);
-	VAR
-		i : INTEGER;
-	BEGIN
-		FOR i := 1 TO length(text) DO
-			globalScreen[i + x, y] := text[i];
-	END;
-	
-	PROCEDURE renderCursor(posCursor, x, y : INTEGER);
-	VAR
-		i,j : INTEGER;
-	BEGIN
-		FOR i := x TO x + 1 DO
-		BEGIN
-			FOR j := y TO y + 2 DO
+			FOR x := x1 TO x2 DO
 			BEGIN
-				globalScreen[i,j] := ' ';
+				globalScreen[x, y1].chr   := '-';
+				globalScreen[x, y1].tCol  := tCol;
+				globalScreen[x, y1].bgCol := bgCol;
 			END;
-		END; 
-		globalScreen[x    ,y + posCursor] := '-';
-		globalScreen[x + 1,y + posCursor] := '>';
+		END;
+		
+		// ligne verticale
+		IF (x1 = x2) and (y1 <> y2) THEN
+		BEGIN
+			FOR x := y1 TO y2 DO
+			BEGIN
+				globalScreen[x1, x].chr   := '|';
+				globalScreen[x1, x].tCol  := tCol;
+				globalScreen[x1, x].bgCol := bgCol;
+			END;
+		END;
 	END;
 	
-	// Fais le rendu du menu. Retourne le choix.
-	FUNCTION requestMunuRender() : INTEGER;
-	VAR
-		ch : CHAR;
-		cursor : INTEGER;
+	FUNCTION isInScreen(x,y : INTEGER) : BOOLEAN;
 	BEGIN
-		renderText('Bienvenus dans Qwirkle', 3,3);
-		renderText('developpé par Paul Planchon et Cyril Marzook', 3,4);
-		renderText('Veuillez vous déplacer avec UP / DOWN / RIGHT', 3,6);
-		
-		cursor := 0;
-		
-		renderText('TEST1', 6,8);
-		renderText('TEST2', 6,9);
-		renderText('TEST3', 6,10);
-		
-		render;
-		
-		REPEAT
-			
-			ch := ReadKey;
-			CASE ch OF
-				#80: inc(cursor);
-				#72: dec(cursor);
-			END;
-			IF cursor > 2 THEN cursor := 2;
-			IF cursor < 0 THEN cursor := 0;
-			
-			renderCursor(cursor, 3, 8);
-			writeln(cursor);
-			clrscr;
-			render;
-		UNTIL ch = #77;
-		
-		requestMunuRender := cursor;
+		isInScreen := NOT((x < 0) or (x > WIDTH) or (y < 0) or (y > HEIGHT));
 	END;
 	
-	PROCEDURE clearScreen;
+	PROCEDURE plot(chr : CHAR; x,y,tCol,bgCol : INTEGER);
+	BEGIN
+		writeln(isInScreen(x,y));
+		IF isInScreen(x,y) THEN
+		BEGIN
+			globalScreen[x, y].bgCol := bgCol;
+			globalScreen[x, y].tCol  := tCol;
+			globalScreen[x, y].chr   := chr;
+		END;
+	END;
+	
+	// Créer les bordures du menu. Fait le rendu dans la surface globalScreen
+	PROCEDURE renderMenuBorder();
+	BEGIN
+		renderLine(0, 0, WIDTH - 1, 0, 7, 0);
+		renderLine(0, 0,         0, HEIGHT - 1, 7, 0);
+		renderLine(0, HEIGHT - 1, WIDTH - 1, HEIGHT - 1, 7, 0);
+		renderLine(WIDTH - 1, 0, WIDTH - 1, HEIGHT - 1, 7, 0);
+		plot('+',0,0,7,0);
+		plot('+',0,HEIGHT - 1,7,0);
+		plot('+',WIDTH - 1,0,7,0);
+		plot('+',WIDTH - 1,HEIGHT - 1,7,0);
+	END;
+	
+	PROCEDURE renderText(text : STRING; x, y, tCol, bgCol : INTEGER);
+	VAR
+		i   : INTEGER;
+		tmp : printable;
+	BEGIN
+		tmp.tCol  := tCol;
+		tmp.bgCol := bgCol;
+		FOR i := 1 TO length(text) DO
+		BEGIN
+			tmp.chr := text[i];
+			globalScreen[i + x, y] := tmp;
+		END;
+	END;
+	
+	PROCEDURE renderPion(x,y : INTEGER; pion : pion);
+	BEGIN
+		plot(COL_FOR[pion.forme,1], x, y, COL_WHITE, pion.couleur);
+		plot(COL_FOR[pion.forme,2], x + 1, y, COL_WHITE, pion.couleur);
+	END;
+	
+	PROCEDURE renderGame();
+	VAR
+		pionTest : pion;
+	BEGIN
+		pionTest.forme := FORME_ROND - 1;
+		pionTest.couleur := COL_RED;
+		renderText('Qwirkle :', 1, 1, COL_YELLOW,COL_RED);
+		renderLine(51,1,51, HEIGHT - 2, 7, 0);
+		renderLine(0,2,51,2, 7, 0);
+		plot('+',51,0,7,0);
+		plot('+',51,HEIGHT - 1,7,0);
+		plot('+',0,2,7,0);
+		plot('+',51,2,7,0);
+		renderPion(5,5,pionTest);
+	END;
+	
+	PROCEDURE clearScreen (bgColor :  BYTE);
 	VAR
 		x,y : INTEGER;
 	BEGIN
@@ -129,7 +147,9 @@ IMPLEMENTATION
 		BEGIN
 			FOR y := 0 TO HEIGHT - 1 DO
 			BEGIN
-				globalScreen[x,y] := ' ';
+				globalScreen[x,y].tCol  := 7;
+				globalScreen[x,y].bgCol := bgColor;
+				globalScreen[x,y].chr   := ' ';
 			END;
 		END;
 	END;
