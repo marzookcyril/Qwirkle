@@ -9,6 +9,7 @@ FUNCTION calculVoisin ( g : grille ; pos : position) : INTEGER ;
 FUNCTION rules(g : grille; pos: position ):BOOLEAN ;
 FUNCTION verifLigne(g : grille ; p, pos : position): BOOLEAN;
 FUNCTION verifColonne(g : grille ; p, pos : position): BOOLEAN;
+FUNCTION posVoisin(g : grille ; pos : position): tabdyn;
 FUNCTION unVoisin(g : grille; pos : position ) : position ;
 
 
@@ -149,6 +150,46 @@ BEGIN
 END;
 
 
+
+FUNCTION posVoisin(g : grille ; pos : position): tabdyn;
+VAR 
+	tabdy : tabdyn;
+	nbrV ,i  : INTEGER;
+BEGIN
+	nbrV := calculVoisin(g,pos);
+	setlength(tabdy,(2*nbrV)-1);
+	i := 0;
+	IF (g[pos.x,pos.y-1].couleur <> 0) THEN
+	BEGIN
+		tabdy[i] := pos.x;
+		tabdy[i+1] := pos.y-1;
+		i := i+2;
+	END;
+	IF (g[pos.x,pos.y+1].couleur <> 0) THEN
+	BEGIN
+		tabdy[i] := pos.x;
+		tabdy[i+1] := pos.y+1;
+		i := i+2;
+	END;
+	IF (g[pos.x-1,pos.y].couleur <> 0) THEN
+	BEGIN
+		tabdy[i] := pos.x-1;
+		tabdy[i+1] := pos.y;
+		i := i+2;
+	END;
+	IF (g[pos.x+1,pos.y].couleur <> 0) THEN
+	BEGIN
+		tabdy[i] := pos.x+1;
+		tabdy[i+1] := pos.y;
+		i := i+2;
+	END;
+	posVoisin := tabdy;
+
+END;
+
+
+
+
 //  Fonction qui permet de renvoyer la position du voisin quand il y en
 //  a qu'un seul.
 FUNCTION unVoisin(g : grille; pos : position ) : position ;
@@ -187,23 +228,31 @@ END;
 //  Fonction qui permet de dire s'il est possible 
 // 	de faire un coup ou non.
 FUNCTION rules(g : grille; pos: position ):BOOLEAN ;
-VAR  temp : INTEGER;
-	p : position;
+VAR  temp          : INTEGER;
+	p1, p2, p3, P4 : position;
+	tab            : tabdyn;
 BEGIN
 	temp := calculVoisin(g,pos);
 	CASE temp OF 
 		1 :
 		BEGIN
-			p := unVoisin(g ,pos);
-			IF ((( (g[p.x,p.y].couleur = g[pos.x,pos.y].couleur) AND (g[p.x,p.y].forme <> g[pos.x,pos.y].forme)) OR ((g[p.x,p.y].couleur <> g[pos.x,pos.y].couleur) AND (g[p.x,p.y].forme = g[pos.x,pos.y].forme))) AND ( verifColonne(g,p,pos) AND verifLigne(g,p,pos) )) THEN 
+			p1 := unVoisin(g ,pos);
+			IF ((( (g[p1.x,p1.y].couleur = g[pos.x,pos.y].couleur) AND (g[p1.x,p1.y].forme <> g[pos.x,pos.y].forme)) OR ((g[p1.x,p1.y].couleur <> g[pos.x,pos.y].couleur) AND (g[p1.x,p1.y].forme = g[pos.x,pos.y].forme))) AND ( verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) )) THEN 
 				rules := TRUE
 			ELSE 
 				rules := FALSE;
 		END;
 		2 : 
 		BEGIN
-		
-		
+			tab := posVoisin(g,pos);
+			p1.x := tab[0];
+			p1.y := tab[1];
+			p2.x := tab[2];
+			p2.y := tab[3];
+			IF ((((g[p1.x,p1.y].couleur = g[p2.x,p2.y].couleur) AND (g[p1.x,p1.y].couleur= g[pos.x,pos.y].couleur)) AND ((g[p1.x,p1.y].forme <> g[p2.x,p2.y].forme) AND (g[p1.x,p1.y].forme <> g[pos.x,pos.y].forme) AND (g[p2.x,p2.y].forme <> g[pos.x,pos.y].forme))) OR (((g[p1.x,p1.y].forme = g[p2.x,p2.y].forme) AND (g[p1.x,p1.y].forme = g[pos.x,pos.y].forme)) AND ((g[p1.x,p1.y].couleur <> g[p2.x,p2.y].couleur) AND (g[p1.x,p1.y].couleur <> g[pos.x,pos.y].couleur) AND (g[p2.x,p2.y].couleur <> g[pos.x,pos.y].couleur))) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos)))) THEN
+				rules := TRUE
+			ElSE 
+				rules := FALSE;
 		END;
 			
 END;
