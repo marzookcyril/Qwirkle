@@ -8,8 +8,8 @@
 UNIT console;
 INTERFACE
 
-USES constants  in 'core/constants.pas', crt,
-	 structures in 'core/structures.pas', sysutils;
+USES constants  in './core/constants.pas', crt,
+	 structures in './core/structures.pas', sysutils;
 
 TYPE
 	// type primitif de tout ce qui peut être affiché à l'écran.
@@ -19,10 +19,11 @@ TYPE
 		bgCol : BYTE;
 	END;
 	
-	PROCEDURE render;
-	PROCEDURE renderGame;
-	PROCEDURE renderMenuBorder();
-	PROCEDURE clearScreen (bgColor :  BYTE);
+PROCEDURE render;
+PROCEDURE renderGame(g : grille);
+PROCEDURE renderMenuBorder();
+PROCEDURE clearScreen (bgColor :  BYTE);
+PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
 
 IMPLEMENTATION
 	VAR
@@ -132,8 +133,8 @@ IMPLEMENTATION
 	// on fait un rendu dans le référentiel de la grille, pas de l'écran.
 	PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
 	BEGIN
-		plot(FOR_TAB[pion.forme,1], 2 * x - 1, y + 2, COL_WHITE, pion.couleur);
-		plot(FOR_TAB[pion.forme,2],     2 * x, y + 2, COL_WHITE, pion.couleur);
+		plot(FOR_TAB[pion.forme,1], 2 * x - 1, y + 2, COL_WHITE, COL_TAB[pion.couleur]);
+		plot(FOR_TAB[pion.forme,2],     2 * x, y + 2, COL_WHITE, COL_TAB[pion.couleur]);
 	END;
 	
 	PROCEDURE renderPion(x,y : INTEGER; pion : pion);
@@ -142,7 +143,8 @@ IMPLEMENTATION
 		plot(FOR_TAB[pion.forme,2], x + 1, y, COL_WHITE, pion.couleur);
 	END;
 	
-	PROCEDURE renderGame();
+	// fais le rendu de la grille de jeu dans sa globalité
+	PROCEDURE renderGame(g : grille);
 	VAR
 		pionTest : pion;
 		i,j : INTEGER;
@@ -184,14 +186,15 @@ IMPLEMENTATION
 			
 		END;
 		
-		FOR i := 1 TO 25 DO
+		FOR i := 0 TO 24 DO
 		BEGIN
-			FOR j := 1 TO 25 DO
+			FOR j := 0 TO 24 DO
 			BEGIN
-				pionTest.couleur := j MOD 7;
-				renderPionInGrille(i,j, pionTest);
+				renderPionInGrille(i + 1, j + 1, g[i,j]);
 			END;
 		END;
+		
+		render;
 	END;
 	
 	// efface l'écran en appliquant la couleur bgColor à tout l'écran.

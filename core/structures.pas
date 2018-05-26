@@ -24,7 +24,5 @@ INTERFACE
 			x : INTEGER;
 			y : INTEGER;
 		END;
-		
-		
 IMPLEMENTATION
 END.

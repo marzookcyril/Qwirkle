@@ -4,8 +4,8 @@ INTERFACE
 	CONST
 		// CONSTANTES DU MOTEUR D'AFFICHAGE
 				
-		COL_TAB : ARRAY [0..6] OF INTEGER = (4,2,6,14,5,1,0);
-		FOR_TAB : ARRAY [0..5] OF STRING  = ('{}','**','++','[]','##','  ');
+		COL_TAB : ARRAY [0..6] OF INTEGER = (0,4,2,6,14,5,1);
+		FOR_TAB : ARRAY [0..6] OF STRING  = ('  ','{}','**','++', ')(','[]','##');
 
 		NUMBERED_COLS    = FALSE;
 
@@ -23,13 +23,13 @@ INTERFACE
 		COULEUR_BLEU   = 6;
 		COULEUR_NUL    = 0;
 		
-		FORME_ROND     = 1;
-		FORME_TREFLE   = 2;
-		FORME_ETOILE   = 3;
-		FORME_CROIX    = 4;
-		FORME_CARRE    = 5;
-		FORME_LOSANGE  = 6;
-		FORME_NUL      = 0;
+		FORME_ROND     = 1; // {}
+		FORME_TREFLE   = 2; // **
+		FORME_ETOILE   = 3; // ++
+		FORME_CROIX    = 4; // )(
+		FORME_CARRE    = 5; // []
+		FORME_LOSANGE  = 6; // ##
+		FORME_NUL      = 0; // 
 
 		COL_BLACK    = 0;
 		COL_BLUE     = 1;
