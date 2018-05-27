@@ -25,6 +25,7 @@ PROCEDURE renderMenuBorder();
 PROCEDURE clearScreen (bgColor :  BYTE);
 PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
 PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
+PROCEDURE initConsole;
 
 IMPLEMENTATION
 	VAR
@@ -34,8 +35,14 @@ IMPLEMENTATION
 		historiqueIndex : INTEGER;
 
 	PROCEDURE initConsole;
+	VAR
+		i : INTEGER;
 	BEGIN
 		historiqueIndex := 0;
+		FOR i := 0 TO length(historique) - 1 DO
+		BEGIN
+			historique[i].id := -1;
+		END;
 	END;
 
 	// Affiche à l'écran le contenue de la surface générale (chez nous globalScreen)
@@ -147,17 +154,23 @@ IMPLEMENTATION
 
 	PROCEDURE renderPion(x,y : INTEGER; pion : pion);
 	BEGIN
-		plot(FOR_TAB[pion.forme,1],     x, y, COL_WHITE, pion.couleur);
-		plot(FOR_TAB[pion.forme,2], x + 1, y, COL_WHITE, pion.couleur);
+		plot(FOR_TAB[pion.forme,1],     x, y, COL_WHITE, COL_TAB[pion.couleur]);
+		plot(FOR_TAB[pion.forme,2], x + 1, y, COL_WHITE, COL_TAB[pion.couleur]);
 	END;
 
 	PROCEDURE renderNodeHistorique(node : dataHistorique; i : INTEGER);
 	BEGIN
-		renderText('MOV ' + inttostr(i), 53, HEIGHT DIV 2 - 4 + i, COL_WHITE, COL_BLACK );
-		renderText(node.joueur, 60, HEIGHT DIV 2 - 4 + i, COL_LBLUE, COL_WHITE);
-		renderPion(64, HEIGHT DIV 2 - 4 + i, node.pion);
-		renderText('x: ' + inttostr(node.posX), 67, HEIGHT DIV 2 - 4 + i, COL_GREEN, COL_BLACK);
-		renderText(', y: ' + inttostr(node.posY), 73, HEIGHT DIV 2 - 4 + i, COL_GREEN, COL_BLACK);
+		IF node.id >= 0 THEN
+		BEGIN
+			renderText('MOV ' + inttostr(node.id), 53, HEIGHT DIV 2 - 4 + i, COL_WHITE, COL_BLACK );
+			CASE node.joueur OF
+				'J1' : renderText(node.joueur, 60, HEIGHT DIV 2 - 4 + i, COL_LBLUE, COL_WHITE);
+				'J2' : renderText(node.joueur, 60, HEIGHT DIV 2 - 4 + i, COL_LBLUE, COL_RED);
+			END;
+			renderPion(64, HEIGHT DIV 2 - 4 + i, node.pion);
+			renderText('x: ' + inttostr(node.posX), 67, HEIGHT DIV 2 - 4 + i, COL_GREEN, COL_BLACK);
+			renderText(', y: ' + inttostr(node.posY), 73, HEIGHT DIV 2 - 4 + i, COL_GREEN, COL_BLACK);
+		END;
 	END;
 
 	PROCEDURE renderHistorique;
@@ -166,7 +179,7 @@ IMPLEMENTATION
 	BEGIN
 		FOR i := 0 TO 16 DO
 		BEGIN
-			renderNodeHistorique(historique[historiqueIndex + i MOD 17], i);
+			renderNodeHistorique(historique[(historiqueIndex + i) MOD 17], i);
 		END;
 	END;
 
@@ -218,7 +231,6 @@ IMPLEMENTATION
 		historique[historiqueIndex MOD 17].id     := historiqueIndex;
 		historique[historiqueIndex MOD 17].joueur := joueur;
 		inc(historiqueIndex);
-		writeln(historiqueIndex);
 	END;
 
 	// efface l'écran en appliquant la couleur bgColor à tout l'écran.

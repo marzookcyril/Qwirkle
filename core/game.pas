@@ -3,17 +3,17 @@ INTERFACE
 USES constants, structures,crt,
 	 console in './uix/consoleUI/console.pas';
 
-PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER);
+PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 FUNCTION remplirGrille(): grille;
 
 IMPLEMENTATION
 
 	// Quand on ajoute un pion à la grille on est sur que ce pion peut etre joué;
-	PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER);
+	PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 	BEGIN
 		clrscr;
 		g[x,y] := pionAAjouter;
-		addToHistorique(pionAAjouter, x, y, 'J1');
+		addToHistorique(pionAAjouter, x, y, joueur);
 		renderGame(g);
 	END;
 
