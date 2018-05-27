@@ -1,9 +1,10 @@
 PROGRAM main;
-	
+
 USES console in 'uix/consoleUI/console.pas', crt,
-	 constants in 'core/constants.pas',
-	 structures in 'core/structure.pas',
-	 game in 'core/game.pas';
+	constants in 'core/constants.pas',
+	structures in 'core/structure.pas',
+	game in 'core/game.pas';
+
 VAR
 	pionTest : pion;
 	g : grille;
@@ -18,4 +19,3 @@ BEGIN
 	ajouterPion(g, pionTest, 1,4);
 	ajouterPion(g, pionTest, 1,6);
 END.
-

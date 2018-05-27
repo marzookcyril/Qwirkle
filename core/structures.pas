@@ -1,7 +1,7 @@
 UNIT structures;
 INTERFACE
 	USES constants;
-	
+
 	{
 	TYPES :
 		- pion       : type du pion primitif
@@ -9,20 +9,29 @@ INTERFACE
 		- mainJoueur : main du joueur
 		- mainJoueur : pioche générale
 	}
-	
-	TYPE 
+
+	TYPE
 		pion = RECORD
 			couleur : INTEGER;
 			forme   : INTEGER;
 		END;
-		
+
 		grille     = ARRAY [0..TAILLE_GRILLE - 1, 0..TAILLE_GRILLE - 1] OF pion;
 		mainJoueur = ARRAY [0..6 - 1] OF pion;
 		pioche     = ARRAY OF pion;
-		
+
 		position = RECORD
 			x : INTEGER;
 			y : INTEGER;
 		END;
+
+		dataHistorique = RECORD
+			id     : INTEGER;
+			joueur : STRING;
+			pion   : pion;
+			posX   : INTEGER;
+			posY   : INTEGER;
+		END;
+
 IMPLEMENTATION
 END.
