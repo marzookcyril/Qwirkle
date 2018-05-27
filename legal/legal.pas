@@ -10,6 +10,8 @@ FUNCTION rules(g : grille; pos: position ):BOOLEAN ;
 FUNCTION verifLigne(g : grille ; p, pos : position): BOOLEAN;
 FUNCTION verifColonne(g : grille ; p, pos : position): BOOLEAN;
 FUNCTION posVoisin(g : grille ; pos : position): tabdyn;
+FUNCTION troisVoisins(g : grille; pos : position): BOOLEAN;
+FUNCTION quatreVoisins(g : grille; pos : position): BOOLEAN;
 FUNCTION unVoisin(g : grille; pos : position ) : position ;
 
 
@@ -225,6 +227,88 @@ BEGIN
 END;
 
 
+
+//Fonction qui verifie si le coup est 
+// possible avec trois voisins
+FUNCTION troisVoisins(g : grille; pos : position): BOOLEAN;
+VAR p1,p2,p3 : position;	
+	tab      : tabdyn;
+BEGIN
+	tab := posVoisin(g,pos);
+	p1.x := tab[0];
+	p1.y := tab[1];
+	p2.x := tab[2];
+	p2.y := tab[3];
+	p3.x := tab[4];
+	p3.y := tab[5];
+	IF (((g[p1.x,p1.y].forme  = g[pos.x,pos.y].forme) AND (g[p1.x,p1.y].forme  = g[p2.x,p2.y].forme)) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos)))) THEN
+	BEGIN
+		IF ((g[p1.x,p1.y].forme <> g[p3.x,p3.y].forme) AND (g[p3.x,p3.y].couleur  = g[pos.x,pos.y].couleur)) AND (verifColonne(g,p3,pos) AND verifLigne(g,p3,pos)) THEN 
+			troisVoisins := TRUE 
+		ELSE 
+			troisVoisins := FALSE;
+	END;
+	IF (((g[p1.x,p1.y].forme  = g[pos.x,pos.y].forme) AND (g[p1.x,p1.y].forme  = g[p3.x,p3.y].forme)) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos)))) THEN
+	BEGIN
+		IF ((g[p1.x,p1.y].forme <> g[p2.x,p2.y].forme) AND (g[p2.x,p2.y].couleur  = g[pos.x,pos.y].couleur)) AND (verifColonne(g,p3,pos) AND (verifLigne(g,p3,pos))) THEN 
+			troisVoisins := TRUE 
+		ELSE 
+			troisVoisins := FALSE;
+	END;
+	IF ((g[p2.x,p2.y].forme  = g[pos.x,pos.y].forme) AND (g[p2.x,p2.y].forme  = g[p3.x,p3.y].forme)) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos))) THEN
+	BEGIN
+		IF ((g[p2.x,p2.y].forme <> g[p1.x,p1.y].forme) AND (g[p1.x,p1.y].couleur  = g[pos.x,pos.y].couleur)) AND  (verifColonne(g,p3,pos) AND (verifLigne(g,p3,pos)))THEN 
+			troisVoisins := TRUE 
+		ELSE 
+			troisVoisins := FALSE;
+	END;
+	IF ((g[p1.x,p1.y].couleur  = g[pos.x,pos.y].couleur) AND (g[p1.x,p1.y].couleur  = g[p2.x,p2.y].couleur)) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos))) THEN
+	BEGIN
+		IF ((g[p1.x,p1.y].couleur <> g[p3.x,p3.y].couleur) AND (g[p3.x,p3.y].forme  = g[pos.x,pos.y].forme)) AND (verifColonne(g,p3,pos) AND (verifLigne(g,p3,pos))) THEN 
+			troisVoisins := TRUE 
+		ELSE 
+			troisVoisins := FALSE;
+	END;
+	IF ((g[p1.x,p1.y].couleur  = g[pos.x,pos.y].couleur) AND (g[p1.x,p1.y].couleur  = g[p3.x,p3.y].couleur)) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos))) THEN
+	BEGIN
+		IF ((g[p1.x,p1.y].couleur <> g[p2.x,p2.y].couleur) AND (g[p2.x,p2.y].forme  = g[pos.x,pos.y].forme))AND (verifColonne(g,p3,pos) AND (verifLigne(g,p3,pos))) THEN 
+			troisVoisins := TRUE 
+		ELSE 
+			troisVoisins := FALSE;
+	END;
+	IF ((g[p2.x,p2.y].couleur  = g[pos.x,pos.y].couleur) AND (g[p2.x,p2.y].couleur  = g[p3.x,p3.y].couleur))  AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos)))THEN
+	BEGIN
+		IF ((g[p2.x,p2.y].couleur <> g[p1.x,p1.y].couleur) AND (g[p1.x,p1.y].forme  = g[pos.x,pos.y].forme)) AND (verifColonne(g,p3,pos) AND (verifLigne(g,p3,pos)))THEN 
+			troisVoisins := TRUE 
+		ELSE 
+			troisVoisins := FALSE;
+	END;
+	
+END;
+
+
+
+FUNCTION quatreVoisins(g : grille; pos : position): BOOLEAN;
+VAR p1, p2, p3, p4 : position;
+	tab  		   : tabdyn;
+BEGIN
+	tab := posVoisin(g,pos);
+	p1.x := tab[0];
+	p1.y := tab[1];
+	p2.x := tab[2];
+	p2.y := tab[3];
+	p3.x := tab[4];
+	p3.y := tab[5];
+	p4.x := tab[6];
+	p4.y := tab[7];
+	
+
+
+
+END;
+
+
+
 //  Fonction qui permet de dire s'il est possible 
 // 	de faire un coup ou non.
 FUNCTION rules(g : grille; pos: position ):BOOLEAN ;
@@ -254,7 +338,20 @@ BEGIN
 			ElSE 
 				rules := FALSE;
 		END;
-			
+		3 :
+		BEGIN
+			IF troisVoisins(g,pos) THEN 
+				rules := TRUE
+			ELSE 
+				rules := FALSE;
+		END;
+		4: 
+		BEGIN
+			IF quatreVoisins(g,pos) THEN 
+				rules := TRUE
+			ELSE 
+				rules := FALSE;
+		END;
 END;
 
 END;
