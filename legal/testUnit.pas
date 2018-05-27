@@ -8,12 +8,12 @@ VAR
 	pos : position;
 BEGIN
 	g := remplirGrille(g);
-	g[4,4].couleur := COULEUR_ROUGE;
-	g[4,4].forme   := FORME_ROND;
-	g[4,5].couleur := COULEUR_ROUGE;
-	g[4,5].forme   := FORME_ETOILE;
-	pos.x := 4;
-	pos.y := 3;
+	g[3,2].couleur := COULEUR_ROUGE;
+	g[3,2].forme   := FORME_ROND;
+	g[4,1].couleur := COULEUR_ROUGE;
+	g[4,1].forme   := FORME_ETOILE;
+	pos.x := 3;
+	pos.y := 1;
 	g[pos.x, pos.y].couleur := COULEUR_ROUGE;
 	g[pos.x,pos.y].forme    := FORME_ETOILE;
 	IF not rules(g,pos) THEN 
