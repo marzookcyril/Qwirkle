@@ -26,12 +26,13 @@ PROCEDURE clearScreen (bgColor :  BYTE);
 PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
 PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
 PROCEDURE initConsole;
+PROCEDURE renderPion(x,y : INTEGER; pion : pion);
 
 IMPLEMENTATION
 	VAR
 		// Surface principale
 		globalScreen : ARRAY [0..WIDTH - 1, 0..HEIGHT - 1] OF printable;
-		historique   : ARRAY [0..16] OF dataHistorique;
+		historique   : ARRAY [0..12] OF dataHistorique;
 		historiqueIndex : INTEGER;
 
 	PROCEDURE initConsole;
@@ -177,9 +178,9 @@ IMPLEMENTATION
 	VAR
 		i : INTEGER;
 	BEGIN
-		FOR i := 0 TO 16 DO
+		FOR i := 0 TO 11 DO
 		BEGIN
-			renderNodeHistorique(historique[(historiqueIndex + i) MOD 17], i);
+			renderNodeHistorique(historique[(historiqueIndex + i) MOD 12], i + 4);
 		END;
 	END;
 
@@ -206,8 +207,16 @@ IMPLEMENTATION
 
 		renderText('JOUEUR 2:', 77, 3, COL_WHITE, COL_BLACK);
 		renderText(' 999 ', 78, 5, COL_LBLUE, COL_WHITE);
-		renderLine(52 ,HEIGHT DIV 2 - 7, WIDTH - 2, HEIGHT DIV 2 - 7, COL_WHITE, COL_BLACK);
-		renderText('*-* HISTORIQUE *-*', 60, HEIGHT DIV 2 - 6, COL_WHITE, COL_BLACK);
+
+		renderText('JOUEUR 3:', 53, 7, COL_WHITE, COL_BLACK);
+		renderText(' 999 ', 54, 9, COL_GREEN, COL_WHITE);
+
+		renderText('JOUEUR 4:', 77, 7, COL_WHITE, COL_BLACK);
+		renderText(' 999 ', 78, 9, COL_MAGENTA, COL_WHITE);
+
+		renderLine(52 , 11, WIDTH - 2, 11, COL_WHITE, COL_BLACK);
+
+		renderText('*-* HISTORIQUE *-*', 60,  12, COL_WHITE, COL_BLACK);
 
 		renderHistorique;
 
@@ -225,11 +234,11 @@ IMPLEMENTATION
 
 	PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
 	BEGIN
-		historique[historiqueIndex MOD 17].pion   := p;
-		historique[historiqueIndex MOD 17].posX   := x;
-		historique[historiqueIndex MOD 17].posY   := y;
-		historique[historiqueIndex MOD 17].id     := historiqueIndex;
-		historique[historiqueIndex MOD 17].joueur := joueur;
+		historique[historiqueIndex MOD 12].pion   := p;
+		historique[historiqueIndex MOD 12].posX   := x;
+		historique[historiqueIndex MOD 12].posY   := y;
+		historique[historiqueIndex MOD 12].id     := historiqueIndex;
+		historique[historiqueIndex MOD 12].joueur := joueur;
 		inc(historiqueIndex);
 	END;
 

@@ -5,8 +5,11 @@ EXEC=qwirkle
 all: legal uix core
 	$(COMP) main.pas
 
-# legal: legal/legal.pas
-# 	$(COMP) legal/legal.pas
+test: legal uix core
+	$(COMP) test.pas
+
+legal: legal/legal.pas
+	$(COMP) legal/legal.pas
 
 uix: uix/consoleUI/console.pas
 	$(COMP) uix/consoleUI/console.pas

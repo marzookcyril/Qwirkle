@@ -1,12 +1,59 @@
 UNIT game;
 INTERFACE
 USES constants, structures,crt,
-	 console in './uix/consoleUI/console.pas';
+	console in './uix/consoleUI/console.pas';
 
 PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 FUNCTION remplirGrille(): grille;
+FUNCTION initPioche : typePioche;
 
 IMPLEMENTATION
+
+	FUNCTION initPioche : typePioche;
+	VAR
+		pioche   : typePioche;
+		piocheIndex, i, j, k : INTEGER;
+	BEGIN
+		piocheIndex := 0;
+		// tous les pions sont en triple
+		FOR i := 0 TO 2 DO
+		BEGIN
+			// on fait toutes les couleurs
+			FOR j := 0 TO 5 DO
+			BEGIN
+				pioche[piocheIndex].couleur := j;
+				// toutes les formes
+				FOR k := 0 TO 5 DO
+				BEGIN
+					pioche[piocheIndex].forme := k;
+
+					inc(piocheIndex);
+				END;
+			END;
+		END;
+		writeln(piocheIndex);
+		initPioche := pioche;
+	END;
+
+	PROCEDURE swap(VAR pioche : typePioche; a,b : INTEGER);
+	VAR
+		tmp : pion;
+	BEGIN
+		tmp := pioche[a];
+		pioche[a] := pioche[b];
+		pioche[b] := tmp;
+	END;
+
+	PROCEDURE shufflePioche(VAR pioche : typePioche);
+	VAR
+		i : INTEGER;
+	BEGIN
+		Randomize;
+		FOR i := 0 TO SHUFFLE_PRECISION DO
+		BEGIN
+			swap(pioche, random(107), random(107));
+		END;
+	END;
 
 	// Quand on ajoute un pion à la grille on est sur que ce pion peut etre joué;
 	PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
