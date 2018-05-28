@@ -1,0 +1,9 @@
+Name=fv
+Version=3.0.4
+Checksum=1507031756
+CPU=x86_64
+OS=linux
+FPMakeOptions=-o -Ur -o -Xs -o -O2 -o -n -o -Cg -o -dx86_64 -o -dRELEASE -o -XX -o -CX
+Depends=rtl,rtl-console|1507031755,rtl-extra|1507031736
+NeedLibC=N
+FPMakeAddIn=N

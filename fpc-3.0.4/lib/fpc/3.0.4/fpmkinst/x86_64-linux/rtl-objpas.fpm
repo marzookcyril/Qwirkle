@@ -1,0 +1,9 @@
+Name=rtl-objpas
+Version=3.0.4
+Checksum=1507031738
+CPU=x86_64
+OS=linux
+FPMakeOptions=-o -Ur -o -Xs -o -O2 -o -n -o -Cg -o -dx86_64 -o -dRELEASE -o -XX -o -CX
+Depends=rtl
+NeedLibC=N
+FPMakeAddIn=N

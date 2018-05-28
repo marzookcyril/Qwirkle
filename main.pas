@@ -21,4 +21,5 @@ BEGIN
 	BEGIN
 		ajouterPion(g, pionTest, i, i, 'J1');
 	END;
+		ajouterPion(g, pionTest, i, i, 'J2');
 END.

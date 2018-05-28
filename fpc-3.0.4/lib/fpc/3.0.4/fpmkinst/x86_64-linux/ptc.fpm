@@ -1,0 +1,9 @@
+Name=ptc
+Version=3.0.4
+Checksum=1507031757
+CPU=x86_64
+OS=linux
+FPMakeOptions=-o -Ur -o -Xs -o -O2 -o -n -o -Cg -o -dx86_64 -o -dRELEASE -o -XX -o -CX
+Depends=rtl,hermes|1507031757,x11|1507031737,opengl|1507031753,fcl-base|1507031739,rtl-console|1507031755
+NeedLibC=N
+FPMakeAddIn=N

@@ -1,4 +1,4 @@
-COMP=fpc
+COMP=./fpc-3.0.4/bin/fpc
 FLAGS=
 EXEC=qwirkle
 
