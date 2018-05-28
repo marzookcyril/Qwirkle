@@ -167,6 +167,7 @@ IMPLEMENTATION
 			CASE node.joueur OF
 				'J1' : renderText(node.joueur, 60, HEIGHT DIV 2 - 4 + i, COL_LBLUE, COL_WHITE);
 				'J2' : renderText(node.joueur, 60, HEIGHT DIV 2 - 4 + i, COL_LBLUE, COL_RED);
+				ELSE renderText(node.joueur, 60, HEIGHT DIV 2 - 4 + i, COL_LBLUE, COL_WHITE);
 			END;
 			renderPion(64, HEIGHT DIV 2 - 4 + i, node.pion);
 			renderText('x: ' + inttostr(node.posX), 67, HEIGHT DIV 2 - 4 + i, COL_GREEN, COL_BLACK);

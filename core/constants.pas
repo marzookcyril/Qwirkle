@@ -4,7 +4,7 @@ INTERFACE
 	CONST
 		// CONSTANTES DU MOTEUR D'AFFICHAGE
 
-		COL_TAB : ARRAY [0..6] OF INTEGER = (0,4,2,6,14,5,1);
+		COL_TAB : ARRAY [0..6] OF INTEGER = (0,4,2,6,3,5,1);
 		FOR_TAB : ARRAY [0..6] OF STRING  = ('  ','{}','**','++', ')(','[]','##');
 
 		NUMBERED_COLS    = FALSE;

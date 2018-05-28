@@ -6,6 +6,7 @@ USES constants, structures,crt,
 PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 FUNCTION remplirGrille(): grille;
 FUNCTION initPioche : typePioche;
+PROCEDURE shufflePioche(VAR pioche : typePioche);
 
 IMPLEMENTATION
 
@@ -18,20 +19,16 @@ IMPLEMENTATION
 		// tous les pions sont en triple
 		FOR i := 0 TO 2 DO
 		BEGIN
-			// on fait toutes les couleurs
-			FOR j := 0 TO 5 DO
+			FOR j := 1 TO 6 DO
 			BEGIN
-				pioche[piocheIndex].couleur := j;
-				// toutes les formes
-				FOR k := 0 TO 5 DO
+				FOR k := 1 TO 6 DO
 				BEGIN
-					pioche[piocheIndex].forme := k;
-
+					pioche[piocheIndex].couleur := k;
+					pioche[piocheIndex].forme   := j;
 					inc(piocheIndex);
 				END;
 			END;
 		END;
-		writeln(piocheIndex);
 		initPioche := pioche;
 	END;
 
@@ -61,7 +58,7 @@ IMPLEMENTATION
 		clrscr;
 		g[x,y] := pionAAjouter;
 		addToHistorique(pionAAjouter, x, y, joueur);
-		renderGame(g);
+		//renderGame(g);
 	END;
 
 	// Fonction qui permet d'initier une grille
