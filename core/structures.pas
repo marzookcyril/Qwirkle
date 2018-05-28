@@ -33,6 +33,7 @@ INTERFACE
               posX   : INTEGER;
               posY   : INTEGER;
       	END;
+      	matrice = ARRAY [0..2, 0..2] OF pion;
 		
 IMPLEMENTATION
 END.
