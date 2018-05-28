@@ -58,7 +58,7 @@ IMPLEMENTATION
 		clrscr;
 		g[x,y] := pionAAjouter;
 		addToHistorique(pionAAjouter, x, y, joueur);
-		//renderGame(g);
+		renderGame(g);
 	END;
 
 	// Fonction qui permet d'initier une grille
