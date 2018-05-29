@@ -1,362 +1,239 @@
 UNIT legal;
 INTERFACE
+USES constants  in 'core/constants.pas', sysutils, Math,
+	structures in 'core/structures.pas';
 
-USES constants  in '../core/constants.pas', crt,
-	 structures in '../core/structures.pas';
-
-FUNCTION remplirGrille(g : grille): grille;
-FUNCTION calculVoisin ( g : grille ; pos : position) : INTEGER ;
-FUNCTION rules(g : grille; pos: position ):BOOLEAN ;
-FUNCTION verifLigne(g : grille ; p, pos : position): BOOLEAN;
-FUNCTION verifColonne(g : grille ; p, pos : position): BOOLEAN;
-FUNCTION posVoisin(g : grille ; pos : position): tabdyn;
-FUNCTION troisVoisins(g : grille; pos : position): BOOLEAN;
-FUNCTION quatreVoisins(g : grille; pos : position): BOOLEAN;
-FUNCTION unVoisin(g : grille; pos : position ) : position ;
-
+FUNCTION calculNombreDeVoisin(g : grille; x, y : INTEGER; dirInt : INTEGER) : INTEGER;
+FUNCTION verifNombreVoisin(g : grille; x, y: INTEGER) : BOOLEAN;
+FUNCTION findEtat(g : grille; x,y, dirInt : INTEGER) : STRING;
+FUNCTION concordance(g : grille; x, y : INTEGER) : BOOLEAN;
+FUNCTION concordanceGenerale(g: grille ; x,y : INTEGER; p : pion): BOOLEAN;
+FUNCTION duplicationPion(g : grille; x,y  : INTEGER; p : pion) : BOOLEAN;
 
 IMPLEMENTATION
 
-// Fonction qui permet d'initier une grille
-// avec des formes et couleurs nulle
-
-FUNCTION remplirGrille(g : grille): grille;
-VAR i , j : INTEGER;
-BEGIN
-	FOR i := 0 TO TAILLE_GRILLE -1 DO
+	// dir :    2
+	//        1   3
+	//          4
+	FUNCTION dirValue(dir : INTEGER) : position;
+	VAR
+		tmp : position;
 	BEGIN
-		FOR j := 0 TO TAILLE_GRILLE -1 DO
-		BEGIN
-			g[i,j].couleur := COULEUR_NULL;
-			g[i,j].forme   := FORME_NULL;
+		CASE dir OF
+			1 : BEGIN
+				tmp.x := -1;
+				tmp.y := 0;
+			END;
+			2 : BEGIN
+				tmp.x := 0;
+				tmp.y := -1;
+			END;
+			3 : BEGIN
+				tmp.x := 1;
+				tmp.y := 0;
+			END;
+			4 : BEGIN
+				tmp.x := 0;
+				tmp.y := 1;
+			END;
 		END;
+		dirValue := tmp;
 	END;
-	remplirGrille := g;
-END;
 
-
-
-
-
-// Fonciton qui permet de calculer le
-// nombre de voisins autour de la position
-// ou l'on veut placer le nouveau pion
-FUNCTION calculVoisin ( g : grille ; pos : position) : INTEGER ;
-VAR x : INTEGER;
-BEGIN
-	x := 0;
-	IF g[pos.x+1 , pos.y].couleur <> 0 THEN
-		x := x +1;
-	IF g[pos.x-1 , pos.y].couleur <> 0 THEN
-		x := x +1;
-	IF g[pos.x , pos.y+1].couleur <> 0 THEN
-		x := x +1;
-	IF g[pos.x+1 , pos.y-1].couleur <> 0 THEN
-		x := x +1;
-	calculVoisin := x;
-END;
-
-
-
-//   Fonction qui permet de verifier si on peut placer
-//   le pion sur la ligne en verifiant si on forme une ligne
-//   avec la couleur ou la forme.
-//   Ensuite on verifie qu'il n'y ait pas deja une ligne
-//   complete de forme ou couleur.
-
-FUNCTION verifLigne(g : grille ; p, pos : position): BOOLEAN;
-VAR x, y, i : INTEGER;
-BEGIN
-	x := 1;
-	y := 1;
-	IF pos.x-1 = p.x THEN
+	FUNCTION calculNombreDeVoisin(g : grille; x, y: INTEGER; dirInt : INTEGER) : INTEGER;
+	VAR
+		i : INTEGER;
+		dir : position;
 	BEGIN
-		IF (((g[p.x-1,p.y].couleur = g[pos.x, pos.y].couleur) AND   (g[p.x-1,p.y].forme <> g[pos.x, pos.y].forme)) OR ((g[p.x-1,p.y].couleur <> g[pos.x, pos.y].couleur) AND   (g[p.x-1,p.y].forme = g[pos.x, pos.y].forme)) OR (g[p.x-1,p.y].couleur = 0)) THEN
-			verifLigne := TRUE
-		ELSE
-			verifLigne := FALSE;
-	END
-	ELSE
-	BEGIN
-		IF (((g[p.x+1,p.y].couleur = g[pos.x, pos.y].couleur) AND   (g[p.x+1,p.y].forme <> g[pos.x, pos.y].forme)) OR ((g[p.x+1,p.y].couleur <> g[pos.x, pos.y].couleur) AND   (g[p.x+1,p.y].forme = g[pos.x, pos.y].forme)) OR (g[p.x+1,p.y].couleur = 0))  THEN
-			verifLigne := TRUE
-		ELSE
-			verifLigne := FALSE;
+		i := 0;
+		dir := dirValue(dirInt);
+		WHILE g[x + (i+1) * dir.x, y + (i+1) * dir.y].forme <> FORME_NULL DO
+			inc(i);
+		calculNombreDeVoisin := i;
 	END;
-	IF g[pos.x-1,pos.y].couleur <> 0 THEN
+
+	FUNCTION verifNombreVoisin(g : grille; x, y: INTEGER) : BOOLEAN;
+	VAR
+		verif : BOOLEAN;
 	BEGIN
-		FOR i := 2 TO 6 DO
+		verif := TRUE;
+		IF NOT (calculNombreDeVoisin(g,x,y,1) + (calculNombreDeVoisin(g,x,y,3)) <= 5) THEN
+			verif := FALSE;
+		IF NOT (calculNombreDeVoisin(g,x,y,2) + (calculNombreDeVoisin(g,x,y,4)) <= 5) THEN
+			verif := FALSE;
+		verifNombreVoisin := verif;
+	END;
+
+	// CODES :
+	// 000 => free
+	// 404 => error
+	FUNCTION findEtat(g : grille; x,y, dirInt : INTEGER) : STRING;
+	VAR
+		dir, dirBis : position;
+		nbrVoisin, nbrVoisinPeu : INTEGER;
+	BEGIN
+		dir := dirValue(dirInt);
+		nbrVoisin := calculNombreDeVoisin(g, x, y, dirInt);
+		IF nbrVoisin > 1 THEN
 		BEGIN
-			IF g[pos.x-i,pos.y].couleur <> 0 THEN
-				inc(x);
-		END;
-	END;
-	IF g[pos.x+1,pos.y].couleur <> 0 THEN
-	BEGIN
-		FOR i := 2 TO 6 DO
-		BEGIN
-			IF g[pos.x+1,pos.y].couleur <> 0 THEN
-				inc(y);
-		END;
-	END;
-	IF (x = 6) OR (y = 6) THEN
-		verifLigne := FALSE;
-END;
-
-
-
-
-//   Fonction qui permet de verifier si on peut placer
-//   le pion sur la colonne en verifiant si on forme une colonne
-//   avec la couleur ou la forme.
-//   Ensuite on verifie qu'il n'y ait pas deja une colonne
-//   complete de forme ou couleur.
-
-FUNCTION verifColonne(g : grille ; p, pos : position): BOOLEAN;
-VAR x,y,i : INTEGER;
-BEGIN
-	x :=1;
-	y :=1;
-	IF pos.y-1 = p.y THEN
-	BEGIN
-		IF (((g[p.x,p.y-1].couleur = g[pos.x, pos.y].couleur) AND   (g[p.x,p.y-1].forme <> g[pos.x, pos.y].forme)) OR ((g[p.x,p.y-1].couleur <> g[pos.x, pos.y].couleur) AND   (g[p.x,p.y-1].forme = g[pos.x, pos.y].forme)) OR (g[p.x,p.y-1].couleur = 0)) THEN
-			verifColonne := TRUE
-		ELSE
-			verifColonne := FALSE;
-	END
-	ELSE
-	BEGIN
-		IF (((g[p.x,p.y+1].couleur = g[pos.x, pos.y].couleur) AND   (g[p.x,p.y+1].forme <> g[pos.x, pos.y].forme)) OR ((g[p.x,p.y+1].couleur <> g[pos.x, pos.y].couleur) AND   (g[p.x,p.y+1].forme = g[pos.x, pos.y].forme)) OR (g[p.x,p.y+1].couleur = 0))  THEN
-			verifColonne := TRUE
-		ELSE
-			verifColonne := FALSE;
-	END;
-	IF g[pos.x,pos.y-1].couleur <> 0 THEN
-	BEGIN
-		FOR i := 2 TO 6 DO
-		BEGIN
-			IF g[pos.x,pos.y-i].couleur <> 0 THEN
-				inc(x);
-		END;
-	END;
-	IF g[pos.x,pos.y+1].couleur <> 0 THEN
-	BEGIN
-		FOR i := 2 TO 6 DO
-		BEGIN
-			IF g[pos.x,pos.y+i].couleur <> 0 THEN
-				inc(y);
-		END;
-	END;
-	IF (x = 6) OR (y = 6) THEN
-		verifColonne := FALSE;
-END;
-
-
-
-FUNCTION posVoisin(g : grille ; pos : position): tabdyn;
-VAR
-	tabdy : tabdyn;
-	nbrV ,i  : INTEGER;
-BEGIN
-	nbrV := calculVoisin(g,pos);
-	setlength(tabdy,(2*nbrV)-1);
-	i := 0;
-	IF (g[pos.x,pos.y-1].couleur <> 0) THEN
-	BEGIN
-		tabdy[i] := pos.x;
-		tabdy[i+1] := pos.y-1;
-		i := i+2;
-	END;
-	IF (g[pos.x,pos.y+1].couleur <> 0) THEN
-	BEGIN
-		tabdy[i] := pos.x;
-		tabdy[i+1] := pos.y+1;
-		i := i+2;
-	END;
-	IF (g[pos.x-1,pos.y].couleur <> 0) THEN
-	BEGIN
-		tabdy[i] := pos.x-1;
-		tabdy[i+1] := pos.y;
-		i := i+2;
-	END;
-	IF (g[pos.x+1,pos.y].couleur <> 0) THEN
-	BEGIN
-		tabdy[i] := pos.x+1;
-		tabdy[i+1] := pos.y;
-		i := i+2;
-	END;
-	posVoisin := tabdy;
-
-END;
-
-
-
-
-//  Fonction qui permet de renvoyer la position du voisin quand il y en
-//  a qu'un seul.
-FUNCTION unVoisin(g : grille; pos : position ) : position ;
-VAR p       : position;
-BEGIN
-	IF (g[pos.x,pos.y-1].couleur <> 0) THEN
-	BEGIN
-				p.x     := pos.x;
-				p.y     := pos.y-1;
+			IF g[x + dir.x, y + dir.y].forme = g[x + 2 * dir.x, y + 2 * dir.y].forme THEN
+			BEGIN
+				findEtat :=  'F' + inttostr(g[x + dir.x, y + dir.y].forme) + '0';
 			END
 			ELSE
 			BEGIN
-				IF g[pos.x,pos.y+1].couleur <> 0 THEN
-				BEGIN
-					p.x     := pos.x;
-					p.y     := pos.y+1;
-				END
+				IF g[x + dir.x, y + dir.y].couleur = g[x + 2 * dir.x, y + 2 * dir.y].couleur THEN
+					findEtat :=  'C' + inttostr(g[x + dir.x, y + dir.y].couleur) + '0'
 				ELSE
+					findEtat := '404';
+			END;
+		END
+		ELSE
+		BEGIN
+			IF nbrVoisin = 0 THEN
+			BEGIN
+				nbrVoisinPeu := calculNombreDeVoisin(g, x, y, (dirInt + 2) MOD 4);
+				dir := dirValue((dirInt + 2) MOD 4);
+				// le voisin opposé est seul
+				IF nbrVoisinPeu = 0 THEN
+					findEtat := '000';
+				IF nbrVoisinPeu = 1 THEN
+					findEtat := '0' + inttostr(g[x + dir.x, y + dir.y].forme) + inttostr(g[x + dir.x, y + dir.y].couleur);
+				IF nbrVoisinPeu > 1 THEN
 				BEGIN
-					IF g[pos.x-1,pos.y].couleur <> 0 THEN
+					IF g[x + dir.x, y + dir.y].forme = g[x + 2 * dir.x, y + 2 * dir.y].forme THEN
+						findEtat :=  'F' + inttostr(g[x + dir.x, y + dir.y].forme) + '0';
+					IF g[x + dir.x, y + dir.y].couleur = g[x + 2 * dir.x, y + 2 * dir.y].couleur THEN
+						findEtat :=  'C' + inttostr(g[x + dir.x, y + dir.y].couleur) + '0';
+				END;
+			END
+			ELSE
+			BEGIN
+				dirBis := dirValue((dirInt + 2) MOD 4);
+				IF g[x + dirBis.x, y + dirBis.y].forme <> 0 THEN
+				BEGIN
+					IF g[x + dir.x, y + dir.y].forme = g[x + dirBis.x, y + dirBis.y].forme THEN
 					BEGIN
-						p.x   := pos.x-1;
-						p.y   := pos.y;
+						findEtat :=  'F' + inttostr(g[x + dir.x, y + dir.y].forme) + '0';
 					END
 					ELSE
 					BEGIN
-						p.x   := pos.x+1;
-						p.y   := pos.y;
+						IF g[x + dir.x, y + dir.y].couleur = g[x + dirBis.x, y + dirBis.y].couleur THEN
+						BEGIN
+							findEtat :=  'C' + inttostr(g[x + dir.x, y + dir.y].couleur) + '0';
+						END
+						ELSE
+							findEtat := '404';
 					END;
-				END;
+				END
+				ELSE
+					findEtat := '0' + inttostr(g[x + dir.x, y + dir.y].forme) + inttostr(g[x + dir.x, y + dir.y].couleur);
+			END;
+		END;
 	END;
-			unVoisin := p;
-END;
 
-
-
-//Fonction qui verifie si le coup est
-// possible avec trois voisins
-FUNCTION troisVoisins(g : grille; pos : position): BOOLEAN;
-VAR p1,p2,p3 : position;
-	tab      : tabdyn;
-BEGIN
-	tab := posVoisin(g,pos);
-	p1.x := tab[0];
-	p1.y := tab[1];
-	p2.x := tab[2];
-	p2.y := tab[3];
-	p3.x := tab[4];
-	p3.y := tab[5];
-	IF (((g[p1.x,p1.y].forme  = g[pos.x,pos.y].forme) AND (g[p1.x,p1.y].forme  = g[p2.x,p2.y].forme)) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos)))) THEN
+	// dir => 0 en ligne, 1 => en colonnne
+	FUNCTION sousConcordance(g : grille; x, y, dir : INTEGER) : BOOLEAN;
+	VAR
+		etat1, etat2 : STRING;
 	BEGIN
-		IF ((g[p1.x,p1.y].forme <> g[p3.x,p3.y].forme) AND (g[p3.x,p3.y].couleur  = g[pos.x,pos.y].couleur)) AND (verifColonne(g,p3,pos) AND verifLigne(g,p3,pos)) THEN
-			troisVoisins := TRUE
+		etat1 := findEtat(g, x, y, dir + 1);
+		etat2 := findEtat(g, x, y, dir + 3);
+
+		IF (etat1 = etat2) AND (etat1 <> '404') THEN
+			sousConcordance := TRUE
 		ELSE
-			troisVoisins := FALSE;
+			sousConcordance := FALSE;
 	END;
-	IF (((g[p1.x,p1.y].forme  = g[pos.x,pos.y].forme) AND (g[p1.x,p1.y].forme  = g[p3.x,p3.y].forme)) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos)))) THEN
+
+	FUNCTION concordance(g : grille; x, y : INTEGER) : BOOLEAN;
 	BEGIN
-		IF ((g[p1.x,p1.y].forme <> g[p2.x,p2.y].forme) AND (g[p2.x,p2.y].couleur  = g[pos.x,pos.y].couleur)) AND (verifColonne(g,p3,pos) AND (verifLigne(g,p3,pos))) THEN
-			troisVoisins := TRUE
-		ELSE
-			troisVoisins := FALSE;
+		concordance := sousConcordance(g, x, y, 1) AND sousConcordance(g, x, y, 0);
 	END;
-	IF ((g[p2.x,p2.y].forme  = g[pos.x,pos.y].forme) AND (g[p2.x,p2.y].forme  = g[p3.x,p3.y].forme)) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos))) THEN
+
+	FUNCTION concordanceGenerale(g: grille ; x,y : INTEGER; p : pion): BOOLEAN;
+	VAR
+		i , j: INTEGER;
+		etat1 : STRING;
 	BEGIN
-		IF ((g[p2.x,p2.y].forme <> g[p1.x,p1.y].forme) AND (g[p1.x,p1.y].couleur  = g[pos.x,pos.y].couleur)) AND  (verifColonne(g,p3,pos) AND (verifLigne(g,p3,pos)))THEN
-			troisVoisins := TRUE
-		ELSE
-			troisVoisins := FALSE;
-	END;
-	IF ((g[p1.x,p1.y].couleur  = g[pos.x,pos.y].couleur) AND (g[p1.x,p1.y].couleur  = g[p2.x,p2.y].couleur)) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos))) THEN
-	BEGIN
-		IF ((g[p1.x,p1.y].couleur <> g[p3.x,p3.y].couleur) AND (g[p3.x,p3.y].forme  = g[pos.x,pos.y].forme)) AND (verifColonne(g,p3,pos) AND (verifLigne(g,p3,pos))) THEN
-			troisVoisins := TRUE
-		ELSE
-			troisVoisins := FALSE;
-	END;
-	IF ((g[p1.x,p1.y].couleur  = g[pos.x,pos.y].couleur) AND (g[p1.x,p1.y].couleur  = g[p3.x,p3.y].couleur)) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos))) THEN
-	BEGIN
-		IF ((g[p1.x,p1.y].couleur <> g[p2.x,p2.y].couleur) AND (g[p2.x,p2.y].forme  = g[pos.x,pos.y].forme))AND (verifColonne(g,p3,pos) AND (verifLigne(g,p3,pos))) THEN
-			troisVoisins := TRUE
-		ELSE
-			troisVoisins := FALSE;
-	END;
-	IF ((g[p2.x,p2.y].couleur  = g[pos.x,pos.y].couleur) AND (g[p2.x,p2.y].couleur  = g[p3.x,p3.y].couleur))  AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos)))THEN
-	BEGIN
-		IF ((g[p2.x,p2.y].couleur <> g[p1.x,p1.y].couleur) AND (g[p1.x,p1.y].forme  = g[pos.x,pos.y].forme)) AND (verifColonne(g,p3,pos) AND (verifLigne(g,p3,pos)))THEN
-			troisVoisins := TRUE
-		ELSE
-			troisVoisins := FALSE;
-	END;
-
-END;
-
-
-
-FUNCTION quatreVoisins(g : grille; pos : position): BOOLEAN;
-VAR p1, p2, p3, p4 : position;
-	tab  		   : tabdyn;
-BEGIN
-	tab := posVoisin(g,pos);
-	p1.x := tab[0];
-	p1.y := tab[1];
-	p2.x := tab[2];
-	p2.y := tab[3];
-	p3.x := tab[4];
-	p3.y := tab[5];
-	p4.x := tab[6];
-	p4.y := tab[7];
-
-
-
-
-END;
-
-
-
-//  Fonction qui permet de dire s'il est possible
-// 	de faire un coup ou non.
-FUNCTION rules(g : grille; pos: position ):BOOLEAN ;
-VAR  temp          : INTEGER;
-	p1, p2, p3, P4 : position;
-	tab            : tabdyn;
-BEGIN
-	temp := calculVoisin(g,pos);
-	CASE temp OF
-		1 :
+		i :=0;
+		FOR j := 1 TO 2 DO
 		BEGIN
-			p1 := unVoisin(g ,pos);
-			IF ((( (g[p1.x,p1.y].couleur = g[pos.x,pos.y].couleur) AND (g[p1.x,p1.y].forme <> g[pos.x,pos.y].forme)) OR ((g[p1.x,p1.y].couleur <> g[pos.x,pos.y].couleur) AND (g[p1.x,p1.y].forme = g[pos.x,pos.y].forme))) AND ( verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) )) THEN
-				rules := TRUE
+			etat1 := findEtat(g, x, y, j);
+			IF ( etat1[1] = '0' ) THEN
+			BEGIN
+				IF (inttostr(p.couleur) = etat1[3]) OR (inttostr(p.couleur) =  etat1[2]) THEN
+					inc(i);
+			END;
+			IF ( etat1[1] = 'F') THEN
+			BEGIN
+				IF inttostr(p.forme) = etat1[2] THEN
+					inc(i);
+			END;
+			IF ( etat1[1] = 'C') THEN
+			BEGIN
+				IF inttostr(p.couleur) = etat1[2] THEN
+					inc(i);
+			END;
+		END;
+		IF i = 2 THEN
+			concordanceGenerale := TRUE
+		ELSE
+			concordanceGenerale := FALSE;
+	END;
+
+	FUNCTION injection(x, y : INTEGER) :  INTEGER;
+	BEGIN
+		injection := ((x + y) * (x + y + 1)) DIV 2 + y;
+	END;
+
+	// 1 en ligne / 2 en colonne
+	FUNCTION duplicationPion(g : grille; x,y: INTEGER; p : pion) : BOOLEAN;
+	VAR
+		// magie de paul
+		tmp : ARRAY [0..83] OF INTEGER;
+		erreur : boolean;
+		i, ii : INTEGER;
+	BEGIN
+		g[x,y] := p;
+		erreur := FALSE;
+
+		FOR i := 0 TO 83 DO
+			tmp[i] := 0;
+
+
+
+
+		i := x - calculNombreDeVoisin(g, x, y, 1);
+		WHILE NOT erreur AND (i <= x + calculNombreDeVoisin(g, x, y, 3)) DO
+			IF tmp[injection(g[i, y].forme, g[i, y].couleur)] <> 0 THEN
+			BEGIN
+				writeln(inttostr(i) + ', ' +inttostr(y) + ' , ' + inttostr(g[i, y].couleur) + ','+ inttostr(tmp[injection(g[i, y].forme, g[i, y].couleur)]));
+				erreur := TRUE;
+			END
 			ELSE
-				rules := FALSE;
-		END;
-		2 :
-		BEGIN
-			tab := posVoisin(g,pos);
-			p1.x := tab[0];
-			p1.y := tab[1];
-			p2.x := tab[2];
-			p2.y := tab[3];
-			IF ((((g[p1.x,p1.y].couleur = g[p2.x,p2.y].couleur) AND (g[p1.x,p1.y].couleur= g[pos.x,pos.y].couleur)) AND ((g[p1.x,p1.y].forme <> g[p2.x,p2.y].forme) AND (g[p1.x,p1.y].forme <> g[pos.x,pos.y].forme) AND (g[p2.x,p2.y].forme <> g[pos.x,pos.y].forme))) OR (((g[p1.x,p1.y].forme = g[p2.x,p2.y].forme) AND (g[p1.x,p1.y].forme = g[pos.x,pos.y].forme)) AND ((g[p1.x,p1.y].couleur <> g[p2.x,p2.y].couleur) AND (g[p1.x,p1.y].couleur <> g[pos.x,pos.y].couleur) AND (g[p2.x,p2.y].couleur <> g[pos.x,pos.y].couleur))) AND ((verifColonne(g,p1,pos) AND verifLigne(g,p1,pos) AND verifColonne(g,p2,pos) AND verifLigne(g,p2,pos)))) THEN
-				rules := TRUE
-			ElSE
-				rules := FALSE;
-		END;
-		3 :
-		BEGIN
-			IF troisVoisins(g,pos) THEN
-				rules := TRUE
+			BEGIN
+				tmp[injection(g[i, y].forme, g[i, y].couleur)] := 1;
+				inc(i);
+			END;
+
+		FOR i := 0 TO 77 DO
+			tmp[i] := 0;
+
+		i := y - calculNombreDeVoisin(g, x, y, 2);
+		WHILE NOT erreur AND (i <= y + calculNombreDeVoisin(g, x, y, 4)) DO
+			IF tmp[injection(g[x, i].forme, g[x, i].couleur)] <> 0 THEN
+			BEGIN
+				writeln(inttostr(x) + ', ' +inttostr(i));
+				erreur := TRUE;
+			END
 			ELSE
-				rules := FALSE;
-		END;
-		4:
-		BEGIN
-			IF quatreVoisins(g,pos) THEN
-				rules := TRUE
-			ELSE
-				rules := FALSE;
-		END;
-END;
-
-END;
+			BEGIN
+				tmp[injection(g[x, i].forme, g[x, i].couleur)] := 1;
+				inc(i);
+			END;
 
 
-
-
+		duplicationPion := NOT erreur;
+	END;
 END.

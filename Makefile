@@ -10,7 +10,6 @@ test: legal uix core
 
 legal: legal/legal.pas
 	$(COMP) legal/legal.pas
-	$(COMP) legal/legalPaul.pas
 
 uix: uix/consoleUI/console.pas
 	$(COMP) uix/consoleUI/console.pas
