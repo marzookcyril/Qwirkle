@@ -9,7 +9,8 @@ UNIT console;
 INTERFACE
 
 USES constants  in '../../core/constants.pas', crt,
-	structures in '../../core/structures.pas', sysutils;
+	structures in '../../core/structures.pas',
+	 sysutils;
 
 TYPE
 	// type primitif de tout ce qui peut être affiché à l'écran.
@@ -27,6 +28,7 @@ PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
 PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
 PROCEDURE initConsole;
 PROCEDURE renderPion(x,y : INTEGER; pion : pion);
+
 
 IMPLEMENTATION
 	VAR
@@ -185,14 +187,17 @@ IMPLEMENTATION
 		END;
 	END;
 
+	
+
+
 	// fais le rendu de la grille de jeu dans sa globalité
 	PROCEDURE renderGame(g : grille);
 	VAR
-		pionTest : pion;
+		pionTest: pion;
 		i,j : INTEGER;
 	BEGIN
 		pionTest.forme := FORME_ROND - 1;
-
+		
 		renderText('Qwirkle par Cyril et Paul :', 1, 1, COL_WHITE,COL_BLACK);
 
 		renderLine(51,1,51, HEIGHT - 2, 7, 0);
@@ -214,6 +219,9 @@ IMPLEMENTATION
 
 		renderText('JOUEUR 4:', 77, 7, COL_WHITE, COL_BLACK);
 		renderText(' 999 ', 78, 9, COL_MAGENTA, COL_WHITE);
+		renderText('Main :', 53, 10, COL_WHITE, COL_BLACK);
+		//mainTest := creerMain
+		//afficheMain(61,10,mainTest);
 
 		renderLine(52 , 11, WIDTH - 2, 11, COL_WHITE, COL_BLACK);
 

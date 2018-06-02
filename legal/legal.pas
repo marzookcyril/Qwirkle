@@ -1,7 +1,7 @@
 UNIT legal;
 INTERFACE
-USES constants  in 'core/constants.pas', sysutils, Math,
-	structures in 'core/structures.pas';
+USES constants  in '../core/constants.pas', sysutils, Math,
+	structures in '../core/structures.pas';
 
 FUNCTION calculNombreDeVoisin(g : grille; x, y : INTEGER; dirInt : INTEGER) : INTEGER;
 FUNCTION verifNombreVoisin(g : grille; x, y: INTEGER) : BOOLEAN;
@@ -9,6 +9,7 @@ FUNCTION findEtat(g : grille; x,y, dirInt : INTEGER) : STRING;
 FUNCTION concordance(g : grille; x, y : INTEGER) : BOOLEAN;
 FUNCTION concordanceGenerale(g: grille ; x,y : INTEGER; p : pion): BOOLEAN;
 FUNCTION duplicationPion(g : grille; x,y  : INTEGER; p : pion) : BOOLEAN;
+FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
 
 IMPLEMENTATION
 
@@ -162,7 +163,7 @@ IMPLEMENTATION
 			etat1 := findEtat(g, x, y, j);
 			IF ( etat1[1] = '0' ) THEN
 			BEGIN
-				IF (inttostr(p.couleur) = etat1[3]) OR (inttostr(p.couleur) =  etat1[2]) THEN
+				IF (inttostr(p.couleur) = etat1[3]) OR (inttostr(p.forme) =  etat1[2]) THEN
 					inc(i);
 			END;
 			IF ( etat1[1] = 'F') THEN
@@ -235,5 +236,13 @@ IMPLEMENTATION
 
 
 		duplicationPion := NOT erreur;
+	END;
+	
+	FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
+	BEGIN 
+		IF concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p) THEN 
+			placer := TRUE 
+		ELSE
+			placer := FALSE;
 	END;
 END.
