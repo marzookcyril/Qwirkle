@@ -8,8 +8,8 @@
 UNIT console;
 INTERFACE
 
-USES constants  in 'core/constants.pas', crt,
-	structures in 'core/structures.pas', sysutils;
+USES constants  in '../../core/constants.pas', crt,
+	structures in '../../core/structures.pas', sysutils;
 
 TYPE
 	// type primitif de tout ce qui peut être affiché à l'écran.
