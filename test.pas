@@ -54,8 +54,8 @@ BEGIN
 	p.couleur := COULEUR_VERT;
 
 	shufflePioche(pioche);
-writeln('boucle ouverte ?');
-	main := creerMain(pioche);
-	pos := selectorPos(g);
-	selectorMain(main);
+	selectorPos(g);
+	//main := creerMain(pioche);
+	//pos := selectorPos(g);
+	//selectorMain(main);
 END.

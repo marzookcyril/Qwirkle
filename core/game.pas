@@ -7,9 +7,7 @@ PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur
 FUNCTION remplirGrille(): grille;
 FUNCTION initPioche : typePioche;
 PROCEDURE shufflePioche(VAR pioche : typePioche);
-PROCEDURE raccourcirPioche(VAR pioche : typePioche);
 FUNCTION creerMain(pioche : typePioche): mainJoueur;
-PROCEDURE echangerPion(VAR main : mainJoueur; VAR pioche : typePioche; n : INTEGER);
 
 
 IMPLEMENTATION
@@ -86,6 +84,12 @@ VAR
 		remplirGrille := g;
 	END;
 
+	FUNCTION piocher : pion;
+	BEGIN
+	inc(globalIndexPioche);
+	piocher := globalPioche[globalIndexPioche];
+	END;
+
 	FUNCTION creerMain(pioche : typePioche): mainJoueur;
 	VAR main : mainJoueur;
 		i : INTEGER;
@@ -95,10 +99,5 @@ VAR
 		creerMain := main;
 	END;
 
-	FUNCTION piocher : pion;
-	BEGIN
-		inc(globalIndexPioche);
-		piocher := globalPioche[globalIndexPioche];
-	END;
 
 END.

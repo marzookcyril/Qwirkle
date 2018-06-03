@@ -59,23 +59,6 @@ END;}
 //render;
 
 
-FUNCTION selector() : position;
-VAR
-	i,j : INTEGER;
-	ch  : char;
-	hasPlaced : boolean;
-BEGIN
-	hasPlaced := false;
-	i := 0;
-	j := 0;
-	REPEAT
-		ch := readkey();
-		case ch of
-		BEGIN
-			#77 :
-		END;
-	UNTIL (hasPlaced);
-END;
 
 77 d
 75 g
