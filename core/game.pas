@@ -1,7 +1,7 @@
 UNIT game;
 INTERFACE
 USES constants, structures,crt,
-	console in '../uix/consoleUI/console.pas';
+	console in 'uix/consoleUI/console.pas';
 
 PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 FUNCTION remplirGrille(): grille;
@@ -10,10 +10,12 @@ PROCEDURE shufflePioche(VAR pioche : typePioche);
 PROCEDURE raccourcirPioche(VAR pioche : typePioche);
 FUNCTION creerMain(pioche : typePioche): mainJoueur;
 PROCEDURE echangerPion(VAR main : mainJoueur; VAR pioche : typePioche; n : INTEGER);
-PROCEDURE afficheMain( g:grille ; x,y : INTEGER ; main : mainJoueur);
 
 
 IMPLEMENTATION
+VAR
+	globalPioche : typePioche;
+	globalIndexPioche : INTEGER;
 
 	FUNCTION initPioche : typePioche;
 	VAR
@@ -83,73 +85,20 @@ IMPLEMENTATION
 		END;
 		remplirGrille := g;
 	END;
-	
-	PROCEDURE raccourcirPioche(VAR pioche : typePioche);
-	VAR i,j : INTEGER;
-	BEGIN	
-		i :=0;
-		j :=0;
-		WHILE i <> 1 DO 
-		BEGIN
-			IF pioche[j].couleur = 0 THEN 
-				inc(j)
-			ELSE 
-			BEGIN
-				pioche[j].couleur := 0;
-				inc(i);
-			END;
-		END;
-	END;
-	
+
 	FUNCTION creerMain(pioche : typePioche): mainJoueur;
 	VAR main : mainJoueur;
 		i : INTEGER;
 	BEGIN
-		i := 0;
-		WHILE i <> 6 DO  
-		BEGIN
-			iF pioche[i].couleur <> 0 THEN 
-			BEGIN
-				main[i] := pioche[i];
-				raccourcirPioche(pioche);
-				inc(i);
-			END;
-		END;
+		FOR i := 0 TO 5 DO
+			main[i] := piocher;
 		creerMain := main;
 	END;
-	
-	PROCEDURE afficheMain( g:grille ; x,y : INTEGER ; main : mainJoueur);
-	VAR i , j : INTEGER;
+
+	FUNCTION piocher : pion;
 	BEGIN
-		j :=0;
-		FOR i := 0 TO 5 DO 
-		BEGIN
-			ajouterPion(g,main[i],x+j,y,'');
-			j := j+3;
-			END;
+		inc(globalIndexPioche);
+		piocher := globalPioche[globalIndexPioche];
 	END;
-	
-	
-	PROCEDURE echangerPion(VAR main : mainJoueur; VAR pioche: typePioche ; n : INTEGER);
-	VAR p : pion;
-		i,j : INTEGER;
-	BEGIN
-		i :=0;
-		j :=0;
-		WHILE i <> 1 DO 
-		BEGIN
-			IF pioche[j].couleur = 0 THEN 
-				inc(j)
-			ELSE 
-			BEGIN
-				p.couleur     := main[n].couleur;
-				p.forme       := main[n].forme;
-				main[n].couleur   := pioche[j].couleur;
-				main[n].forme   := pioche[j].forme;
-				pioche[j].couleur := p.couleur;
-				pioche[j].forme := p.forme;
-			END;
-		END;
-	END;
-	
+
 END.

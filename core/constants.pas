@@ -6,12 +6,12 @@ INTERFACE
 
 		COL_TAB : ARRAY [0..6] OF INTEGER = (0,4,2,6,3,5,1);
 		FOR_TAB : ARRAY [0..6] OF STRING  = ('  ','{}','**','++', ')(','[]','##');
-
+		ALPHAB  : STRING = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 		NUMBERED_COLS    = FALSE;
 
 		TAILLE_GRILLE    = 25;
-		WIDTH            = 90;
-		HEIGHT           = TAILLE_GRILLE + 4;
+		WIDTH            = 92;
+		HEIGHT           = TAILLE_GRILLE + 9;
 		OFFSET_NUMBEROPT = 2;
 
 		// CONSTANTES DU MOTEUR DE JEU
