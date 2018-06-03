@@ -259,7 +259,8 @@ IMPLEMENTATION
 			clrscr;
 			render;
 			writeln(i);
-		UNTIL hasPlaced
+		UNTIL hasPlaced;
+		selectorMain := main[i];
 	END;
 
 	PROCEDURE renderHistorique;
