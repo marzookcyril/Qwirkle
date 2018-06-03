@@ -156,7 +156,7 @@ IMPLEMENTATION
 	BEGIN
 		FOR i := 0 TO 5 DO
 		BEGIN
-			renderPion(x+i,y,main[i]);
+			renderPion(x+i*2,y,main[i]);
 		END;
 	END;
 
@@ -231,8 +231,35 @@ IMPLEMENTATION
 	END;
 
 	FUNCTION selectorMain(main : mainJoueur) : pion;
+	VAR
+		hasPlaced : BOOLEAN;
+		ch        : char;
+		p         : pion;
+		i         : INTEGER;
 	BEGIN
+		i := 0;
+		clrscr;
 		renderMain(3, HEIGHT - 3, main);
+		plot('/', 3, HEIGHT - 2, 7, 0);
+		plot('\',  4,HEIGHT - 2, 7, 0);
+		render;
+		hasPlaced := False;
+		REPEAT
+			ch := readKey();
+			plot(' ', 3 + i * 2, HEIGHT - 2, 7, 0);
+			plot(' ',  3 + i * 2 + 1,HEIGHT - 2, 7, 0);
+			CASE ch OF
+				#77 : IF i < length(main) - 1 THEN inc(i);
+				#75 : IF i > 0 THEN dec(i);
+				#13 : hasPlaced := True;
+			END;
+			clrscr;
+			plot('/', 3 + i * 2, HEIGHT - 2, 7, 0);
+			plot('\',  3 + i * 2 + 1,HEIGHT - 2, 7, 0);
+			clrscr;
+			render;
+			writeln(i);
+		UNTIL hasPlaced
 	END;
 
 	PROCEDURE renderHistorique;

@@ -5,9 +5,9 @@ USES constants, structures,crt,
 
 PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 FUNCTION remplirGrille(): grille;
-FUNCTION initPioche : typePioche;
-PROCEDURE shufflePioche(VAR pioche : typePioche);
-FUNCTION creerMain(pioche : typePioche): mainJoueur;
+PROCEDURE initPioche;
+PROCEDURE shufflePioche;
+FUNCTION creerMain: mainJoueur;
 
 
 IMPLEMENTATION
@@ -15,9 +15,8 @@ VAR
 	globalPioche : typePioche;
 	globalIndexPioche : INTEGER;
 
-	FUNCTION initPioche : typePioche;
+	PROCEDURE initPioche;
 	VAR
-		pioche   : typePioche;
 		piocheIndex, i, j, k : INTEGER;
 	BEGIN
 		piocheIndex := 0;
@@ -28,32 +27,31 @@ VAR
 			BEGIN
 				FOR k := 1 TO 6 DO
 				BEGIN
-					pioche[piocheIndex].couleur := k;
-					pioche[piocheIndex].forme   := j;
+					globalPioche[piocheIndex].couleur := k;
+					globalPioche[piocheIndex].forme   := j;
 					inc(piocheIndex);
 				END;
 			END;
 		END;
-		initPioche := pioche;
 	END;
 
-	PROCEDURE swap(VAR pioche : typePioche; a,b : INTEGER);
+	PROCEDURE swap(a,b : INTEGER);
 	VAR
 		tmp : pion;
 	BEGIN
-		tmp := pioche[a];
-		pioche[a] := pioche[b];
-		pioche[b] := tmp;
+		tmp := globalPioche[a];
+		globalPioche[a] := globalPioche[b];
+		globalPioche[b] := tmp;
 	END;
 
-	PROCEDURE shufflePioche(VAR pioche : typePioche);
+	PROCEDURE shufflePioche;
 	VAR
 		i : INTEGER;
 	BEGIN
 		Randomize;
 		FOR i := 0 TO SHUFFLE_PRECISION DO
 		BEGIN
-			swap(pioche, random(107), random(107));
+			swap(random(107), random(107));
 		END;
 	END;
 
@@ -86,18 +84,18 @@ VAR
 
 	FUNCTION piocher : pion;
 	BEGIN
-	inc(globalIndexPioche);
-	piocher := globalPioche[globalIndexPioche];
+		inc(globalIndexPioche);
+		piocher := globalPioche[globalIndexPioche];
 	END;
 
-	FUNCTION creerMain(pioche : typePioche): mainJoueur;
-	VAR main : mainJoueur;
+	FUNCTION creerMain: mainJoueur;
+	VAR
+		main : mainJoueur;
 		i : INTEGER;
 	BEGIN
+		setLength(main, 6);
 		FOR i := 0 TO 5 DO
 			main[i] := piocher;
 		creerMain := main;
 	END;
-
-
 END.

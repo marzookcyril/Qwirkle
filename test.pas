@@ -53,9 +53,10 @@ BEGIN
 	p.forme := FORME_CARRE;
 	p.couleur := COULEUR_VERT;
 
-	shufflePioche(pioche);
-	selectorPos(g);
-	//main := creerMain(pioche);
-	//pos := selectorPos(g);
-	//selectorMain(main);
+	initPioche;
+	shufflePioche;
+	main := creerMain;
+	pos := selectorPos(g);
+	p := selectorMain(main);
+	writeln('Tu as voulu placer en : ' + inttostr(pos.x) + ',' + inttostr(pos.y) + ' le pion ' + inttostr(p.couleur) + ' ' + inttostr(p.forme));
 END.
