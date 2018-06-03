@@ -1,9 +1,9 @@
 PROGRAM test;
-USES console in 'uix/consoleUI/console.pas', crt, sysutils,
-	constants in 'core/constants.pas',
+USES console    in 'uix/consoleUI/console.pas', crt, sysutils,
+	constants  in 'core/constants.pas',
 	structures in 'core/structure.pas',
-	legal in 'legal/legal.pas',
-	game in 'core/game.pas';
+	legal      in 'legal/legal.pas',
+	game       in 'core/game.pas';
 
 VAR
 	pioche : typePioche;
