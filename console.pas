@@ -30,7 +30,7 @@ PROCEDURE initConsole;
 PROCEDURE renderPion(x,y : INTEGER; pion : pion);
 PROCEDURE renderNumber(x1, y1, x2, y2 : INTEGER);
 FUNCTION  selectorPos(g : grille) : position;
-FUNCTION selectorMain(main : mainJoueur) : pion;
+FUNCTION  selectorMain(main : mainJoueur) : pion;
 
 IMPLEMENTATION
 	VAR
@@ -154,7 +154,7 @@ IMPLEMENTATION
 	VAR
 		i : INTEGER;
 	BEGIN
-		FOR i := 0 TO 5 DO
+		FOR i := 0 TO length(main) - 1 DO
 		BEGIN
 			renderPion(x+i*2,y,main[i]);
 		END;
@@ -232,7 +232,7 @@ IMPLEMENTATION
 
 	FUNCTION selectorMain(main : mainJoueur) : pion;
 	VAR
-		hasPlaced : BOOLEAN;
+		hasPlaced, swapPion : BOOLEAN;
 		ch        : char;
 		p         : pion;
 		i         : INTEGER;
@@ -244,6 +244,9 @@ IMPLEMENTATION
 		plot('\',  4,HEIGHT - 2, 7, 0);
 		render;
 		hasPlaced := False;
+		swapPion := False;
+		p.couleur := COULEUR_NULL;
+		p.forme := FORME_NULL;
 		REPEAT
 			ch := readKey();
 			plot(' ', 3 + i * 2, HEIGHT - 2, 7, 0);
@@ -252,6 +255,7 @@ IMPLEMENTATION
 				#77 : IF i < length(main) - 1 THEN inc(i);
 				#75 : IF i > 0 THEN dec(i);
 				#13 : hasPlaced := True;
+				#114 : swapPion := True;
 			END;
 			clrscr;
 			plot('/', 3 + i * 2, HEIGHT - 2, 7, 0);
@@ -259,8 +263,11 @@ IMPLEMENTATION
 			clrscr;
 			render;
 			writeln(i);
-		UNTIL hasPlaced;
-		selectorMain := main[i];
+		UNTIL hasPlaced or swapPion;
+		IF hasPlaced THEN
+			selectorMain := main[i];
+		IF swapPion THEN
+			selectorMain := p;
 	END;
 
 	PROCEDURE renderHistorique;
@@ -306,16 +313,16 @@ IMPLEMENTATION
 				IF x - y1 > 9 THEN
 				BEGIN
 					globalScreen[x1, x].chr   := inttostr(x - y1)[1];
-					globalScreen[x1, x].tCol  := x MOD 6;
+					globalScreen[x1, x].tCol  := x MOD 6 + 1;
 					globalScreen[x1, x].bgCol := COULEUR_NULL;
 					globalScreen[x1 + 1, x].chr   := inttostr(x - y1)[2];
-					globalScreen[x1 + 1, x].tCol  := x MOD 6;
+					globalScreen[x1 + 1, x].tCol  := x MOD 6 + 1;
 					globalScreen[x1 + 1, x].bgCol := COULEUR_NULL;
 				END
 				ELSE
 				BEGIN
 					globalScreen[x1, x].chr   := inttostr(x - y1)[1];
-					globalScreen[x1, x].tCol  := x MOD 6;
+					globalScreen[x1, x].tCol  := x MOD 6 + 1;
 					globalScreen[x1, x].bgCol := COULEUR_NULL;
 				END;
 			END;

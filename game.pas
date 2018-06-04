@@ -1,31 +1,51 @@
 UNIT game;
 INTERFACE
-USES constants, structures,crt,
-	console in 'uix/consoleUI/console.pas';
+USES crt,
+	constants  in 'core/constants.pas',
+	structures in 'core/structures.pas',
+	console    in 'uix/consoleUI/console.pas';
 
 PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 FUNCTION remplirGrille(): grille;
-PROCEDURE initPioche;
+PROCEDURE initPioche(nbrCouleurs, nbrFormes, nbrTuiles : INTEGER);
 PROCEDURE shufflePioche;
 FUNCTION creerMain: mainJoueur;
-
+FUNCTION hasWon : BOOLEAN;
+PROCEDURE removePionFromPioche(VAR main : mainJoueur; p : pion);
+PROCEDURE echangerPioche(VAR main : mainJoueur);
 
 IMPLEMENTATION
 VAR
 	globalPioche : typePioche;
 	globalIndexPioche : INTEGER;
 
-	PROCEDURE initPioche;
+	PROCEDURE echangerPioche(VAR main : mainJoueur);
+	VAR
+		i, rand : INTEGER;
+		tmp : pion;
+	BEGIN
+		FOR i := 0 TO length(main) - 1 DO
+		BEGIN
+			rand := random(globalIndexPioche);
+			tmp := main[i];
+			main[i] := globalPioche[rand];
+			globalPioche[rand] := tmp;
+		END;
+	END;
+
+	PROCEDURE initPioche(nbrCouleurs, nbrFormes, nbrTuiles : INTEGER);
 	VAR
 		piocheIndex, i, j, k : INTEGER;
 	BEGIN
+		setLength(globalPioche, nbrCouleurs * nbrFormes * nbrTuiles);
 		piocheIndex := 0;
-		// tous les pions sont en triple
-		FOR i := 0 TO 2 DO
+
+		// génération des pions en fonction des paramètres de départ
+		FOR i := 0 TO nbrTuiles - 1 DO
 		BEGIN
-			FOR j := 1 TO 6 DO
+			FOR j := 1 TO nbrFormes DO
 			BEGIN
-				FOR k := 1 TO 6 DO
+				FOR k := 1 TO nbrCouleurs DO
 				BEGIN
 					globalPioche[piocheIndex].couleur := k;
 					globalPioche[piocheIndex].forme   := j;
@@ -44,14 +64,23 @@ VAR
 		globalPioche[b] := tmp;
 	END;
 
+	PROCEDURE swapLastMain(VAR main : mainJoueur; a: INTEGER);
+	VAR
+		tmp : pion;
+	BEGIN
+		tmp := main[a];
+		main[a] := main[length(main) - 1];
+		main[length(main) - 1] := tmp;
+	END;
+
 	PROCEDURE shufflePioche;
 	VAR
 		i : INTEGER;
 	BEGIN
 		Randomize;
-		FOR i := 0 TO SHUFFLE_PRECISION DO
+		FOR i := 0 TO (length(globalPioche) - 1) * 3 DO
 		BEGIN
-			swap(random(107), random(107));
+			swap(random(length(globalPioche) - 1), random(length(globalPioche) - 1));
 		END;
 	END;
 
@@ -80,6 +109,28 @@ VAR
 			END;
 		END;
 		remplirGrille := g;
+	END;
+
+	PROCEDURE removeFromArray(VAR main : mainJoueur; i : INTEGER);
+	BEGIN
+		swapLastMain(main, i);
+		setLength(main, length(main) - 1);
+	END;
+
+	PROCEDURE removePionFromPioche(VAR main : mainJoueur; p : pion);
+	VAR
+		i : INTEGER;
+	BEGIN
+		FOR i := 0 TO length(main) - 1 DO
+		BEGIN
+			IF (p.couleur = main[i].couleur) and (p.forme = main[i].forme) THEN
+				removeFromArray(main, i);
+		END;
+	END;
+
+	FUNCTION hasWon : BOOLEAN;
+	BEGIN
+		hasWon := False;
 	END;
 
 	FUNCTION piocher : pion;
