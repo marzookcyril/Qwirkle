@@ -178,15 +178,15 @@ IMPLEMENTATION
 	BEGIN
 		IF node.id >= 0 THEN
 		BEGIN
-			renderText('MOV ' + inttostr(node.id), 55, HEIGHT DIV 2 - 4 + i, COL_WHITE, COL_BLACK );
+			renderText('MOV ' + inttostr(node.id), 55, HEIGHT DIV 2 - 1 + i, COL_WHITE, COL_BLACK );
 			CASE node.joueur OF
-				'J1' : renderText(node.joueur, 62, HEIGHT DIV 2 - 4 + i, COL_LBLUE, COL_WHITE);
-				'J2' : renderText(node.joueur, 62, HEIGHT DIV 2 - 4 + i, COL_LBLUE, COL_RED);
-				ELSE renderText(node.joueur, 62, HEIGHT DIV 2 - 4 + i, COL_LBLUE, COL_WHITE);
+				'J1' : renderText(node.joueur, 62, HEIGHT DIV 2 - 1 + i, COL_LBLUE, COL_WHITE);
+				'J2' : renderText(node.joueur, 62, HEIGHT DIV 2 - 1 + i, COL_LBLUE, COL_RED);
+				ELSE renderText(node.joueur, 62, HEIGHT DIV 2 - 1 + i, COL_LBLUE, COL_WHITE);
 			END;
-			renderPion(65, HEIGHT DIV 2 - 4 + i, node.pion);
-			renderText('x: ' + inttostr(node.posX), 69, HEIGHT DIV 2 - 4 + i, COL_GREEN, COL_BLACK);
-			renderText(', y: ' + inttostr(node.posY), 75, HEIGHT DIV 2 - 4 + i, COL_GREEN, COL_BLACK);
+			renderPion(65, HEIGHT DIV 2 - 1 + i, node.pion);
+			renderText('x: ' + inttostr(node.posX), 69, HEIGHT DIV 2 - 1 + i, COL_GREEN, COL_BLACK);
+			renderText(', y: ' + inttostr(node.posY), 75, HEIGHT DIV 2 - 1 + i, COL_GREEN, COL_BLACK);
 		END;
 	END;
 
@@ -267,7 +267,7 @@ IMPLEMENTATION
 	VAR
 		i : INTEGER;
 	BEGIN
-		FOR i := 0 TO 11 DO
+		FOR i := 0 TO 14 DO
 		BEGIN
 			renderNodeHistorique(historique[(historiqueIndex + i) MOD 12], i + 4);
 		END;
@@ -336,10 +336,9 @@ IMPLEMENTATION
 		renderLine(53,1,53, HEIGHT - 2, 7, 0);
 		renderLine(0,2,53,2, 7, 0);
 		renderLine(53 , 11, WIDTH - 2, 11, COL_WHITE, COL_BLACK);
-		renderLine(0 , HEIGHT - 5, WIDTH - 2, HEIGHT - 5, COL_WHITE, COL_BLACK);
+		renderLine(0 , HEIGHT - 5, 53, HEIGHT - 5, COL_WHITE, COL_BLACK);
 		plot('+', 53, HEIGHT - 5, 7, 0);
 		plot('+', 0, HEIGHT - 5, 7, 0);
-		plot('+', WIDTH - 1, HEIGHT - 5, 7, 0);
 		plot('+', 53, 11, 7, 0);
 		plot('+', WIDTH - 1, 11, 7, 0);
 		plot('+',53,0,7,0);

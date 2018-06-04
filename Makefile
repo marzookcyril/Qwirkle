@@ -1,4 +1,4 @@
-COMP=fpc
+COMP=fpc-3.0.4/bin/fpc
 FLAGS=
 EXEC=qwirkle
 
@@ -17,4 +17,4 @@ uix: uix/consoleUI/console.pas
 core: core/constants.pas core/game.pas core/structures.pas
 	$(COMP) core/structures.pas
 	$(COMP) core/constants.pas
-	$(COMP) core/game.pas
+	OMP) core/game.pas

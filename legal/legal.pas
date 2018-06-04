@@ -1,7 +1,7 @@
 UNIT legal;
 INTERFACE
-USES constants  in '../core/constants.pas', sysutils, Math,
-	structures in '../core/structures.pas';
+USES constants  in 'core/constants.pas', sysutils, Math,
+	structures in 'core/structures.pas';
 
 FUNCTION calculNombreDeVoisin(g : grille; x, y : INTEGER; dirInt : INTEGER) : INTEGER;
 FUNCTION verifNombreVoisin(g : grille; x, y: INTEGER) : BOOLEAN;
@@ -239,97 +239,97 @@ IMPLEMENTATION
 
 		duplicationPion := NOT erreur;
 	END;
-	
+
 	FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
-	BEGIN 
-		IF concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p) THEN 
-			placer := TRUE 
+	BEGIN
+		IF concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p) THEN
+			placer := TRUE
 		ELSE
 			placer := FALSE;
 	END;
-	
-	
-	
+
+
+
 	FUNCTION plusieursCoups(g: grille; x1,y1,x2,y2 : INTEGER; p1,p2 : pion) : BOOLEAN;
-	VAR 
+	VAR
 		s1,s2 : STRING;
 	BEGIN
 		s1 := findEtat(g, x1, y1, 2);
 		s2 := findEtat(g, x1, y1, 3);
-		IF p2.couleur = p1.couleur THEN 
+		IF p2.couleur = p1.couleur THEN
 		BEGIN
 			IF (((s1[1] = 'C') AND (s1[2]= intToStr(p2.couleur))OR ((s1[1]= '0') AND ( s1[3] = intToStr(p2.couleur))))) THEN
 			BEGIN
-				IF ((placer(g,x2,y2,p2)) AND (x1=x2)) THEN 
-					plusieursCoups := TRUE 
-				ELSE 
+				IF ((placer(g,x2,y2,p2)) AND (x1=x2)) THEN
+					plusieursCoups := TRUE
+				ELSE
 					plusieursCoups := FALSE ;
 			END
-			ELSE 
+			ELSE
 			BEGIN
 				IF (((s2[1] = 'C') AND (s2[2]= intToStr(p2.couleur))OR ((s2[1]= '0') AND ( s2[3] = intToStr(p2.couleur))))) THEN
 				BEGIN
-					IF ((placer(g,x2,y2,p2)) AND (x1=x2)) THEN 
-						plusieursCoups := TRUE 
-					ELSE 
+					IF ((placer(g,x2,y2,p2)) AND (x1=x2)) THEN
+						plusieursCoups := TRUE
+					ELSE
 						plusieursCoups := FALSE;
 				END;
 			END;
 		END;
-		IF p2.forme = p1.forme THEN 
-		BEGIN 
+		IF p2.forme = p1.forme THEN
+		BEGIN
 			IF (((s1[1] = 'F') AND (s1[2]= intToStr(p2.forme))OR ((s1[1]= '0') AND ( s1[2] = intToStr(p2.forme))))) THEN
 			BEGIN
-				IF ((placer(g,x2,y2,p2)) AND (y1=y2)) THEN 
-					plusieursCoups := TRUE 
-				ELSE 
+				IF ((placer(g,x2,y2,p2)) AND (y1=y2)) THEN
+					plusieursCoups := TRUE
+				ELSE
 					plusieursCoups := FALSE;
 			END
 			ELSE
 			BEGIN
 				IF (((s2[1] = 'F') AND (s2[2]= intToStr(p2.forme))OR ((s2[1]= '0') AND ( s2[2] = intToStr(p2.forme))))) THEN
 				BEGIN
-					IF ((placer(g,x2,y2,p2)) AND (y1=y2)) THEN 
-						plusieursCoups := TRUE 
-					ELSE 
+					IF ((placer(g,x2,y2,p2)) AND (y1=y2)) THEN
+						plusieursCoups := TRUE
+					ELSE
 						plusieursCoups := FALSE;
 				END;
 			END;
 		END;
-		IF ((p2.couleur<> p1.couleur) AND (p2.forme <> p1.forme)) THEN 
+		IF ((p2.couleur<> p1.couleur) AND (p2.forme <> p1.forme)) THEN
 			plusieursCoups := FALSE;
 	END;
-	
-		
+
+
 	FUNCTION nCoups(g: grille; x1,y1,x2,y2,x3,y3,num : INTEGER; p1,p2,p3 : pion) : BOOLEAN;
 	BEGIN
 		CASE num OF
-			1 : 
+			1 :
 			BEGIN
-				IF placer(g,x1,y1,p1) THEN 
+				IF placer(g,x1,y1,p1) THEN
 					nCoups := TRUE
-				ELSE 
+				ELSE
 					nCoups := FALSE;
 			END;
-			2 : 
+			2 :
 			BEGIN
-				IF plusieursCoups(g, x1,y1,x2,y2, p1,p2) THEN 
+				IF plusieursCoups(g, x1,y1,x2,y2, p1,p2) THEN
 					nCoups := TRUE
-				ELSE 
+				ELSE
 					nCoups := FALSE;
 			END
-		ELSE 
+		ELSE
 		BEGIN
-			IF (num > 2) THEN 
-			BEGIN 
-				IF plusieursCoups(g,x1,y1,x3,y3,p1,p3) AND plusieursCoups(g,x1,y1,x2,y2,p1,p2) THEN 
+			IF (num > 2) THEN
+			BEGIN
+				IF plusieursCoups(g,x1,y1,x3,y3,p1,p3) AND plusieursCoups(g,x1,y1,x2,y2,p1,p2) THEN
 					nCoups := TRUE
-				ELSE 
+				ELSE
 					nCoups := FALSE;
 			END;
 		END;
 	END;
 	END;
 
-	
+
 END.
