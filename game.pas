@@ -1,17 +1,19 @@
 UNIT game;
 INTERFACE
-USES constants, structures,crt,
-	console in 'uix/consoleUI/console.pas';
+USES crt,
+	constants  in 'core/constants.pas',
+	structures in 'core/structures.pas',
+	console    in 'uix/consoleUI/console.pas';
 
 PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 FUNCTION remplirGrille(): grille;
-PROCEDURE initPioche;
+PROCEDURE initPioche(nbrCouleurs, nbrFormes, nbrTuiles : INTEGER);
 PROCEDURE shufflePioche;
 FUNCTION creerMain: mainJoueur;
 FUNCTION hasWon : BOOLEAN;
 PROCEDURE removePionFromPioche(VAR main : mainJoueur; p : pion);
 PROCEDURE echangerPioche(VAR main : mainJoueur);
-	
+
 IMPLEMENTATION
 VAR
 	globalPioche : typePioche;
@@ -31,17 +33,19 @@ VAR
 		END;
 	END;
 
-	PROCEDURE initPioche;
+	PROCEDURE initPioche(nbrCouleurs, nbrFormes, nbrTuiles : INTEGER);
 	VAR
 		piocheIndex, i, j, k : INTEGER;
 	BEGIN
+		setLength(globalPioche, nbrCouleurs * nbrFormes * nbrTuiles);
 		piocheIndex := 0;
-		// tous les pions sont en triple
-		FOR i := 0 TO 2 DO
+
+		// génération des pions en fonction des paramètres de départ
+		FOR i := 0 TO nbrTuiles - 1 DO
 		BEGIN
-			FOR j := 1 TO 6 DO
+			FOR j := 1 TO nbrFormes DO
 			BEGIN
-				FOR k := 1 TO 6 DO
+				FOR k := 1 TO nbrCouleurs DO
 				BEGIN
 					globalPioche[piocheIndex].couleur := k;
 					globalPioche[piocheIndex].forme   := j;
@@ -74,9 +78,9 @@ VAR
 		i : INTEGER;
 	BEGIN
 		Randomize;
-		FOR i := 0 TO SHUFFLE_PRECISION DO
+		FOR i := 0 TO (length(globalPioche) - 1) * 3 DO
 		BEGIN
-			swap(random(107), random(107));
+			swap(random(length(globalPioche) - 1), random(length(globalPioche) - 1));
 		END;
 	END;
 

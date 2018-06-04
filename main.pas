@@ -1,63 +1,48 @@
 PROGRAM main;
-
-USES console in 'uix/consoleUI/console.pas', crt,
-	constants in 'core/constants.pas',
-	structures in 'core/structure.pas',
-	game in 'core/game.pas',
-	legal in 'legal/legal.pas';
+USES sysutils,
+	game in 'core/game.pas';
 
 VAR
-	p : pion;
-	pos : position;
-	g : grille;
-	i : INTEGER;
-	mainJoueur1, mainJoueur2 : mainJoueur;
-	isFirst : BOOLEAN;
+	i, ii : INTEGER;
+	nbrJoueurHumain, nbrJoueurMachine, nbrCouleurs, nbrFormes, nbrTuiles : INTEGER;
 BEGIN
-	i := 0;
-	initConsole;
-	g := remplirGrille;
-	clrscr;
-	clearScreen(COL_BLACK);
-	initPioche;
-	shufflePioche;
-	mainJoueur1 := creerMain;
-	mainJoueur2 := creerMain;
-	isFirst := True;
-	// boucle principale du jeu de ouff
-	REPEAT
-		clearScreen(COL_BLACK);
-		renderMenuBorder;
-		render;
-		renderGame(g);
-		IF i MOD 2 = 0 THEN
-		BEGIN
-			p := selectorMain(mainJoueur1);
-			isFirst := False;
-		END
-		ELSE
-			p := selectorMain(mainJoueur2);
+	// initialisation des variables, on est jamais trop prudent avec
+	// pascal <3
+	nbrCouleurs      := 0;
+	nbrFormes        := 0;
+	nbrTuiles        := 0;
+	nbrJoueurHumain  := 0;
+	nbrJoueurMachine := 0;
 
-		IF p.couleur = COULEUR_NULL THEN
-		BEGIN
-			IF i MOD 2 = 0 THEN echangerPioche(mainJoueur1);
-			IF i MOD 2 = 1 THEN echangerPioche(mainJoueur2);
+	// on va initialiser le jeu avec les parametres pris en compte
+	FOR i := 0 TO ParamCount - 2 DO
+	BEGIN
+		CASE ParamStr(i) OF
+			'-j' :
+				BEGIN
+					FOR ii := 0 TO length(ParamStr(i+1)) DO
+					BEGIN
+						CASE ParamStr(i+1)[ii] OF
+							'h': inc(nbrJoueurHumain);
+							'o': inc(nbrJoueurMachine);
+						END;
+					END;
+				END;
+			'-c' : nbrCouleurs := strtoint(ParamStr(i+1));
+			'-f' : nbrFormes   := strtoint(ParamStr(i+1));
+			'-t' : nbrTuiles   := strtoint(ParamStr(i+1));
 		END;
-		pos := selectorPos(g);
-		IF isLegal(g, pos.x, pos.y, p, isFirst) THEN
-		BEGIN
-			ajouterPion(g, p, pos.x - 2, pos.y - 2, 'J1');
-			IF i MOD 2 = 0 THEN
-				removePionFromPioche(mainJoueur1, p)
-			ELSE
-				removePionFromPioche(mainJoueur2, p);
-			inc(i);
-		END
-		ELSE
-		BEGIN
-			clrscr;
-			writeln('Tu peux pas placer la.');
-		END;
+	END;
 
-	UNTIL ((hasWon) or (readKey = #27));
+	writeln('Parametres : ', nbrJoueurHumain, nbrJoueurMachine, nbrCouleurs, nbrFormes, nbrTuiles);
+
+	// si les parametres sont vides, on mets les parametres par defaut
+	IF nbrCouleurs      = 0 THEN nbrCouleurs      := 6;
+	IF nbrFormes        = 0 THEN nbrFormes        := 6;
+	IF nbrTuiles        = 0 THEN nbrTuiles        := 3;
+	IF nbrJoueurHumain  = 0 THEN nbrJoueurHumain  := 2;
+	IF nbrJoueurMachine = 0 THEN nbrJoueurMachine := 0;
+
+	// on creer la pioche
+	initPioche(nbrCouleurs, nbrFormes, nbrTuiles);
 END.

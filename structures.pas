@@ -18,7 +18,7 @@ INTERFACE
 
 		grille     = ARRAY [0..TAILLE_GRILLE - 1, 0..TAILLE_GRILLE - 1] OF pion;
 		mainJoueur = ARRAY OF pion;
-		typePioche = ARRAY [0..108] OF pion;
+		typePioche = ARRAY OF pion;
 
 		position = RECORD
 			x : INTEGER;
