@@ -62,6 +62,7 @@ BEGIN
 		renderTitle('C''est au joueur : ' + inttostr(joueurJouant) + ' de jouer...');
 		renderPopUp('C''est au joueur : ' + inttostr(joueurJouant) + ' de jouer...');
 		render;
+		render;
 	UNTIL hasWon or (readkey = 'q');
 
 END.
