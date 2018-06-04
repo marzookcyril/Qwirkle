@@ -5,8 +5,8 @@ INTERFACE
 		// CONSTANTES DU MOTEUR D'AFFICHAGE
 
 		COL_TAB : ARRAY [0..6] OF INTEGER = (0,4,2,6,3,5,1);
-		FOR_TAB : ARRAY [0..6] OF STRING  = ('  ','{}','**','++', ')(','[]','##');
-		
+		FOR_TAB : ARRAY [0..10] OF STRING  = ('  ','{}','**','++', ')(','[]','##', '<>', '><', 'OO', '||');
+
 		NUMBERED_COLS    = FALSE;
 
 		TAILLE_GRILLE    = 25;

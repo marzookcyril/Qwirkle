@@ -25,27 +25,51 @@ PROCEDURE initConsole;
 PROCEDURE renderMenuBorder;
 PROCEDURE renderScore(joueur, score : INTEGER);
 PROCEDURE renderHistorique;
-PROCEDURE renderMain(x,y : INTEGER ; main : mainJoueur);
+PROCEDURE renderMain(x,y, joueur : INTEGER ; main : mainJoueur);
 PROCEDURE renderGame(g : grille);
-FUNCTION selectorMain(main : mainJoueur) : pion;
+PROCEDURE renderPopUp(text : STRING);
+PROCEDURE renderTitle(title : STRING);
+PROCEDURE renderJoueurText(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
+PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
+FUNCTION selectorMain(main : mainJoueur; joueur : INTEGER) : pion;
 FUNCTION selectorPos(g: grille) : position;
 
 IMPLEMENTATION
 	VAR
 		// Surface principale
 		globalScreen : ARRAY [0..WIDTH - 1, 0..HEIGHT - 1] OF printable;
+		lastglobalScreen : ARRAY [0..WIDTH - 1, 0..HEIGHT - 1] OF printable;
 		historique   : ARRAY [0..12] OF dataHistorique;
 		historiqueIndex : INTEGER;
+		isInPopUp : BOOLEAN;
+
+	// efface l'écran en appliquant la couleur bgColor à tout l'écran.
+	PROCEDURE clearScreen (bgColor :  BYTE);
+	VAR
+		x,y : INTEGER;
+	BEGIN
+		FOR x := 0 TO WIDTH - 1 DO
+		BEGIN
+			FOR y := 0 TO HEIGHT - 1 DO
+			BEGIN
+				globalScreen[x,y].tCol  := 7;
+				globalScreen[x,y].bgCol := bgColor;
+				globalScreen[x,y].chr   := ' ';
+			END;
+		END;
+	END;
 
 	PROCEDURE initConsole;
 	VAR
 		i : INTEGER;
 	BEGIN
+		isInPopUp := False;
 		historiqueIndex := 0;
 		FOR i := 0 TO length(historique) - 1 DO
 		BEGIN
 			historique[i].id := -1;
 		END;
+		clearScreen(0);
 	END;
 
 	// Affiche à l'écran le contenue de la surface générale (chez nous globalScreen)
@@ -54,6 +78,7 @@ IMPLEMENTATION
 	VAR
 		x,y : INTEGER;
 	BEGIN
+		clrscr;
 		FOR y := 0 TO HEIGHT - 1 DO
 		BEGIN
 			FOR x := 0 TO WIDTH - 1 DO
@@ -65,6 +90,76 @@ IMPLEMENTATION
 				TextBackground(0);
 			END;
 			writeln;
+		END;
+		IF isInPopUp THEN
+		BEGIN
+			readkey;
+			globalScreen := lastglobalScreen;
+		END;
+	END;
+
+	// Fais un simple rendu de texte aux coordonnées x,y avec un texte de
+	// couleur tCol et de bg bgCol (voir constantes.pas)
+	PROCEDURE renderText(text : STRING; x, y, tCol, bgCol : INTEGER);
+	VAR
+		i   : INTEGER;
+		tmp : printable;
+	BEGIN
+		tmp.tCol  := tCol;
+		tmp.bgCol := bgCol;
+		FOR i := 1 TO length(text) DO
+		BEGIN
+			tmp.chr := text[i];
+			globalScreen[i + x, y] := tmp;
+		END;
+	END;
+
+	PROCEDURE renderNumber(x1, y1, x2, y2 : INTEGER);
+	VAR
+		x : INTEGER;
+	BEGIN
+		// ligne horizontale
+		IF (x1 <> x2) and (y1 = y2) THEN
+		BEGIN
+			FOR x := x1 TO x2 DO
+			BEGIN
+				IF x - x1 > 9 THEN
+				BEGIN
+					globalScreen[x*2 - 1, y1].chr     := inttostr(x - x1)[1];
+					globalScreen[x*2 , y1].chr := inttostr(x - x1)[2];
+					globalScreen[x*2 - 1, y1].tCol     := x MOD 6 +1;
+					globalScreen[x*2 - 1, y1].bgCol    := COULEUR_NULL;
+					globalScreen[x*2, y1].tCol     := x MOD 6 +1;
+					globalScreen[x*2, y1].bgCol    := COULEUR_NULL;
+				END
+				ELSE
+					globalScreen[x*2-1, y1].chr := inttostr(x - x1)[1];
+					globalScreen[x*2-1, y1].tCol     := x MOD 6 +1;
+					globalScreen[x*2-1, y1].bgCol    := COULEUR_NULL;
+			END;
+		END;
+
+		// ligne verticale
+		IF (x1 = x2) and (y1 <> y2) THEN
+		BEGIN
+			FOR x := y1 TO y2 DO
+			BEGIN
+				IF x - y1 > 9 THEN
+				BEGIN
+					globalScreen[x1, x].chr   := inttostr(x - y1)[1];
+					globalScreen[x1, x].tCol  := x MOD 6 + 1;
+					globalScreen[x1, x].bgCol := COULEUR_NULL;
+					globalScreen[x1 + 1, x].chr   := inttostr(x - y1)[2];
+					globalScreen[x1 + 1, x].tCol  := x MOD 6 + 1;
+					globalScreen[x1 + 1, x].bgCol := COULEUR_NULL;
+				END
+				ELSE
+				BEGIN
+					globalScreen[x1, x].chr   := inttostr(x - y1)[1];
+					globalScreen[x1, x].tCol  := x MOD 6 + 1;
+					globalScreen[x1, x].bgCol := COULEUR_NULL;
+				END;
+			END;
 		END;
 	END;
 
@@ -98,16 +193,11 @@ IMPLEMENTATION
 		END;
 	END;
 
-	// Vérifie si les coordonnées demandées sont dans l'écran ou non.
-	// RETURN : TRUE si elles sont dans l'écran
-	//        : FALSE si elles ne pas dans l'écran
 	FUNCTION isInScreen(x,y : INTEGER) : BOOLEAN;
 	BEGIN
 		isInScreen := NOT((x < 0) or (x > WIDTH) or (y < 0) or (y > HEIGHT));
 	END;
 
-	// affiche un charactère à l'écran aux coordonnées x,y avec un texte de
-	// couleur tCol et de bg bgCol (voir constantes.pas)
 	PROCEDURE plot(chr : CHAR; x,y,tCol,bgCol : INTEGER);
 	BEGIN
 		IF isInScreen(x,y) THEN
@@ -118,60 +208,37 @@ IMPLEMENTATION
 		END;
 	END;
 
-	// Créer les bordures du menu. Fait le rendu dans la surface globalScreen
-	PROCEDURE renderMenuBorder;
-	BEGIN
-		renderLine(        0,      0, WIDTH - 1,      0, 7, 0);
-		renderLine(        0,      0,         0, HEIGHT - 1, 7, 0);
-		renderLine(        0, HEIGHT - 1, WIDTH - 1, HEIGHT - 1, 7, 0);
-		renderLine(WIDTH - 1,      0, WIDTH - 1, HEIGHT - 1, 7, 0);
-		plot('+',0,0,7,0);
-		plot('+',0,HEIGHT - 1,7,0);
-		plot('+',WIDTH - 1,0,7,0);
-		plot('+',WIDTH - 1,HEIGHT - 1,7,0);
-		renderText('Qwirkle par Cyril et Paul :', 1, 1, COL_WHITE,COL_BLACK);
-		renderLine(53,1,53, HEIGHT - 2, 7, 0);
-		renderLine(0,2,53,2, 7, 0);
-		renderLine(53 , 11, WIDTH - 2, 11, COL_WHITE, COL_BLACK);
-		renderLine(0 , HEIGHT - 5, 53, HEIGHT - 5, COL_WHITE, COL_BLACK);
-		plot('+', 53, HEIGHT - 5, 7, 0);
-		plot('+', 0, HEIGHT - 5, 7, 0);
-		plot('+', 53, 11, 7, 0);
-		plot('+', WIDTH - 1, 11, 7, 0);
-		plot('+',53,0,7,0);
-		plot('+',53,HEIGHT - 1,7,0);
-		plot('+',0,2,7,0);
-		plot('+',53,2,7,0);
-		renderText('Votre main :', 2, HEIGHT - 4, COL_WHITE, COL_BLACK);
-		renderNumber(2,3, 26, 3);
-		renderNumber(1,4, 1, 28);
-		renderText('*-* HISTORIQUE *-*', 63,  12, COL_WHITE, COL_BLACK);
-	END;
-
-	// Fais un simple rendu de texte aux coordonnées x,y avec un texte de
-	// couleur tCol et de bg bgCol (voir constantes.pas)
-	PROCEDURE renderText(text : STRING; x, y, tCol, bgCol : INTEGER);
+	PROCEDURE renderPopUp(text : STRING);
 	VAR
-		i   : INTEGER;
-		tmp : printable;
+		x1, x2, y1, y2, i : INTEGER;
 	BEGIN
-		tmp.tCol  := tCol;
-		tmp.bgCol := bgCol;
-		FOR i := 1 TO length(text) DO
-		BEGIN
-			tmp.chr := text[i];
-			globalScreen[i + x, y] := tmp;
-		END;
-	END;
+		lastglobalScreen := globalScreen;
+		x1 := WIDTH DIV 2 - length(text) DIV 2 - 2;
+		x2 := WIDTH DIV 2 + length(text) DIV 2 + 3;
+		y1 := HEIGHT DIV 2 - 1;
+		y2 := HEIGHT DIV 2 + 1;
 
-	PROCEDURE renderMain(x,y : INTEGER ; main : mainJoueur);
-	VAR
-		i : INTEGER;
-	BEGIN
-		FOR i := 0 TO length(main) - 1 DO
+
+		FOR i := x1 TO x2 - 1 DO
 		BEGIN
-			renderPion(x+i*2,y,main[i]);
+			renderText(' ', i, y1, COL_RED, COL_RED);
+			renderText(' ', i, y1 + 1, COL_RED, COL_RED);
+			renderText(' ', i, y2, COL_RED, COL_RED);
 		END;
+
+		renderLine(x1, y1, x2, y1, COL_WHITE, COL_LRED);
+		renderLine(x1, y2, x2, y2, COL_WHITE, COL_LRED);
+		renderLine(x1, y1, x1, y2, COL_WHITE, COL_LRED);
+		renderLine(x2, y1, x2, y2, COL_WHITE, COL_LRED);
+
+		plot('+', x1, y1, COL_WHITE, COL_RED);
+		plot('+', x2, y1, COL_WHITE, COL_RED);
+		plot('+', x2, y2, COL_WHITE, COL_RED);
+		plot('+', x1, y2, COL_WHITE, COL_RED);
+
+		renderText(text, x1 + 2, y1 + 1, COL_WHITE, COL_RED);
+
+		isInPopUp := True;
 	END;
 
 	PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
@@ -184,6 +251,50 @@ IMPLEMENTATION
 	BEGIN
 		plot(FOR_TAB[pion.forme,1],     x, y, COL_WHITE, COL_TAB[pion.couleur]);
 		plot(FOR_TAB[pion.forme,2], x + 1, y, COL_WHITE, COL_TAB[pion.couleur]);
+	END;
+
+	PROCEDURE renderTitle(title : STRING);
+	BEGIN
+		renderText(title, 1, 1, COL_WHITE,COL_BLACK);
+	END;
+
+	PROCEDURE renderMenuBorder;
+	BEGIN
+		renderLine(        0,      0, WIDTH - 1,      0, 7, 0);
+		renderLine(        0,      0,         0, HEIGHT - 1, 7, 0);
+		renderLine(        0, HEIGHT - 1, WIDTH - 1, HEIGHT - 1, 7, 0);
+		renderLine(WIDTH - 1,      0, WIDTH - 1, HEIGHT - 1, 7, 0);
+		plot('+',0,0,7,0);
+		plot('+',0,HEIGHT - 1,7,0);
+		plot('+',WIDTH - 1,0,7,0);
+		plot('+',WIDTH - 1,HEIGHT - 1,7,0);
+		renderLine(53,1,53, HEIGHT - 2, 7, 0);
+		renderLine(0,2,53,2, 7, 0);
+		renderLine(53 , 11, WIDTH - 2, 11, COL_WHITE, COL_BLACK);
+		renderLine(0 , HEIGHT - 5, 53, HEIGHT - 5, COL_WHITE, COL_BLACK);
+		plot('+', 53, HEIGHT - 5, 7, 0);
+		plot('+', 0, HEIGHT - 5, 7, 0);
+		plot('+', 53, 11, 7, 0);
+		plot('+', WIDTH - 1, 11, 7, 0);
+		plot('+',53,0,7,0);
+		plot('+',53,HEIGHT - 1,7,0);
+		plot('+',0,2,7,0);
+		plot('+',53,2,7,0);
+		renderNumber(2,3, 26, 3);
+		renderNumber(1,4, 1, 28);
+		renderText('*-* HISTORIQUE *-*', 63,  12, COL_WHITE, COL_BLACK);
+		renderText('*-* SCORE *-*', 65,  1, COL_WHITE, COL_BLACK);
+	END;
+
+	PROCEDURE renderMain(x,y, joueur : INTEGER ; main : mainJoueur);
+	VAR
+		i : INTEGER;
+	BEGIN
+		renderText('Votre main, joueur ' + inttostr(joueur) + ' :', 2, HEIGHT - 4, COL_WHITE, COL_BLACK);
+		FOR i := 0 TO length(main) - 1 DO
+		BEGIN
+			renderPion(x+i*2,y,main[i]);
+		END;
 	END;
 
 	PROCEDURE renderNodeHistorique(node : dataHistorique; i : INTEGER);
@@ -242,7 +353,7 @@ IMPLEMENTATION
 		END;
 	END;
 
-	FUNCTION selectorMain(main : mainJoueur) : pion;
+	FUNCTION selectorMain(main : mainJoueur; joueur : INTEGER) : pion;
 	VAR
 		hasPlaced, swapPion : BOOLEAN;
 		ch        : char;
@@ -251,7 +362,7 @@ IMPLEMENTATION
 	BEGIN
 		i := 0;
 		clrscr;
-		renderMain(3, HEIGHT - 3, main);
+		renderMain(3, HEIGHT - 3, joueur, main);
 		plot('/', 3, HEIGHT - 2, 7, 0);
 		plot('\',  4,HEIGHT - 2, 7, 0);
 		render;
@@ -292,55 +403,6 @@ IMPLEMENTATION
 		END;
 	END;
 
-	PROCEDURE renderNumber(x1, y1, x2, y2 : INTEGER);
-	VAR
-		x : INTEGER;
-	BEGIN
-		// ligne horizontale
-		IF (x1 <> x2) and (y1 = y2) THEN
-		BEGIN
-			FOR x := x1 TO x2 DO
-			BEGIN
-				IF x - x1 > 9 THEN
-				BEGIN
-					globalScreen[x*2 - 1, y1].chr     := inttostr(x - x1)[1];
-					globalScreen[x*2 , y1].chr := inttostr(x - x1)[2];
-					globalScreen[x*2 - 1, y1].tCol     := x MOD 6 +1;
-					globalScreen[x*2 - 1, y1].bgCol    := COULEUR_NULL;
-					globalScreen[x*2, y1].tCol     := x MOD 6 +1;
-					globalScreen[x*2, y1].bgCol    := COULEUR_NULL;
-				END
-				ELSE
-					globalScreen[x*2-1, y1].chr := inttostr(x - x1)[1];
-					globalScreen[x*2-1, y1].tCol     := x MOD 6 +1;
-					globalScreen[x*2-1, y1].bgCol    := COULEUR_NULL;
-			END;
-		END;
-
-		// ligne verticale
-		IF (x1 = x2) and (y1 <> y2) THEN
-		BEGIN
-			FOR x := y1 TO y2 DO
-			BEGIN
-				IF x - y1 > 9 THEN
-				BEGIN
-					globalScreen[x1, x].chr   := inttostr(x - y1)[1];
-					globalScreen[x1, x].tCol  := x MOD 6 + 1;
-					globalScreen[x1, x].bgCol := COULEUR_NULL;
-					globalScreen[x1 + 1, x].chr   := inttostr(x - y1)[2];
-					globalScreen[x1 + 1, x].tCol  := x MOD 6 + 1;
-					globalScreen[x1 + 1, x].bgCol := COULEUR_NULL;
-				END
-				ELSE
-				BEGIN
-					globalScreen[x1, x].chr   := inttostr(x - y1)[1];
-					globalScreen[x1, x].tCol  := x MOD 6 + 1;
-					globalScreen[x1, x].bgCol := COULEUR_NULL;
-				END;
-			END;
-		END;
-	END;
-
 	PROCEDURE renderGame(g : grille);
 	VAR
 		i,j : INTEGER;
@@ -368,21 +430,21 @@ IMPLEMENTATION
 	PROCEDURE renderJoueurText(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 	VAR
 		i : INTEGER;
-		textPos  : ARRAY [0..7] OF INTEGER = (53, 3, 79, 3, 55, 7, 79, 7);
+		textPos  : ARRAY [0..7] OF INTEGER = (54, 3, 79, 3, 54, 7, 79, 7);
 		scorePos : ARRAY [0..7] OF INTEGER = (56, 5, 80, 5, 56, 5, 80, 9);
 	BEGIN
 		FOR i := 0 TO nbrJoueurHumain + nbrJoueurMachine - 1 DO
 		BEGIN
 			IF nbrJoueurHumain > 0 THEN
 			BEGIN
-				renderText('JOUEUR ' + inttostr(i) + ' :', textPos[i], textPos[i + 1], COL_WHITE, COL_BLACK);
+				renderText('JOUEUR ' + inttostr(i) + ' :', textPos[i * 2], textPos[i * 2 + 1], COL_WHITE, COL_BLACK);
 				dec(nbrJoueurHumain);
 			END
 			ELSE
 			BEGIN
 				IF nbrJoueurMachine > 0 THEN
 				BEGIN
-					renderText('ORDIN. ' + inttostr(i) + ' :', textPos[i], textPos[i + 1], COL_WHITE, COL_BLACK);
+					renderText('ORDIN. ' + inttostr(i) + ' :', textPos[i * 2], textPos[i * 2 + 1], COL_WHITE, COL_BLACK);
 					dec(nbrJoueurMachine);
 				END;
 			END;
@@ -394,21 +456,5 @@ IMPLEMENTATION
 		scorePos : ARRAY [0..7] OF INTEGER = (56, 5, 80, 5, 56, 5, 80, 9);
 	BEGIN
 		renderText(' ' + inttostr(score), scorePos[joueur], scorePos[joueur + 1], joueur MOD 7 + 1, COL_WHITE);
-	END;
-
-	// efface l'écran en appliquant la couleur bgColor à tout l'écran.
-	PROCEDURE clearScreen (bgColor :  BYTE);
-	VAR
-		x,y : INTEGER;
-	BEGIN
-		FOR x := 0 TO WIDTH - 1 DO
-		BEGIN
-			FOR y := 0 TO HEIGHT - 1 DO
-			BEGIN
-				globalScreen[x,y].tCol  := 7;
-				globalScreen[x,y].bgCol := bgColor;
-				globalScreen[x,y].chr   := ' ';
-			END;
-		END;
 	END;
 END.

@@ -1,8 +1,8 @@
 PROGRAM main;
-USES sysutils, game, console;
+USES crt, sysutils, game, console;
 
 VAR
-	i, ii : INTEGER;
+	i, ii, joueurJouant : INTEGER;
 	nbrJoueurHumain, nbrJoueurMachine, nbrCouleurs, nbrFormes, nbrTuiles : INTEGER;
 BEGIN
 	// initialisation des variables, on est jamais trop prudent avec
@@ -12,6 +12,7 @@ BEGIN
 	nbrTuiles        := 0;
 	nbrJoueurHumain  := 0;
 	nbrJoueurMachine := 0;
+	joueurJouant     := 0;
 
 	// on va initialiser le jeu avec les parametres pris en compte
 	FOR i := 0 TO ParamCount - 1 DO
@@ -39,8 +40,12 @@ BEGIN
 	IF nbrCouleurs      = 0 THEN nbrCouleurs      := 6;
 	IF nbrFormes        = 0 THEN nbrFormes        := 6;
 	IF nbrTuiles        = 0 THEN nbrTuiles        := 3;
-	IF nbrJoueurHumain  = 0 THEN nbrJoueurHumain  := 2;
-	IF nbrJoueurMachine = 0 THEN nbrJoueurMachine := 0;
+
+	IF nbrJoueurHumain + nbrJoueurMachine = 0 THEN
+	BEGIN
+		nbrJoueurHumain  := 2;
+		nbrJoueurMachine := 0;
+	END;
 
 	initConsole;
 
@@ -49,7 +54,14 @@ BEGIN
 	initJoueur(nbrJoueurHumain, nbrJoueurMachine);
 
 	renderMenuBorder;
+	renderTitle('Qwirkle par Cyril et Paul :');
 	render;
 
+	REPEAT
+		joueurJouant := joueurJouant MOD (nbrJoueurHumain + nbrJoueurMachine);
+		renderTitle('C''est au joueur : ' + inttostr(joueurJouant) + ' de jouer...');
+		renderPopUp('C''est au joueur : ' + inttostr(joueurJouant) + ' de jouer...');
+		render;
+	UNTIL hasWon or (readkey = 'q');
 
 END.
