@@ -56,7 +56,7 @@ BEGIN
 	initPioche;
 	shufflePioche;
 	main := creerMain;
-	pos := selectorPos(g);
 	p := selectorMain(main);
+	pos := selectorPos(g);
 	writeln('Tu as voulu placer en : ' + inttostr(pos.x) + ',' + inttostr(pos.y) + ' le pion ' + inttostr(p.couleur) + ' ' + inttostr(p.forme));
 END.
