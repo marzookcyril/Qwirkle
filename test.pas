@@ -8,11 +8,12 @@ USES console    in 'uix/consoleUI/console.pas', crt, sysutils,
 VAR
 	pioche : typePioche;
 	p ,p2 , p3, pTest: pion;
-	i, y,l,v,b ,c,f	,s,n: INTEGER;
+	i, y,l,v,b ,c,f	,s,n, points,pointss : INTEGER;
 	g : grille;
 	main : mainJoueur;
 	ch : char;
 	pos : position;
+	t : tabPos;
 BEGIN
 	pTest.couleur := 0;
  	pTest.forme   := 0;
@@ -72,6 +73,10 @@ BEGIN
   	BEGIN
   		writeln('on peut placer');
  		ajouterPion(g,p,7,7,'');
+ 		t := initTabPos();
+ 		choperPos(t,7,7,1);
+ 		points := point(g,t,1);
+ 		writeln('le nombre de points est de ', points);
   	END
   	ELSE 
   		writeln('on peut pas placer');
@@ -93,6 +98,9 @@ BEGIN
  	BEGIN
  		writeln('on peut placer');
  		ajouterPion(g,p2,v,b,'');
+ 		choperPos(t,v,b,2);
+ 		pointss := point(g,t,1);
+ 		writeln('le nombre de points est de ', pointss);
  	END
  	ELSE 
  		writeln('on peut pas placer');
