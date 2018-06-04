@@ -184,6 +184,8 @@ IMPLEMENTATION
 				IF inttostr(p.couleur) = etat1[2] THEN
 					inc(i);
 			END;
+			IF  ( etat1 = '000') THEN 
+				inc(i);
 		END;
 		IF i = 2 THEN
 			concordanceGenerale := TRUE
