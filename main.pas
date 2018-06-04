@@ -1,6 +1,5 @@
 PROGRAM main;
-USES sysutils,
-	game in 'core/game.pas';
+USES sysutils, game, console;
 
 VAR
 	i, ii : INTEGER;
@@ -15,7 +14,7 @@ BEGIN
 	nbrJoueurMachine := 0;
 
 	// on va initialiser le jeu avec les parametres pris en compte
-	FOR i := 0 TO ParamCount - 2 DO
+	FOR i := 0 TO ParamCount - 1 DO
 	BEGIN
 		CASE ParamStr(i) OF
 			'-j' :
@@ -43,6 +42,14 @@ BEGIN
 	IF nbrJoueurHumain  = 0 THEN nbrJoueurHumain  := 2;
 	IF nbrJoueurMachine = 0 THEN nbrJoueurMachine := 0;
 
+	initConsole;
+
 	// on creer la pioche
 	initPioche(nbrCouleurs, nbrFormes, nbrTuiles);
+	initJoueur(nbrJoueurHumain, nbrJoueurMachine);
+
+	renderMenuBorder;
+	render;
+
+
 END.

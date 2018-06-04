@@ -1,9 +1,6 @@
 UNIT game;
 INTERFACE
-USES crt,
-	constants  in 'core/constants.pas',
-	structures in 'core/structures.pas',
-	console    in 'uix/consoleUI/console.pas';
+USES crt, sysutils, constants, structures, console;
 
 PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 FUNCTION remplirGrille(): grille;
@@ -13,11 +10,14 @@ FUNCTION creerMain: mainJoueur;
 FUNCTION hasWon : BOOLEAN;
 PROCEDURE removePionFromPioche(VAR main : mainJoueur; p : pion);
 PROCEDURE echangerPioche(VAR main : mainJoueur);
+PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 
 IMPLEMENTATION
 VAR
 	globalPioche : typePioche;
 	globalIndexPioche : INTEGER;
+	globalHumain : INTEGER;
+	globalMachine : INTEGER;
 
 	PROCEDURE echangerPioche(VAR main : mainJoueur);
 	VAR
@@ -84,17 +84,12 @@ VAR
 		END;
 	END;
 
-	// Quand on ajoute un pion à la grille on est sur que ce pion peut etre joué;
 	PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 	BEGIN
-		clrscr;
 		g[x,y] := pionAAjouter;
 		addToHistorique(pionAAjouter, x, y, joueur);
-		renderGame(g);
 	END;
 
-	// Fonction qui permet d'initier une grille
-	// avec des formes et couleurs nulle
 	FUNCTION remplirGrille(): grille;
 	VAR
 		i , j    : INTEGER;
@@ -126,6 +121,13 @@ VAR
 			IF (p.couleur = main[i].couleur) and (p.forme = main[i].forme) THEN
 				removeFromArray(main, i);
 		END;
+	END;
+
+	PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
+	BEGIN
+		globalHumain  := nbrJoueurHumain;
+		globalMachine := nbrJoueurMachine;
+		renderJoueurText(nbrJoueurHumain, nbrJoueurMachine);
 	END;
 
 	FUNCTION hasWon : BOOLEAN;

@@ -21,16 +21,14 @@ TYPE
 	END;
 
 PROCEDURE render;
-PROCEDURE renderGame(g : grille);
-PROCEDURE renderMenuBorder();
-PROCEDURE clearScreen (bgColor :  BYTE);
-PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
-PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
 PROCEDURE initConsole;
-PROCEDURE renderPion(x,y : INTEGER; pion : pion);
-PROCEDURE renderNumber(x1, y1, x2, y2 : INTEGER);
-FUNCTION  selectorPos(g : grille) : position;
-FUNCTION  selectorMain(main : mainJoueur) : pion;
+PROCEDURE renderMenuBorder;
+PROCEDURE renderScore(joueur, score : INTEGER);
+PROCEDURE renderHistorique;
+PROCEDURE renderMain(x,y : INTEGER ; main : mainJoueur);
+PROCEDURE renderGame(g : grille);
+FUNCTION selectorMain(main : mainJoueur) : pion;
+FUNCTION selectorPos(g: grille) : position;
 
 IMPLEMENTATION
 	VAR
@@ -52,7 +50,7 @@ IMPLEMENTATION
 
 	// Affiche à l'écran le contenue de la surface générale (chez nous globalScreen)
 	// en prenant en compte les couleurs et le BG.
-	PROCEDURE render();
+	PROCEDURE render;
 	VAR
 		x,y : INTEGER;
 	BEGIN
@@ -121,17 +119,33 @@ IMPLEMENTATION
 	END;
 
 	// Créer les bordures du menu. Fait le rendu dans la surface globalScreen
-	PROCEDURE renderMenuBorder();
+	PROCEDURE renderMenuBorder;
 	BEGIN
 		renderLine(        0,      0, WIDTH - 1,      0, 7, 0);
 		renderLine(        0,      0,         0, HEIGHT - 1, 7, 0);
 		renderLine(        0, HEIGHT - 1, WIDTH - 1, HEIGHT - 1, 7, 0);
 		renderLine(WIDTH - 1,      0, WIDTH - 1, HEIGHT - 1, 7, 0);
-
 		plot('+',0,0,7,0);
 		plot('+',0,HEIGHT - 1,7,0);
 		plot('+',WIDTH - 1,0,7,0);
 		plot('+',WIDTH - 1,HEIGHT - 1,7,0);
+		renderText('Qwirkle par Cyril et Paul :', 1, 1, COL_WHITE,COL_BLACK);
+		renderLine(53,1,53, HEIGHT - 2, 7, 0);
+		renderLine(0,2,53,2, 7, 0);
+		renderLine(53 , 11, WIDTH - 2, 11, COL_WHITE, COL_BLACK);
+		renderLine(0 , HEIGHT - 5, 53, HEIGHT - 5, COL_WHITE, COL_BLACK);
+		plot('+', 53, HEIGHT - 5, 7, 0);
+		plot('+', 0, HEIGHT - 5, 7, 0);
+		plot('+', 53, 11, 7, 0);
+		plot('+', WIDTH - 1, 11, 7, 0);
+		plot('+',53,0,7,0);
+		plot('+',53,HEIGHT - 1,7,0);
+		plot('+',0,2,7,0);
+		plot('+',53,2,7,0);
+		renderText('Votre main :', 2, HEIGHT - 4, COL_WHITE, COL_BLACK);
+		renderNumber(2,3, 26, 3);
+		renderNumber(1,4, 1, 28);
+		renderText('*-* HISTORIQUE *-*', 63,  12, COL_WHITE, COL_BLACK);
 	END;
 
 	// Fais un simple rendu de texte aux coordonnées x,y avec un texte de
@@ -160,8 +174,6 @@ IMPLEMENTATION
 		END;
 	END;
 
-	// ATTENTION !
-	// on fait un rendu dans le référentiel de la grille, pas de l'écran.
 	PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
 	BEGIN
 		plot(FOR_TAB[pion.forme,1], 2 * x - 1, y + 2, COL_WHITE, COL_TAB[pion.couleur]);
@@ -329,52 +341,10 @@ IMPLEMENTATION
 		END;
 	END;
 
-
-	// fais le rendu de la grille de jeu dans sa globalité
 	PROCEDURE renderGame(g : grille);
 	VAR
-		pionTest: pion;
 		i,j : INTEGER;
 	BEGIN
-		pionTest.forme := FORME_ROND - 1;
-
-		renderText('Qwirkle par Cyril et Paul :', 1, 1, COL_WHITE,COL_BLACK);
-
-		renderLine(53,1,53, HEIGHT - 2, 7, 0);
-		renderLine(0,2,53,2, 7, 0);
-		renderLine(53 , 11, WIDTH - 2, 11, COL_WHITE, COL_BLACK);
-		renderLine(0 , HEIGHT - 5, 53, HEIGHT - 5, COL_WHITE, COL_BLACK);
-		plot('+', 53, HEIGHT - 5, 7, 0);
-		plot('+', 0, HEIGHT - 5, 7, 0);
-		plot('+', 53, 11, 7, 0);
-		plot('+', WIDTH - 1, 11, 7, 0);
-		plot('+',53,0,7,0);
-		plot('+',53,HEIGHT - 1,7,0);
-		plot('+',0,2,7,0);
-		plot('+',53,2,7,0);
-		renderText('*-* SCORES *-*', 64, 1, COL_WHITE, COL_BLACK);
-		renderText('JOUEUR 1:', 55, 3, COL_WHITE, COL_BLACK);
-		renderText(' 999 ', 56, 5, COL_RED, COL_WHITE);
-
-		renderText('JOUEUR 2:', 79, 3, COL_WHITE, COL_BLACK);
-		renderText(' 999 ', 80, 5, COL_LBLUE, COL_WHITE);
-
-		renderText('JOUEUR 3:', 55, 7, COL_WHITE, COL_BLACK);
-		renderText(' 999 ', 56, 9, COL_GREEN, COL_WHITE);
-
-		renderText('JOUEUR 4:', 79, 7, COL_WHITE, COL_BLACK);
-		renderText(' 999 ', 80, 9, COL_MAGENTA, COL_WHITE);
-		renderText('Votre main :', 2, HEIGHT - 4, COL_WHITE, COL_BLACK);
-		//mainTest := creerMain
-		//afficheMain(61,10,mainTest);
-		renderNumber(2,3, 26, 3);
-		renderNumber(1,4, 1, 28);
-
-
-		renderText('*-* HISTORIQUE *-*', 63,  12, COL_WHITE, COL_BLACK);
-
-		renderHistorique;
-
 		FOR i := 0 TO 24 DO
 		BEGIN
 			FOR j := 0 TO 24 DO
@@ -382,8 +352,6 @@ IMPLEMENTATION
 				renderPionInGrille(i + 2, j + 2, g[i,j]);
 			END;
 		END;
-
-		render;
 	END;
 
 
@@ -395,6 +363,37 @@ IMPLEMENTATION
 		historique[historiqueIndex MOD 12].id     := historiqueIndex;
 		historique[historiqueIndex MOD 12].joueur := joueur;
 		inc(historiqueIndex);
+	END;
+
+	PROCEDURE renderJoueurText(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
+	VAR
+		i : INTEGER;
+		textPos  : ARRAY [0..7] OF INTEGER = (53, 3, 79, 3, 55, 7, 79, 7);
+		scorePos : ARRAY [0..7] OF INTEGER = (56, 5, 80, 5, 56, 5, 80, 9);
+	BEGIN
+		FOR i := 0 TO nbrJoueurHumain + nbrJoueurMachine - 1 DO
+		BEGIN
+			IF nbrJoueurHumain > 0 THEN
+			BEGIN
+				renderText('JOUEUR ' + inttostr(i) + ' :', textPos[i], textPos[i + 1], COL_WHITE, COL_BLACK);
+				dec(nbrJoueurHumain);
+			END
+			ELSE
+			BEGIN
+				IF nbrJoueurMachine > 0 THEN
+				BEGIN
+					renderText('ORDIN. ' + inttostr(i) + ' :', textPos[i], textPos[i + 1], COL_WHITE, COL_BLACK);
+					dec(nbrJoueurMachine);
+				END;
+			END;
+		END;
+	END;
+
+	PROCEDURE renderScore(joueur, score : INTEGER);
+	VAR
+		scorePos : ARRAY [0..7] OF INTEGER = (56, 5, 80, 5, 56, 5, 80, 9);
+	BEGIN
+		renderText(' ' + inttostr(score), scorePos[joueur], scorePos[joueur + 1], joueur MOD 7 + 1, COL_WHITE);
 	END;
 
 	// efface l'écran en appliquant la couleur bgColor à tout l'écran.
