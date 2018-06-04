@@ -14,7 +14,7 @@ legal: legal/legal.pas
 uix: uix/consoleUI/console.pas
 	$(COMP) uix/consoleUI/console.pas
 
-core: core/constants.pas core/game.pas core/structures.pas
+core: core/constants.pas core/structures.pas core/game.pas
 	$(COMP) core/structures.pas
 	$(COMP) core/constants.pas
-	OMP) core/game.pas
+	$(COMP) core/game.pas

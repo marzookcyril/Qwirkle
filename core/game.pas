@@ -8,12 +8,28 @@ FUNCTION remplirGrille(): grille;
 PROCEDURE initPioche;
 PROCEDURE shufflePioche;
 FUNCTION creerMain: mainJoueur;
-
-
+FUNCTION hasWon : BOOLEAN;
+PROCEDURE removePionFromPioche(VAR main : mainJoueur; p : pion);
+PROCEDURE echangerPioche(VAR main : mainJoueur);
+	
 IMPLEMENTATION
 VAR
 	globalPioche : typePioche;
 	globalIndexPioche : INTEGER;
+
+	PROCEDURE echangerPioche(VAR main : mainJoueur);
+	VAR
+		i, rand : INTEGER;
+		tmp : pion;
+	BEGIN
+		FOR i := 0 TO length(main) - 1 DO
+		BEGIN
+			rand := random(globalIndexPioche);
+			tmp := main[i];
+			main[i] := globalPioche[rand];
+			globalPioche[rand] := tmp;
+		END;
+	END;
 
 	PROCEDURE initPioche;
 	VAR
@@ -42,6 +58,15 @@ VAR
 		tmp := globalPioche[a];
 		globalPioche[a] := globalPioche[b];
 		globalPioche[b] := tmp;
+	END;
+
+	PROCEDURE swapLastMain(VAR main : mainJoueur; a: INTEGER);
+	VAR
+		tmp : pion;
+	BEGIN
+		tmp := main[a];
+		main[a] := main[length(main) - 1];
+		main[length(main) - 1] := tmp;
 	END;
 
 	PROCEDURE shufflePioche;
@@ -80,6 +105,28 @@ VAR
 			END;
 		END;
 		remplirGrille := g;
+	END;
+
+	PROCEDURE removeFromArray(VAR main : mainJoueur; i : INTEGER);
+	BEGIN
+		swapLastMain(main, i);
+		setLength(main, length(main) - 1);
+	END;
+
+	PROCEDURE removePionFromPioche(VAR main : mainJoueur; p : pion);
+	VAR
+		i : INTEGER;
+	BEGIN
+		FOR i := 0 TO length(main) - 1 DO
+		BEGIN
+			IF (p.couleur = main[i].couleur) and (p.forme = main[i].forme) THEN
+				removeFromArray(main, i);
+		END;
+	END;
+
+	FUNCTION hasWon : BOOLEAN;
+	BEGIN
+		hasWon := False;
 	END;
 
 	FUNCTION piocher : pion;

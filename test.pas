@@ -14,49 +14,5 @@ VAR
 	ch : char;
 	pos : position;
 BEGIN
-	pTest.couleur := 0;
-	pTest.forme   := 0;
-	g := remplirGrille;
-	initConsole;
-	clrscr;
-	clearScreen(0);
-	renderMenuBorder;
-
-	p.forme := FORME_CROIX;
-	p.couleur := COULEUR_VERT;
-	ajouterPion(g, p, 8, 8, '');
-
-	{p.forme := FORME_CARRE;
-	p.couleur := COULEUR_VERT;
-	ajouterPion(g, p, 6, 6, '');}
-
-	p.forme := FORME_CARRE;
-	p.couleur := COULEUR_ORANGE;
-	ajouterPion(g, p, 5, 7, '');
-
-	p.forme := FORME_ROND;
-	p.couleur := COULEUR_VERT;
-	ajouterPion(g, p, 7,6 , '');
-
-	{p.forme := FORME_CARRE;
-	p.couleur := COULEUR_VIOLET;
-	ajouterPion(g, p, 9, 8, '');}
-
-	{p.forme := FORME_CARRE;
-	p.couleur := COULEUR_ROUGE;
-	ajouterPion(g, p, 8, 7, '');}
-
-	p.forme := FORME_CARRE;
-	p.couleur := COULEUR_BLEU;
-	ajouterPion(g, p, 6, 7, '');
-
-	p.forme := FORME_CARRE;
-	p.couleur := COULEUR_VERT;
-
-	initPioche;
-	shufflePioche;
-	main := creerMain;
-	p := selectorMain(main);
-	pos := selectorPos(g);
-	writeln('Tu as voulu placer en : ' + inttostr(pos.x) + ',' + inttostr(pos.y) + ' le pion ' + inttostr(p.couleur) + ' ' + inttostr(p.forme));
+	writeln(ord(readKey()));
 END.

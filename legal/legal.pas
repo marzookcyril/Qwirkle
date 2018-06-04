@@ -10,6 +10,7 @@ FUNCTION concordance(g : grille; x, y : INTEGER) : BOOLEAN;
 FUNCTION concordanceGenerale(g: grille ; x,y : INTEGER; p : pion): BOOLEAN;
 FUNCTION duplicationPion(g : grille; x,y  : INTEGER; p : pion) : BOOLEAN;
 FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
+FUNCTION isLegal(g: grille; x, y : INTEGER; p : pion; isFirst : BOOLEAN): BOOLEAN;
 FUNCTION plusieursCoups(g: grille; x1,y1,x2,y2: INTEGER; p1,p2 : pion) : BOOLEAN;
 FUNCTION nCoups(g: grille; x1,y1,x2,y2,x3,y3,num : INTEGER; p1,p2,p3 : pion) : BOOLEAN;
 
@@ -238,6 +239,20 @@ IMPLEMENTATION
 
 
 		duplicationPion := NOT erreur;
+	END;
+
+
+	FUNCTION isLegal(g: grille; x, y : INTEGER; p : pion; isFirst : BOOLEAN): BOOLEAN;
+	BEGIN
+		IF isFirst THEN
+			isLegal := TRUE
+		ELSE
+		BEGIN
+			IF concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p) THEN
+				isLegal := TRUE
+			ELSE
+				isLegal := FALSE;
+		END;
 	END;
 
 	FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
