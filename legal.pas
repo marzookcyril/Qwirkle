@@ -184,6 +184,8 @@ IMPLEMENTATION
 				IF inttostr(p.couleur) = etat1[2] THEN
 					inc(i);
 			END;
+			IF  ( etat1 = '000') THEN 
+				inc(i);
 		END;
 		IF i = 2 THEN
 			concordanceGenerale := TRUE
@@ -399,7 +401,7 @@ IMPLEMENTATION
                     IF calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,1) = 5 THEN
                         points := points + 12
                     ELSE
-                        points := points + 1 + calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,1) ; 
+                        points := points  + calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,1) ; 
                 END;
             IF calculNombreDeVoisin(g,t[0].x,t[0].y,3) =5 THEN 
                 points := points + 12
@@ -416,7 +418,7 @@ IMPLEMENTATION
                     IF calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,3) = 5 THEN
                         points := points + 12
                     ELSE
-                        points := points + 1 + calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,3) ; 
+                        points := points  + calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,3) ; 
                 END;
             IF calculNombreDeVoisin(g,t[0].x,t[0].y,1) =5 THEN 
                 points := points + 12
