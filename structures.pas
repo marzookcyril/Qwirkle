@@ -25,6 +25,7 @@ INTERFACE
 			y : INTEGER;
 			END;
 		tabdyn = ARRAY OF INTEGER;
+		tabPos = ARRAY[0..5] OF position;
 
 		dataHistorique = RECORD
               id     : INTEGER;
