@@ -151,7 +151,7 @@ IMPLEMENTATION
 		etat1 := findEtat(g, x, y, dir + 1);
 		etat2 := findEtat(g, x, y, dir + 3);
 
-		IF (etat1 = etat2) AND (etat1 <> '404') THEN
+		IF (etat1 = etat2) THEN
 			sousConcordance := TRUE
 		ELSE
 			sousConcordance := FALSE;
@@ -168,7 +168,7 @@ IMPLEMENTATION
 		etat1 : STRING;
 	BEGIN
 		i :=0;
-		FOR j := 1 TO 2 DO
+		FOR j := 1 TO 4 DO
 		BEGIN
 			etat1 := findEtat(g, x, y, j);
 			IF ( etat1[1] = '0' ) THEN
@@ -189,7 +189,7 @@ IMPLEMENTATION
 			IF  ( etat1 = '000') THEN
 				inc(i);
 		END;
-		IF i = 2 THEN
+		IF i = 4 THEN
 			concordanceGenerale := TRUE
 		ELSE
 			concordanceGenerale := FALSE;
@@ -293,52 +293,14 @@ IMPLEMENTATION
 
 	FUNCTION plusieursCoups(g: grille; x1,y1,x2,y2 : INTEGER; p1,p2 : pion) : BOOLEAN;
 	VAR
-		s1,s2 : STRING;
+		bool : BOOLEAN;
 	BEGIN
-		s1 := findEtat(g, x1, y1, 2);
-		s2 := findEtat(g, x1, y1, 3);
-		IF p2.couleur = p1.couleur THEN
-		BEGIN
-			IF (((s1[1] = 'C') AND (s1[2]= intToStr(p2.couleur))OR ((s1[1]= '0') AND ( s1[3] = intToStr(p2.couleur))))) THEN
-			BEGIN
-				IF ((placer(g,x2,y2,p2)) AND (x1=x2)) THEN
-					plusieursCoups := TRUE
-				ELSE
-					plusieursCoups := FALSE ;
-			END
-			ELSE
-			BEGIN
-				IF (((s2[1] = 'C') AND (s2[2]= intToStr(p2.couleur))OR ((s2[1]= '0') AND ( s2[3] = intToStr(p2.couleur))))) THEN
-				BEGIN
-					IF ((placer(g,x2,y2,p2)) AND (x1=x2)) THEN
-						plusieursCoups := TRUE
-					ELSE
-						plusieursCoups := FALSE;
-				END;
-			END;
-		END;
-		IF p2.forme = p1.forme THEN
-		BEGIN
-			IF (((s1[1] = 'F') AND (s1[2]= intToStr(p2.forme))OR ((s1[1]= '0') AND ( s1[2] = intToStr(p2.forme))))) THEN
-			BEGIN
-				IF ((placer(g,x2,y2,p2)) AND (y1=y2)) THEN
-					plusieursCoups := TRUE
-				ELSE
-					plusieursCoups := FALSE;
-			END
-			ELSE
-			BEGIN
-				IF (((s2[1] = 'F') AND (s2[2]= intToStr(p2.forme))OR ((s2[1]= '0') AND ( s2[2] = intToStr(p2.forme))))) THEN
-				BEGIN
-					IF ((placer(g,x2,y2,p2)) AND (y1=y2)) THEN
-						plusieursCoups := TRUE
-					ELSE
-						plusieursCoups := FALSE;
-				END;
-			END;
-		END;
-		IF ((p2.couleur<> p1.couleur) AND (p2.forme <> p1.forme)) THEN
-			plusieursCoups := FALSE;
+		bool := FALSE;
+		IF ((x1 = x2) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2)) THEN
+			bool:= TRUE;
+		IF ((y1 = y2) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2)) THEN
+			bool := TRUE;
+		plusieursCoups:= bool;
 	END;
 
 
@@ -392,7 +354,7 @@ IMPLEMENTATION
 
 	FUNCTION calculNombreDeVoisinLigne(g : grille; x,y : INTEGER) : INTEGER;
 	BEGIN
-		calculNombreDeVoisinLigne := calculNombreDeVoisin(g, x, y, 1) + calculNombreDeVoisin(g, x, y, 3);
+		calculNombreDeVoisinLigne := calculNombreDeVoisin(g, x, y, 1)+ calculNombreDeVoisin(g, x, y, 3);
 	END;
 
 	FUNCTION calculNombreDeVoisinColonne(g : grille; x,y : INTEGER) : INTEGER;
