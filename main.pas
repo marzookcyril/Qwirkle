@@ -96,7 +96,7 @@ BEGIN
 			aFiniDeJouer := False;
 			t := initTabPos();
 			REPEAT
-				p := selectorMain(allJoueur[i].main, joueurJouant);
+				p := selectorMain(allJoueur[joueurJouant].main, joueurJouant);
 				IF NOT isFirst THEN
 				BEGIN
 					pos := selectorPos(g);
