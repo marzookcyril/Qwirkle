@@ -39,7 +39,7 @@ IMPLEMENTATION
 		// Surface principale
 		globalScreen : ARRAY [0..WIDTH - 1, 0..HEIGHT - 1] OF printable;
 		lastglobalScreen : ARRAY [0..WIDTH - 1, 0..HEIGHT - 1] OF printable;
-		historique   : ARRAY [0..12] OF dataHistorique;
+		historique   : ARRAY [0..18] OF dataHistorique;
 		historiqueIndex : INTEGER;
 		isInPopUp : BOOLEAN;
 
@@ -289,6 +289,7 @@ IMPLEMENTATION
 
 	PROCEDURE renderTitle(title : STRING);
 	BEGIN
+		renderText('                                                  ', 1, 1, COL_WHITE,COL_BLACK);
 		renderText(title, 1, 1, COL_WHITE,COL_BLACK);
 	END;
 
@@ -332,18 +333,32 @@ IMPLEMENTATION
 	END;
 
 	PROCEDURE renderNodeHistorique(node : dataHistorique; i : INTEGER);
+	VAR
+		x,y : INTEGER;
 	BEGIN
+		x := 58;
+		y := 10 + i;
 		IF node.id >= 0 THEN
 		BEGIN
-			renderText('MOV ' + inttostr(node.id), 55, HEIGHT DIV 2 - 1 + i, COL_WHITE, COL_BLACK );
+			renderText('MOV ' + inttostr(node.id), x, y, COL_WHITE, COL_BLACK );
 			CASE node.joueur OF
-				'J1' : renderText(node.joueur, 62, HEIGHT DIV 2 - 1 + i, COL_LBLUE, COL_WHITE);
-				'J2' : renderText(node.joueur, 62, HEIGHT DIV 2 - 1 + i, COL_LBLUE, COL_RED);
-				ELSE renderText(node.joueur, 62, HEIGHT DIV 2 - 1 + i, COL_LBLUE, COL_WHITE);
+				'J1' : renderText(node.joueur, x + 7, y, COL_LBLUE, COL_WHITE);
+				'J2' : renderText(node.joueur, x + 7, y, COL_LBLUE, COL_RED);
+				ELSE renderText(node.joueur, x + 7, y, COL_LBLUE, COL_WHITE);
 			END;
-			renderPion(65, HEIGHT DIV 2 - 1 + i, node.pion);
-			renderText('x: ' + inttostr(node.posX), 69, HEIGHT DIV 2 - 1 + i, COL_GREEN, COL_BLACK);
-			renderText(', y: ' + inttostr(node.posY), 75, HEIGHT DIV 2 - 1 + i, COL_GREEN, COL_BLACK);
+			renderPion(x + 10, y, node.pion);
+			renderText('x: ' + inttostr(node.posX), x + 14, y, COL_GREEN, COL_BLACK);
+			renderText(', y: ' + inttostr(node.posY), x + 20, y, COL_GREEN, COL_BLACK);
+		END;
+	END;
+
+	PROCEDURE renderHistorique;
+	VAR
+		i : INTEGER;
+	BEGIN
+		FOR i := 0 TO 17 DO
+		BEGIN
+			renderNodeHistorique(historique[(i + historiqueIndex) MOD 17], i + 4);
 		END;
 	END;
 
@@ -392,8 +407,16 @@ IMPLEMENTATION
 		hasPlaced, swapPion, stop : BOOLEAN;
 		ch        : char;
 		p         : pion;
-		i         : INTEGER;
+		i, ii     : INTEGER;
 	BEGIN
+		FOR i := 1 TO 50 DO
+		BEGIN
+			FOR ii := 30 TO 32 DO
+			BEGIN
+				plot(' ', i, ii, 7, 0);
+			END;
+		END;
+
 		i := 0;
 		clrscr;
 		renderMain(3, HEIGHT - 3, joueur, main);
@@ -433,16 +456,6 @@ IMPLEMENTATION
 		END;
 	END;
 
-	PROCEDURE renderHistorique;
-	VAR
-		i : INTEGER;
-	BEGIN
-		FOR i := 0 TO 14 DO
-		BEGIN
-			renderNodeHistorique(historique[(historiqueIndex + i) MOD 12], i + 4);
-		END;
-	END;
-
 	PROCEDURE renderGame(g : grille);
 	VAR
 		i,j : INTEGER;
@@ -459,11 +472,11 @@ IMPLEMENTATION
 
 	PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
 	BEGIN
-		historique[historiqueIndex MOD 12].pion   := p;
-		historique[historiqueIndex MOD 12].posX   := x;
-		historique[historiqueIndex MOD 12].posY   := y;
-		historique[historiqueIndex MOD 12].id     := historiqueIndex;
-		historique[historiqueIndex MOD 12].joueur := joueur;
+		historique[historiqueIndex MOD 18].pion   := p;
+		historique[historiqueIndex MOD 18].posX   := x;
+		historique[historiqueIndex MOD 18].posY   := y;
+		historique[historiqueIndex MOD 18].id     := historiqueIndex;
+		historique[historiqueIndex MOD 18].joueur := joueur;
 		inc(historiqueIndex);
 	END;
 
@@ -493,8 +506,8 @@ IMPLEMENTATION
 
 	PROCEDURE renderScore(joueur, score : INTEGER);
 	VAR
-		scorePos : ARRAY [0..7] OF INTEGER = (56, 5, 80, 5, 56, 5, 80, 9);
+		scorePos : ARRAY [0..7] OF INTEGER = (56, 5, 82, 5, 56, 5, 80, 9);
 	BEGIN
-		renderText(' ' + inttostr(score), scorePos[joueur], scorePos[joueur + 1], joueur MOD 7 + 1, COL_WHITE);
+		renderText(' ' + inttostr(score), scorePos[joueur * 2], scorePos[joueur * 2 + 1], joueur MOD 7 + 1, COL_WHITE);
 	END;
 END.

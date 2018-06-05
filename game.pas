@@ -107,21 +107,23 @@ VAR
 		remplirGrille := g;
 	END;
 
-	PROCEDURE removeFromArray(VAR main : mainJoueur; i : INTEGER);
+	FUNCTION removeFromArray(main : mainJoueur; i : INTEGER) : mainJoueur;
 	BEGIN
 		swapLastMain(main, i);
 		setLength(main, length(main) - 1);
+		removeFromArray := main;
 	END;
 
 	PROCEDURE removePionFromPioche(VAR main : mainJoueur; p : pion);
 	VAR
-		i : INTEGER;
+		i, indexToRemove : INTEGER;
 	BEGIN
 		FOR i := 0 TO length(main) - 1 DO
 		BEGIN
 			IF (p.couleur = main[i].couleur) and (p.forme = main[i].forme) THEN
-				removeFromArray(main, i);
+				indexToRemove := i;
 		END;
+		main := removeFromArray(main, indexToRemove);
 	END;
 
 	PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);

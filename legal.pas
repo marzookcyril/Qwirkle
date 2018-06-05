@@ -83,6 +83,7 @@ IMPLEMENTATION
 	BEGIN
 		dir := dirValue(dirInt);
 		nbrVoisin := calculNombreDeVoisin(g, x, y, dirInt);
+		WriteLn('calculNombreDeVoisin', nbrVoisin);
 		IF nbrVoisin > 1 THEN
 		BEGIN
 			IF g[x + dir.x, y + dir.y].forme = g[x + 2 * dir.x, y + 2 * dir.y].forme THEN
@@ -116,7 +117,7 @@ IMPLEMENTATION
 						findEtat :=  'C' + inttostr(g[x + dir.x, y + dir.y].couleur) + '0';
 				END;
 			END;
-			
+
 			IF nbrVoisin = 1 THEN
 			BEGIN
 				dirBis := dirValue((dirInt + 2) MOD 4);
@@ -186,8 +187,6 @@ IMPLEMENTATION
 					inc(i);
 			END;
 			IF  ( etat1 = '000') THEN
-				inc(i);
-			IF  ( etat1 = '404') THEN
 				inc(i);
 		END;
 		IF i = 2 THEN
