@@ -20,10 +20,18 @@ INTERFACE
 		mainJoueur = ARRAY OF pion;
 		typePioche = ARRAY OF pion;
 
+		typeJoueur = RECORD
+			main : mainJoueur;
+			genre : BOOLEAN;
+			score : INTEGER;
+		END;
+
+		tabJoueur = ARRAY OF typeJoueur;
+
 		position = RECORD
 			x : INTEGER;
 			y : INTEGER;
-			END;
+		END;
 		tabdyn = ARRAY OF INTEGER;
 		tabPos = ARRAY[0..5] OF position;
 
@@ -34,6 +42,9 @@ INTERFACE
               posX   : INTEGER;
               posY   : INTEGER;
       	END;
+
+CONST
+	PION_NULL : pion = (couleur: COULEUR_NULL; forme: FORME_NULL);
 
 IMPLEMENTATION
 END.

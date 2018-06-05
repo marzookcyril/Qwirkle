@@ -12,11 +12,11 @@ FUNCTION duplicationPion(g : grille; x,y  : INTEGER; p : pion) : BOOLEAN;
 FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
 FUNCTION isLegal(g: grille; x, y : INTEGER; p : pion; isFirst : BOOLEAN): BOOLEAN;
 FUNCTION plusieursCoups(g: grille; x1,y1,x2,y2: INTEGER; p1,p2 : pion) : BOOLEAN;
-FUNCTION nCoups(g: grille; x1,y1,x2,y2,x3,y3,num : INTEGER; p1,p2,p3 : pion) : BOOLEAN;
+FUNCTION nCoups(g: grille; t : tabPos; num : INTEGER) : BOOLEAN;
 FUNCTION initTabPos(): tabPos;
-PROCEDURE choperPos(VAR t : tabPos ; x,y, num : INTEGER);
 FUNCTION point(g : grille; t : tabPos ; num : INTEGER): INTEGER;
 FUNCTION continu(g: grille ;x1,y1,x2,y2 : INTEGER): BOOLEAN;
+PROCEDURE choperPos(VAR t : tabPos ; x,y, num : INTEGER);
 
 
 IMPLEMENTATION
@@ -115,8 +115,9 @@ IMPLEMENTATION
 					IF g[x + dir.x, y + dir.y].couleur = g[x + 2 * dir.x, y + 2 * dir.y].couleur THEN
 						findEtat :=  'C' + inttostr(g[x + dir.x, y + dir.y].couleur) + '0';
 				END;
-			END
-			ELSE
+			END;
+			
+			IF nbrVoisin = 1 THEN
 			BEGIN
 				dirBis := dirValue((dirInt + 2) MOD 4);
 				IF g[x + dirBis.x, y + dirBis.y].forme <> 0 THEN
@@ -184,7 +185,9 @@ IMPLEMENTATION
 				IF inttostr(p.couleur) = etat1[2] THEN
 					inc(i);
 			END;
-			IF  ( etat1 = '000') THEN 
+			IF  ( etat1 = '000') THEN
+				inc(i);
+			IF  ( etat1 = '404') THEN
 				inc(i);
 		END;
 		IF i = 2 THEN
@@ -271,18 +274,18 @@ IMPLEMENTATION
 	END;
 
 	FUNCTION continu(g: grille ;x1,y1,x2,y2 : INTEGER): BOOLEAN;
-	VAR 
+	VAR
 		cont: BOOLEAN;
 	BEGIN
 		cont := FALSE;
-		IF x1 = x2 THEN 
-		BEGIN 
-			IF ((x2 > x1 - 6) AND (x2 < x1 + 6)) THEN 
+		IF x1 = x2 THEN
+		BEGIN
+			IF ((x2 > x1 - 6) AND (x2 < x1 + 6)) THEN
 				cont := TRUE;
 		END;
-		IF y1 = y2 THEN 
-		BEGIN 
-			IF ((y2 > y1 - 6) AND (y2 < y1 + 6)) THEN 
+		IF y1 = y2 THEN
+		BEGIN
+			IF ((y2 > y1 - 6) AND (y2 < y1 + 6)) THEN
 				cont := TRUE;
 		END;
 		continu := cont;
@@ -340,19 +343,19 @@ IMPLEMENTATION
 	END;
 
 
-	FUNCTION nCoups(g: grille; x1,y1,x2,y2,x3,y3,num : INTEGER; p1,p2,p3 : pion) : BOOLEAN;
+	FUNCTION nCoups(g: grille; t : tabPos; num : INTEGER) : BOOLEAN;
 	BEGIN
 		CASE num OF
 			1 :
 			BEGIN
-				IF placer(g,x1,y1,p1) THEN
+				IF placer(g,t[0].x,t[0].y,g[t[0].x, t[0].y]) THEN
 					nCoups := TRUE
 				ELSE
 					nCoups := FALSE;
 			END;
 			2 :
 			BEGIN
-				IF plusieursCoups(g, x1,y1,x2,y2, p1,p2) THEN
+				IF plusieursCoups(g, t[0].x,t[0].y,t[1].x,t[1].y, g[t[0].x, t[0].y],g[t[1].x, t[1].y]) THEN
 					nCoups := TRUE
 				ELSE
 					nCoups := FALSE;
@@ -361,7 +364,7 @@ IMPLEMENTATION
 		BEGIN
 			IF (num > 2) THEN
 			BEGIN
-				IF plusieursCoups(g,x1,y1,x3,y3,p1,p3) AND plusieursCoups(g,x1,y1,x2,y2,p1,p2) THEN
+				IF plusieursCoups(g, t[0].x,t[0].y,t[num - 1].x,t[num - 1].y, g[t[0].x, t[0].y],g[t[num - 1].x, t[num - 1].y]) AND plusieursCoups(g, t[1].x,t[1].y,t[num - 1].x,t[num - 1].y, g[t[0].x, t[0].y],g[t[num - 1].x, t[num - 1].y]) THEN
 					nCoups := TRUE
 				ELSE
 					nCoups := FALSE;
@@ -369,77 +372,83 @@ IMPLEMENTATION
 		END;
 	END;
 	END;
+
 	FUNCTION initTabPos(): tabPos;
 	VAR i : INTEGER;
 		t : tabPos;
 	BEGIN
-		FOR i := 0 TO 5 Do 
-		BEGIN 
+		FOR i := 0 TO 5 Do
+		BEGIN
 			t[i].x := 0;
 			t[i].y := 0;
 		END;
 		initTabPos := t;
 	END;
-	
+
 	PROCEDURE choperPos(VAR t : tabPos ; x,y, num : INTEGER);
     BEGIN
         t[num-1].x  := x;
 		t[num-1].y  := y;
     END;
-    
-    
-    FUNCTION point(g : grille; t : tabPos ; num : INTEGER): INTEGER;
-    VAR i ,points : INTEGER;
-    BEGIN
-        points := 0;
-        IF ((t[1].x <> 0) AND (t[0].x = t[1].x)) THEN
-        BEGIN
-            FOR i := 1 TO num DO 
-            BEGIN
-                IF calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,1) <> 0 THEN 
-                BEGIN
-                    IF calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,1) = 5 THEN
-                        points := points + 12
-                    ELSE
-                        points := points  + calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,1) ; 
-                END;
-            IF calculNombreDeVoisin(g,t[0].x,t[0].y,3) =5 THEN 
-                points := points + 12
-            ELSE 
-                points := points + 1 + calculNombreDeVoisin(g,t[0].x,t[0].y,3);
-            END;
-        END;
-         IF ((t[1].x <> 0) AND (t[0].y = t[1].y)) THEN
-        BEGIN
-            FOR i := 1 TO num DO 
-            BEGIN
-                IF calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,3) <> 0 THEN 
-                BEGIN
-                    IF calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,3) = 5 THEN
-                        points := points + 12
-                    ELSE
-                        points := points  + calculNombreDeVoisin(g,t[i-1].x,t[i-1].y,3) ; 
-                END;
-            IF calculNombreDeVoisin(g,t[0].x,t[0].y,1) =5 THEN 
-                points := points + 12
-            ELSE 
-                points := points + 1 + calculNombreDeVoisin(g,t[0].x,t[0].y,1);
-            END;
-        END;
-        IF num = 1 THEN 
+
+	FUNCTION calculNombreDeVoisinLigne(g : grille; x,y : INTEGER) : INTEGER;
+	BEGIN
+		calculNombreDeVoisinLigne := calculNombreDeVoisin(g, x, y, 1) + calculNombreDeVoisin(g, x, y, 3);
+	END;
+
+	FUNCTION calculNombreDeVoisinColonne(g : grille; x,y : INTEGER) : INTEGER;
+	BEGIN
+		calculNombreDeVoisinColonne := calculNombreDeVoisin(g, x, y, 2) + calculNombreDeVoisin(g, x, y, 4);
+	END;
+
+	FUNCTION point(g : grille; t : tabPos ; num : INTEGER): INTEGER;
+	VAR
+		i ,points : INTEGER;
+	BEGIN
+		points := 0;
+		IF num = 1 THEN
 		BEGIN
-			IF calculNombreDeVoisin(g,t[0].x,t[0].y,1) =5 THEN 
-				points := points + 12
-			ELSE 
-				points := points + 1 + calculNombreDeVoisin(g,t[0].x,t[0].y,1);
-			IF calculNombreDeVoisin(g,t[0].x,t[0].y,3) =5 THEN 
-				points := points + 12
-			ELSE 
-				points := points + 1 + calculNombreDeVoisin(g,t[0].x,t[0].y,3);
+			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < 5) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
+				points := points + calculNombreDeVoisinLigne(g, t[0].x, t[0].y) + 1;
+			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = 5) THEN
+				points := points + 12;
+			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < 5) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
+				points := points + calculNombreDeVoisinColonne(g, t[0].x, t[0].y) + 1;
+			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) = 5) THEN
+				points := points + 12;
+		END
+		ELSE
+		BEGIN
+			// en colonne
+			IF t[0].x = t[1].x THEN
+			BEGIN
+				FOR i := 0 TO num - 1 DO
+				BEGIN
+					IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) < 5) AND (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) > 0) THEN
+						points := points + calculNombreDeVoisinLigne(g, t[i].x, t[i].y) + 1;
+					IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) = 5) THEN
+						points := points + 12;
+				END;
+				IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < 5) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
+					points := points + calculNombreDeVoisinColonne(g, t[0].x, t[0].y) + 1;
+				IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) = 5) THEN
+					points := points + 12;
+			END;
+			IF t[0].y = t[1].y THEN
+			BEGIN
+				FOR i := 0 TO num - 1 DO
+				BEGIN
+					IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) < 5) AND (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) > 0) THEN
+						points := points + calculNombreDeVoisinColonne(g, t[i].x, t[i].y) + 1;
+					IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) = 5) THEN
+						points := points + 12;
+				END;
+				IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < 5) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
+					points := points + calculNombreDeVoisinLigne(g, t[0].x, t[0].y) + 1;
+				IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = 5) THEN
+					points := points + 12;
+			END;
 		END;
-        point := points; 
-    END;
-    
-
-
+		point := points;
+	END;
 END.

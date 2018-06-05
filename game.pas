@@ -11,6 +11,7 @@ FUNCTION hasWon : BOOLEAN;
 PROCEDURE removePionFromPioche(VAR main : mainJoueur; p : pion);
 PROCEDURE echangerPioche(VAR main : mainJoueur);
 PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
+FUNCTION piocher : pion;
 
 IMPLEMENTATION
 VAR

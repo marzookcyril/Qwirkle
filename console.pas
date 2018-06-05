@@ -25,12 +25,12 @@ PROCEDURE initConsole;
 PROCEDURE renderMenuBorder;
 PROCEDURE renderScore(joueur, score : INTEGER);
 PROCEDURE renderHistorique;
-PROCEDURE renderMain(x,y, joueur : INTEGER ; main : mainJoueur);
 PROCEDURE renderGame(g : grille);
 PROCEDURE renderPopUp(text : STRING);
 PROCEDURE renderTitle(title : STRING);
 PROCEDURE renderJoueurText(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
+FUNCTION renderPopUpWithResponce(text : STRING) : CHAR;
 FUNCTION selectorMain(main : mainJoueur; joueur : INTEGER) : pion;
 FUNCTION selectorPos(g: grille) : position;
 
@@ -90,11 +90,6 @@ IMPLEMENTATION
 				TextBackground(0);
 			END;
 			writeln;
-		END;
-		IF isInPopUp THEN
-		BEGIN
-			readkey;
-			globalScreen := lastglobalScreen;
 		END;
 	END;
 
@@ -239,6 +234,45 @@ IMPLEMENTATION
 		renderText(text, x1 + 2, y1 + 1, COL_WHITE, COL_RED);
 
 		isInPopUp := True;
+		render;
+		readKey;
+		globalScreen := lastglobalScreen;
+	END;
+
+	FUNCTION renderPopUpWithResponce(text : STRING) : CHAR;
+	VAR
+		x1, x2, y1, y2, i : INTEGER;
+	BEGIN
+		lastglobalScreen := globalScreen;
+		x1 := WIDTH DIV 2 - length(text) DIV 2 - 2;
+		x2 := WIDTH DIV 2 + length(text) DIV 2 + 3;
+		y1 := HEIGHT DIV 2 - 1;
+		y2 := HEIGHT DIV 2 + 1;
+
+
+		FOR i := x1 TO x2 - 1 DO
+		BEGIN
+			renderText(' ', i, y1, COL_RED, COL_RED);
+			renderText(' ', i, y1 + 1, COL_RED, COL_RED);
+			renderText(' ', i, y2, COL_RED, COL_RED);
+		END;
+
+		renderLine(x1, y1, x2, y1, COL_WHITE, COL_LRED);
+		renderLine(x1, y2, x2, y2, COL_WHITE, COL_LRED);
+		renderLine(x1, y1, x1, y2, COL_WHITE, COL_LRED);
+		renderLine(x2, y1, x2, y2, COL_WHITE, COL_LRED);
+
+		plot('+', x1, y1, COL_WHITE, COL_RED);
+		plot('+', x2, y1, COL_WHITE, COL_RED);
+		plot('+', x2, y2, COL_WHITE, COL_RED);
+		plot('+', x1, y2, COL_WHITE, COL_RED);
+
+		renderText(text, x1 + 2, y1 + 1, COL_WHITE, COL_RED);
+
+		isInPopUp := True;
+		render;
+		globalScreen := lastglobalScreen;
+		renderPopUpWithResponce := readKey;
 	END;
 
 	PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
@@ -355,7 +389,7 @@ IMPLEMENTATION
 
 	FUNCTION selectorMain(main : mainJoueur; joueur : INTEGER) : pion;
 	VAR
-		hasPlaced, swapPion : BOOLEAN;
+		hasPlaced, swapPion, stop : BOOLEAN;
 		ch        : char;
 		p         : pion;
 		i         : INTEGER;
@@ -370,6 +404,7 @@ IMPLEMENTATION
 		swapPion := False;
 		p.couleur := COULEUR_NULL;
 		p.forme := FORME_NULL;
+		stop := False;
 		REPEAT
 			ch := readKey();
 			plot(' ', 3 + i * 2, HEIGHT - 2, 7, 0);
@@ -378,19 +413,24 @@ IMPLEMENTATION
 				#77 : IF i < length(main) - 1 THEN inc(i);
 				#75 : IF i > 0 THEN dec(i);
 				#13 : hasPlaced := True;
-				#114 : swapPion := True;
+				#114: swapPion := True;
+				'q' : stop := True;
 			END;
 			clrscr;
 			plot('/', 3 + i * 2, HEIGHT - 2, 7, 0);
 			plot('\',  3 + i * 2 + 1,HEIGHT - 2, 7, 0);
 			clrscr;
 			render;
-			writeln(i);
-		UNTIL hasPlaced or swapPion;
+		UNTIL hasPlaced or swapPion or stop;
 		IF hasPlaced THEN
 			selectorMain := main[i];
 		IF swapPion THEN
 			selectorMain := p;
+		IF stop THEN
+		BEGIN
+			p.couleur := -1;
+			selectorMain := p;
+		END;
 	END;
 
 	PROCEDURE renderHistorique;
