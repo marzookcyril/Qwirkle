@@ -1,5 +1,5 @@
 PROGRAM main;
-USES crt, sysutils, game, console, structures, legal;
+USES crt, sysutils, game, console, structures, legal, constants;
 
 VAR
 	i, ii, joueurJouant, nombreDeCoups, lastSize : INTEGER;
@@ -11,6 +11,7 @@ VAR
 	stop, aFiniDeJouer, isFirst : BOOLEAN;
 	t : tabPos;
 	responce : CHAR;
+	tabPions : tabPion;
 BEGIN
 	// initialisation des variables, on est jamais trop prudent avec
 	// pascal <3
@@ -66,7 +67,7 @@ BEGIN
 	renderTitle('Qwirkle par Cyril et Paul :');
 	render;
 
-	joueurJouant := 0;
+	joueurJouant := -1;
 
 	// on creer les mains
 	setLength(allJoueur, nbrJoueurHumain + nbrJoueurMachine + 1);
@@ -88,6 +89,8 @@ BEGIN
 	isFirst := True;
 
 	REPEAT
+		lastSize := 0;
+		inc(joueurJouant);
 		joueurJouant := joueurJouant MOD (nbrJoueurHumain + nbrJoueurMachine);
 		renderTitle('Tour du joueur ' + inttostr(joueurJouant) + '...');
 		renderPopUp('C''est au joueur : ' + inttostr(joueurJouant) + ' de jouer...');
@@ -95,69 +98,78 @@ BEGIN
 		IF allJoueur[joueurJouant].genre THEN
 		BEGIN
 			nombreDeCoups := 1;
-			t := initTabPos();
-			REPEAT
-				aFiniDeJouer := True;
-				p := selectorMain(allJoueur[joueurJouant].main, joueurJouant);
-				IF NOT isFirst THEN
-				BEGIN
-					pos := selectorPos(g);
-					pos.x := pos.x - 2;
-					pos.y := pos.y - 2;
-				END
-				ELSE
-				BEGIN
-					pos.x := 12;
-					pos.y := 12;
-				END;
-				choperPos(t, pos.x, pos.y, nombreDeCoups);
-				IF nCoups(g, t, nombreDeCoups) OR isFirst OR TRUE THEN
-				BEGIN
-					ajouterPion(g, p, pos.x, pos.y, intToStr(joueurJouant));
-					removePionFromPioche(allJoueur[joueurJouant].main, p);
-					renderGame(g);
-					render;
-					responce := renderPopUpWithResponce('Un autre pion ?');
-					isFirst := False;
-					IF responce = 'o' THEN
+			t := initTabPos;
+			tabPions := initTabPion;
+			renderMain(3, HEIGHT - 3, joueurJouant, allJoueur[joueurJouant].main);
+			render;
+			IF renderPopUpWithResponce('Voulez vous changer votre pioche ? (o/n)') = 'o' THEN
+				echangerPioche(allJoueur[joueurJouant].main)
+			ELSE
+			BEGIN
+				REPEAT
+					aFiniDeJouer := True;
+					p := selectorMain(allJoueur[joueurJouant].main, joueurJouant);
+					IF NOT isFirst THEN
 					BEGIN
-						inc(nombreDeCoups);
-						aFiniDeJouer := False;
+						pos := selectorPos(g, pos.x, pos.y);
+						pos.x := pos.x - 2;
+						pos.y := pos.y - 2;
 					END
 					ELSE
 					BEGIN
-						aFiniDeJouer := True;
+						pos.x := 12;
+						pos.y := 12;
 					END;
-				END
-				ELSE
-				BEGIN
-					renderPopUp('Pas possible de jouer la');
-					responce := renderPopUpWithResponce('Un autre pion ?');
-					IF responce = 'o' THEN
-						aFiniDeJouer := False
+					choperPos(t, pos.x, pos.y, nombreDeCoups);
+					choperPion(tabPions, nombreDeCoups, p);
+					IF nCoups(g, t, tabPions, nombreDeCoups) OR isFirst THEN
+					BEGIN
+						ajouterPion(g, p, pos.x, pos.y, intToStr(joueurJouant));
+						removePionFromPioche(allJoueur[joueurJouant].main, p);
+						renderGame(g);
+						render;
+						responce := renderPopUpWithResponce('Un autre pion ?');
+						isFirst := False;
+						IF responce = 'o' THEN
+						BEGIN
+							inc(nombreDeCoups);
+							aFiniDeJouer := False;
+						END
+						ELSE
+						BEGIN
+							aFiniDeJouer := True;
+						END;
+					END
 					ELSE
-						aFiniDeJouer := True;
+					BEGIN
+						renderPopUp('Pas possible de jouer la');
+						responce := renderPopUpWithResponce('Un autre pion ?');
+						IF responce = 'o' THEN
+							aFiniDeJouer := False
+						ELSE
+							aFiniDeJouer := True;
+					END;
+				UNTIL aFiniDeJouer;
+
+				allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, t, nombreDeCoups);
+				renderScore(joueurJouant, allJoueur[joueurJouant].score);
+				renderGame(g);
+				renderHistorique;
+				render;
+
+				lastSize := length(allJoueur[joueurJouant].main);
+				writeln(length(allJoueur[joueurJouant].main));
+				FOR i := 0 TO 6 - lastSize - 1 DO
+				BEGIN
+					setLength(allJoueur[joueurJouant].main, length(allJoueur[joueurJouant].main) + 1);
+					allJoueur[joueurJouant].main[lastSize + i] := piocher;
 				END;
-			UNTIL aFiniDeJouer;
-			allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, t, nombreDeCoups);
-			renderScore(joueurJouant, allJoueur[joueurJouant].score);
-			renderGame(g);
-			renderHistorique;
-			render;
-
-			lastSize := length(allJoueur[joueurJouant].main);
-
-			FOR i := 0 TO nombreDeCoups - 1 DO
-			BEGIN
-				setLength(allJoueur[joueurJouant].main, length(allJoueur[joueurJouant].main) + 1);
-				allJoueur[joueurJouant].main[lastSize + i] := piocher;
+				writeln(length(allJoueur[joueurJouant].main));
 			END;
 		END
 		ELSE
 		BEGIN
 			// partie IA
 		END;
-		inc(joueurJouant);
-	UNTIL hasWon or stop;
-
+	UNTIL hasWon(allJoueur[joueurJouant]) or stop;
 END.

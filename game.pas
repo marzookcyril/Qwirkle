@@ -25,12 +25,15 @@ VAR
 		i, rand : INTEGER;
 		tmp : pion;
 	BEGIN
-		FOR i := 0 TO length(main) - 1 DO
+		IF globalIndexPioche + 6 < nbrCouleurs * nbrFormes * nbrTuiles THEN
 		BEGIN
-			rand := random(globalIndexPioche);
-			tmp := main[i];
-			main[i] := globalPioche[rand];
-			globalPioche[rand] := tmp;
+			FOR i := 0 TO length(main) - 1 DO
+			BEGIN
+				rand := random(globalIndexPioche);
+				tmp := main[i];
+				main[i] := globalPioche[rand];
+				globalPioche[rand] := tmp;
+			END;
 		END;
 	END;
 
@@ -133,15 +136,26 @@ VAR
 		renderJoueurText(nbrJoueurHumain, nbrJoueurMachine);
 	END;
 
-	FUNCTION hasWon : BOOLEAN;
+	FUNCTION hasWon(joueur : typeJoueur) : BOOLEAN;
 	BEGIN
-		hasWon := False;
+		IF ((length(joueur.main)) = 0 AND (globalIndexPioche >= nbrCouleurs * nbrFormes * nbrTuiles)) THEN
+		BEGIN
+			joueur.score := joueur.score + 6;
+			hasWon := TRUE;
+		END
+		ELSE
+			hasWon := FALSE;
 	END;
 
 	FUNCTION piocher : pion;
 	BEGIN
-		inc(globalIndexPioche);
-		piocher := globalPioche[globalIndexPioche];
+		IF globalIndexPioche < nbrCouleurs * nbrFormes * nbrTuiles THEN
+		BEGIN
+			inc(globalIndexPioche);
+			piocher := globalPioche[globalIndexPioche];
+		END
+		ELSE
+			piocher := PION_NULL;
 	END;
 
 	FUNCTION creerMain: mainJoueur;

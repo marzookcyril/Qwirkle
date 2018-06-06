@@ -34,6 +34,7 @@ INTERFACE
 		END;
 		tabdyn = ARRAY OF INTEGER;
 		tabPos = ARRAY[0..5] OF position;
+		tabPion = ARRAY[0..5] OF pion;
 
 		dataHistorique = RECORD
               id     : INTEGER;

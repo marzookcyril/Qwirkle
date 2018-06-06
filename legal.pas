@@ -10,13 +10,14 @@ FUNCTION concordance(g : grille; x, y : INTEGER) : BOOLEAN;
 FUNCTION concordanceGenerale(g: grille ; x,y : INTEGER; p : pion): BOOLEAN;
 FUNCTION duplicationPion(g : grille; x,y  : INTEGER; p : pion) : BOOLEAN;
 FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
-FUNCTION isLegal(g: grille; x, y : INTEGER; p : pion; isFirst : BOOLEAN): BOOLEAN;
 FUNCTION plusieursCoups(g: grille; x1,y1,x2,y2: INTEGER; p1,p2 : pion) : BOOLEAN;
-FUNCTION nCoups(g: grille; t : tabPos; num : INTEGER) : BOOLEAN;
+FUNCTION nCoups(g: grille; t : tabPos; p : tabPion; num : INTEGER) : BOOLEAN;
 FUNCTION initTabPos(): tabPos;
+FUNCTION initTabPion(): tabPion;
 FUNCTION point(g : grille; t : tabPos ; num : INTEGER): INTEGER;
 FUNCTION continu(g: grille ;x1,y1,x2,y2 : INTEGER): BOOLEAN;
 PROCEDURE choperPos(VAR t : tabPos ; x,y, num : INTEGER);
+PROCEDURE choperPion(VAR t : tabPion ;num : INTEGER; p : pion);
 
 
 IMPLEMENTATION
@@ -83,7 +84,6 @@ IMPLEMENTATION
 	BEGIN
 		dir := dirValue(dirInt);
 		nbrVoisin := calculNombreDeVoisin(g, x, y, dirInt);
-		WriteLn('calculNombreDeVoisin', nbrVoisin);
 		IF nbrVoisin > 1 THEN
 		BEGIN
 			IF g[x + dir.x, y + dir.y].forme = g[x + 2 * dir.x, y + 2 * dir.y].forme THEN
@@ -168,27 +168,40 @@ IMPLEMENTATION
 		etat1 : STRING;
 	BEGIN
 		i :=0;
+		writeln('pion : ', p.forme,' ', p.couleur, ' ', x, ',', y);
 		FOR j := 1 TO 4 DO
 		BEGIN
 			etat1 := findEtat(g, x, y, j);
+			writeln(etat1);
+			//readln();
 			IF ( etat1[1] = '0' ) THEN
 			BEGIN
 				IF (inttostr(p.couleur) = etat1[3]) OR (inttostr(p.forme) =  etat1[2]) THEN
+				BEGIN
 					inc(i);
+				END;
+				writeln('je suis la', i);
 			END;
 			IF ( etat1[1] = 'F') THEN
 			BEGIN
 				IF inttostr(p.forme) = etat1[2] THEN
 					inc(i);
+				writeln('je suis laa', i);
 			END;
 			IF ( etat1[1] = 'C') THEN
 			BEGIN
 				IF inttostr(p.couleur) = etat1[2] THEN
 					inc(i);
+				writeln('je suis laaa', i);
 			END;
 			IF  ( etat1 = '000') THEN
+			BEGIN
 				inc(i);
+				writeln('je suis laaaa', i);
+			END;
 		END;
+		writeln('FINAL : ', i);
+		//readln();
 		IF i = 4 THEN
 			concordanceGenerale := TRUE
 		ELSE
@@ -221,7 +234,6 @@ IMPLEMENTATION
 		WHILE NOT erreur AND (i <= x + calculNombreDeVoisin(g, x, y, 3)) DO
 			IF tmp[injection(g[i, y].forme, g[i, y].couleur)] <> 0 THEN
 			BEGIN
-				writeln(inttostr(i) + ', ' +inttostr(y) + ' , ' + inttostr(g[i, y].couleur) + ','+ inttostr(tmp[injection(g[i, y].forme, g[i, y].couleur)]));
 				erreur := TRUE;
 			END
 			ELSE
@@ -237,7 +249,6 @@ IMPLEMENTATION
 		WHILE NOT erreur AND (i <= y + calculNombreDeVoisin(g, x, y, 4)) DO
 			IF tmp[injection(g[x, i].forme, g[x, i].couleur)] <> 0 THEN
 			BEGIN
-				writeln(inttostr(x) + ', ' +inttostr(i));
 				erreur := TRUE;
 			END
 			ELSE
@@ -250,24 +261,13 @@ IMPLEMENTATION
 		duplicationPion := NOT erreur;
 	END;
 
-
-	FUNCTION isLegal(g: grille; x, y : INTEGER; p : pion; isFirst : BOOLEAN): BOOLEAN;
-	BEGIN
-		IF isFirst THEN
-			isLegal := TRUE
-		ELSE
-		BEGIN
-			IF concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p) THEN
-				isLegal := TRUE
-			ELSE
-				isLegal := FALSE;
-		END;
-	END;
-
 	FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
 	BEGIN
-		IF concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p) THEN
-			placer := TRUE
+		IF (concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p)) THEN
+		BEGIN
+			//readln();
+			placer := TRUE;
+		END
 		ELSE
 			placer := FALSE;
 	END;
@@ -296,42 +296,53 @@ IMPLEMENTATION
 		bool : BOOLEAN;
 	BEGIN
 		bool := FALSE;
-		IF ((x1 = x2) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2)) THEN
+		IF (((x1 = x2) XOR (y1 = y2)) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2)) THEN
+		BEGIN
+			writeln('Je suis la');
 			bool:= TRUE;
-		IF ((y1 = y2) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2)) THEN
-			bool := TRUE;
+		END;
 		plusieursCoups:= bool;
 	END;
 
 
-	FUNCTION nCoups(g: grille; t : tabPos; num : INTEGER) : BOOLEAN;
+	FUNCTION nCoups(g: grille; t : tabPos; p : tabPion; num : INTEGER) : BOOLEAN;
 	BEGIN
 		CASE num OF
 			1 :
 			BEGIN
-				IF placer(g,t[0].x,t[0].y,g[t[0].x, t[0].y]) THEN
-					nCoups := TRUE
+				IF placer(g, t[0].x, t[0].y, p[0]) THEN
+				BEGIN
+					writeln('case of 1');
+					nCoups := TRUE;
+				END
 				ELSE
 					nCoups := FALSE;
 			END;
 			2 :
 			BEGIN
-				IF plusieursCoups(g, t[0].x,t[0].y,t[1].x,t[1].y, g[t[0].x, t[0].y],g[t[1].x, t[1].y]) THEN
-					nCoups := TRUE
+				IF plusieursCoups(g, t[0].x, t[0].y, t[1].x,t[1].y, p[0], p[1]) THEN
+				BEGIN
+					writeln('case of 2');
+					nCoups := TRUE;
+				END
 				ELSE
 					nCoups := FALSE;
 			END
-		ELSE
-		BEGIN
-			IF (num > 2) THEN
+			ELSE
 			BEGIN
-				IF plusieursCoups(g, t[0].x,t[0].y,t[num - 1].x,t[num - 1].y, g[t[0].x, t[0].y],g[t[num - 1].x, t[num - 1].y]) AND plusieursCoups(g, t[1].x,t[1].y,t[num - 1].x,t[num - 1].y, g[t[0].x, t[0].y],g[t[num - 1].x, t[num - 1].y]) THEN
-					nCoups := TRUE
-				ELSE
-					nCoups := FALSE;
+				IF (num > 2) THEN
+				BEGIN
+					IF plusieursCoups(g, t[0].x,t[0].y,t[num - 1].x,t[num - 1].y, p[0],p[num - 1]) AND plusieursCoups(g, t[1].x,t[1].y,t[num - 1].x,t[num - 1].y, p[1],p[num - 1]) THEN
+					BEGIN
+						writeln('case of <2');
+						nCoups := TRUE;
+					END
+					ELSE
+						nCoups := FALSE;
+				END;
 			END;
 		END;
-	END;
+		writeln(nCoups);
 	END;
 
 	FUNCTION initTabPos(): tabPos;
@@ -346,11 +357,28 @@ IMPLEMENTATION
 		initTabPos := t;
 	END;
 
+	FUNCTION initTabPion(): tabPion;
+	VAR i : INTEGER;
+		t : tabPion;
+	BEGIN
+		FOR i := 0 TO 5 Do
+		BEGIN
+			t[i].couleur := 0;
+			t[i].forme := 0;
+		END;
+		initTabPion := t;
+	END;
+
 	PROCEDURE choperPos(VAR t : tabPos ; x,y, num : INTEGER);
-    BEGIN
-        t[num-1].x  := x;
+	BEGIN
+		t[num-1].x  := x;
 		t[num-1].y  := y;
-    END;
+	END;
+
+	PROCEDURE choperPion(VAR t : tabPion ;num : INTEGER; p : pion);
+	BEGIN
+		t[num-1] := p;
+	END;
 
 	FUNCTION calculNombreDeVoisinLigne(g : grille; x,y : INTEGER) : INTEGER;
 	BEGIN
