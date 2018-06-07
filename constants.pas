@@ -1,7 +1,7 @@
 UNIT constants;
 INTERFACE
 	CONST
-		// CONSTANTES DU MOTEUR D'AFFICHAGE
+		// CONSTANTES DU MOTEUR DAFFICHAGE
 
 		COL_TAB : ARRAY [0..6] OF INTEGER = (0,4,2,6,3,5,1);
 		FOR_TAB : ARRAY [0..10] OF STRING  = ('  ','{}','**','++', ')(','[]','##', '<>', '><', 'OO', '||');

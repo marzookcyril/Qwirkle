@@ -1,6 +1,6 @@
 UNIT legal;
 INTERFACE
-USES constants  in 'core/constants.pas', sysutils, Math,
+USES constants  in 'core/constants.pas', sysutils, Math, crt,
 	structures in 'core/structures.pas';
 
 FUNCTION calculNombreDeVoisin(g : grille; x, y : INTEGER; dirInt : INTEGER) : INTEGER;
@@ -43,6 +43,10 @@ IMPLEMENTATION
 				tmp.y := 0;
 			END;
 			4 : BEGIN
+				tmp.x := 0;
+				tmp.y := 1;
+			END;
+			0 : BEGIN
 				tmp.x := 0;
 				tmp.y := 1;
 			END;
@@ -162,52 +166,6 @@ IMPLEMENTATION
 		concordance := sousConcordance(g, x, y, 1) AND sousConcordance(g, x, y, 0);
 	END;
 
-	FUNCTION concordanceGenerale(g: grille ; x,y : INTEGER; p : pion): BOOLEAN;
-	VAR
-		i , j: INTEGER;
-		etat1 : STRING;
-	BEGIN
-		i :=0;
-		writeln('pion : ', p.forme,' ', p.couleur, ' ', x, ',', y);
-		FOR j := 1 TO 4 DO
-		BEGIN
-			etat1 := findEtat(g, x, y, j);
-			writeln(etat1);
-			//readln();
-			IF ( etat1[1] = '0' ) THEN
-			BEGIN
-				IF (inttostr(p.couleur) = etat1[3]) OR (inttostr(p.forme) =  etat1[2]) THEN
-				BEGIN
-					inc(i);
-				END;
-				writeln('je suis la', i);
-			END;
-			IF ( etat1[1] = 'F') THEN
-			BEGIN
-				IF inttostr(p.forme) = etat1[2] THEN
-					inc(i);
-				writeln('je suis laa', i);
-			END;
-			IF ( etat1[1] = 'C') THEN
-			BEGIN
-				IF inttostr(p.couleur) = etat1[2] THEN
-					inc(i);
-				writeln('je suis laaa', i);
-			END;
-			IF  ( etat1 = '000') THEN
-			BEGIN
-				inc(i);
-				writeln('je suis laaaa', i);
-			END;
-		END;
-		writeln('FINAL : ', i);
-		//readln();
-		IF i = 4 THEN
-			concordanceGenerale := TRUE
-		ELSE
-			concordanceGenerale := FALSE;
-	END;
-
 	FUNCTION injection(x, y : INTEGER) :  INTEGER;
 	BEGIN
 		injection := ((x + y) * (x + y + 1)) DIV 2 + y;
@@ -217,18 +175,15 @@ IMPLEMENTATION
 	FUNCTION duplicationPion(g : grille; x,y: INTEGER; p : pion) : BOOLEAN;
 	VAR
 		// magie de paul
-		tmp : ARRAY [0..83] OF INTEGER;
+		tmp : ARRAY [0..500] OF INTEGER;
 		erreur : boolean;
 		i, ii : INTEGER;
 	BEGIN
 		g[x,y] := p;
 		erreur := FALSE;
 
-		FOR i := 0 TO 83 DO
+		FOR i := 0 TO 499 DO
 			tmp[i] := 0;
-
-
-
 
 		i := x - calculNombreDeVoisin(g, x, y, 1);
 		WHILE NOT erreur AND (i <= x + calculNombreDeVoisin(g, x, y, 3)) DO
@@ -242,7 +197,7 @@ IMPLEMENTATION
 				inc(i);
 			END;
 
-		FOR i := 0 TO 77 DO
+		FOR i := 0 TO 499 DO
 			tmp[i] := 0;
 
 		i := y - calculNombreDeVoisin(g, x, y, 2);
@@ -263,9 +218,10 @@ IMPLEMENTATION
 
 	FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
 	BEGIN
+		WriteLn('concordanceGenerale ', concordanceGenerale(g,x,y,p));
+		writeln('dupli', duplicationPion(g,x,y,p));
 		IF (concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p)) THEN
 		BEGIN
-			//readln();
 			placer := TRUE;
 		END
 		ELSE
@@ -296,9 +252,11 @@ IMPLEMENTATION
 		bool : BOOLEAN;
 	BEGIN
 		bool := FALSE;
+		writeln('XOR',((x1 = x2) XOR (y1 = y2)));
+		writeLn('placer ', placer(g,x2,y2,p2));
+		writeln('continue', continu(g,x1,y1,x2,y2));
 		IF (((x1 = x2) XOR (y1 = y2)) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2)) THEN
 		BEGIN
-			writeln('Je suis la');
 			bool:= TRUE;
 		END;
 		plusieursCoups:= bool;
@@ -312,7 +270,6 @@ IMPLEMENTATION
 			BEGIN
 				IF placer(g, t[0].x, t[0].y, p[0]) THEN
 				BEGIN
-					writeln('case of 1');
 					nCoups := TRUE;
 				END
 				ELSE
@@ -322,7 +279,6 @@ IMPLEMENTATION
 			BEGIN
 				IF plusieursCoups(g, t[0].x, t[0].y, t[1].x,t[1].y, p[0], p[1]) THEN
 				BEGIN
-					writeln('case of 2');
 					nCoups := TRUE;
 				END
 				ELSE
@@ -334,7 +290,6 @@ IMPLEMENTATION
 				BEGIN
 					IF plusieursCoups(g, t[0].x,t[0].y,t[num - 1].x,t[num - 1].y, p[0],p[num - 1]) AND plusieursCoups(g, t[1].x,t[1].y,t[num - 1].x,t[num - 1].y, p[1],p[num - 1]) THEN
 					BEGIN
-						writeln('case of <2');
 						nCoups := TRUE;
 					END
 					ELSE
@@ -342,7 +297,7 @@ IMPLEMENTATION
 				END;
 			END;
 		END;
-		writeln(nCoups);
+		writeln('FINAL', nCoups);
 	END;
 
 	FUNCTION initTabPos(): tabPos;
@@ -388,6 +343,47 @@ IMPLEMENTATION
 	FUNCTION calculNombreDeVoisinColonne(g : grille; x,y : INTEGER) : INTEGER;
 	BEGIN
 		calculNombreDeVoisinColonne := calculNombreDeVoisin(g, x, y, 2) + calculNombreDeVoisin(g, x, y, 4);
+	END;
+
+	FUNCTION concordanceGenerale(g: grille ; x,y : INTEGER; p : pion): BOOLEAN;
+	VAR
+		i , j: INTEGER;
+		etat1 : STRING;
+	BEGIN
+		i :=0;
+		FOR j := 1 TO 4 DO
+		BEGIN
+			etat1 := findEtat(g, x, y, j);
+			IF ( etat1[1] = '0' ) THEN
+			BEGIN
+				IF (inttostr(p.couleur) = etat1[3]) OR (inttostr(p.forme) =  etat1[2]) THEN
+				BEGIN
+					inc(i);
+				END;
+			END;
+			IF ( etat1[1] = 'F') THEN
+			BEGIN
+				IF inttostr(p.forme) = etat1[2] THEN
+				BEGIN
+					inc(i);
+				END;
+			END;
+			IF ( etat1[1] = 'C') THEN
+			BEGIN
+				IF inttostr(p.couleur) = etat1[2] THEN
+				BEGIN
+					inc(i);
+				END;
+			END;
+			IF (etat1 = '000') AND (calculNombreDeVoisinLigne(g, x, y) + calculNombreDeVoisinColonne(g, x, y) > 0) THEN
+			BEGIN
+				inc(i);
+			END;
+		END;
+		IF i = 4 THEN
+			concordanceGenerale := TRUE
+		ELSE
+			concordanceGenerale := FALSE;
 	END;
 
 	FUNCTION point(g : grille; t : tabPos ; num : INTEGER): INTEGER;

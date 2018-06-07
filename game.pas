@@ -7,11 +7,12 @@ FUNCTION remplirGrille(): grille;
 PROCEDURE initPioche(nbrCouleurs, nbrFormes, nbrTuiles : INTEGER);
 PROCEDURE shufflePioche;
 FUNCTION creerMain: mainJoueur;
-FUNCTION hasWon : BOOLEAN;
+FUNCTION hasWon(joueur : typeJoueur) : BOOLEAN;
 PROCEDURE removePionFromPioche(VAR main : mainJoueur; p : pion);
 PROCEDURE echangerPioche(VAR main : mainJoueur);
 PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 FUNCTION piocher : pion;
+FUNCTION getPiocheSize : INTEGER;
 
 IMPLEMENTATION
 VAR
@@ -19,13 +20,19 @@ VAR
 	globalIndexPioche : INTEGER;
 	globalHumain : INTEGER;
 	globalMachine : INTEGER;
+	gNbrCouleurs, gNbrFormes, gNbrTuiles : INTEGER;
+
+	FUNCTION getPiocheSize : INTEGER;
+	BEGIN
+		getPiocheSize := gNbrFormes * gNbrTuiles * gNbrCouleurs - globalIndexPioche;
+	END;
 
 	PROCEDURE echangerPioche(VAR main : mainJoueur);
 	VAR
 		i, rand : INTEGER;
 		tmp : pion;
 	BEGIN
-		IF globalIndexPioche + 6 < nbrCouleurs * nbrFormes * nbrTuiles THEN
+		IF globalIndexPioche + 6 < gNbrCouleurs * gNbrFormes * gNbrTuiles THEN
 		BEGIN
 			FOR i := 0 TO length(main) - 1 DO
 			BEGIN
@@ -43,6 +50,10 @@ VAR
 	BEGIN
 		setLength(globalPioche, nbrCouleurs * nbrFormes * nbrTuiles);
 		piocheIndex := 0;
+		gNbrFormes := nbrFormes;
+		gNbrTuiles := nbrTuiles;
+		gNbrCouleurs := nbrCouleurs;
+		globalIndexPioche := 0;
 
 		// génération des pions en fonction des paramètres de départ
 		FOR i := 0 TO nbrTuiles - 1 DO
@@ -138,7 +149,7 @@ VAR
 
 	FUNCTION hasWon(joueur : typeJoueur) : BOOLEAN;
 	BEGIN
-		IF ((length(joueur.main)) = 0 AND (globalIndexPioche >= nbrCouleurs * nbrFormes * nbrTuiles)) THEN
+		IF ((length(joueur.main) = 0) AND (globalIndexPioche >= gNbrCouleurs * gNbrFormes * gNbrTuiles)) THEN
 		BEGIN
 			joueur.score := joueur.score + 6;
 			hasWon := TRUE;
@@ -149,7 +160,7 @@ VAR
 
 	FUNCTION piocher : pion;
 	BEGIN
-		IF globalIndexPioche < nbrCouleurs * nbrFormes * nbrTuiles THEN
+		IF globalIndexPioche < gNbrCouleurs * gNbrFormes * gNbrTuiles THEN
 		BEGIN
 			inc(globalIndexPioche);
 			piocher := globalPioche[globalIndexPioche];
@@ -163,6 +174,7 @@ VAR
 		main : mainJoueur;
 		i : INTEGER;
 	BEGIN
+		WriteLn('output');
 		setLength(main, 6);
 		FOR i := 0 TO 5 DO
 			main[i] := piocher;

@@ -1,6 +1,6 @@
 {
-* 	CETTE UNIT EST RESPONSABLE DE TOUT L'AFFICHAGE CONSOLE.
-*   C'EST ELLE QUI GERE TOUT L'ECRAN DE LA CONSOLE.
+* 	CETTE UNIT EST RESPONSABLE DE TOUT LAFFICHAGE CONSOLE.
+*   CEST ELLE QUI GERE TOUT LECRAN DE LA CONSOLE.
 *   ELLE NE GERE PAS LES INPUTS OU LE MOTEUR DU JEU.
 *   ELLE NE FAIT QUE LE RENDU
 * }
@@ -8,12 +8,10 @@
 UNIT console;
 INTERFACE
 
-USES constants  in 'core/constants.pas', crt,
-	structures in 'core/structures.pas',
-	 sysutils;
+USES constants, crt, structures, sysutils;
 
 TYPE
-	// type primitif de tout ce qui peut être affiché à l'écran.
+	// type primitif de tout ce qui peut être affiché à lécran.
 	printable = RECORD
 		chr   : CHAR;
 		tCol  : BYTE;
@@ -29,6 +27,7 @@ PROCEDURE renderGame(g : grille);
 PROCEDURE renderMain(x,y, joueur : INTEGER ; main : mainJoueur);
 PROCEDURE renderPopUp(text : STRING);
 PROCEDURE renderTitle(title : STRING);
+PROCEDURE renderText(text : STRING; x, y, tCol, bgCol : INTEGER);
 PROCEDURE renderJoueurText(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
 FUNCTION renderPopUpWithResponce(text : STRING) : CHAR;
@@ -44,7 +43,7 @@ IMPLEMENTATION
 		historiqueIndex : INTEGER;
 		isInPopUp : BOOLEAN;
 
-	// efface l'écran en appliquant la couleur bgColor à tout l'écran.
+	// efface lécran en appliquant la couleur bgColor à tout lécran.
 	PROCEDURE clearScreen (bgColor :  BYTE);
 	VAR
 		x,y : INTEGER;
@@ -73,7 +72,7 @@ IMPLEMENTATION
 		clearScreen(0);
 	END;
 
-	// Affiche à l'écran le contenue de la surface générale (chez nous globalScreen)
+	// Affiche à lécran le contenue de la surface générale (chez nous globalScreen)
 	// en prenant en compte les couleurs et le BG.
 	PROCEDURE render;
 	VAR
@@ -401,6 +400,9 @@ IMPLEMENTATION
 			pos.y := j;
 			selectorPos := pos;
 		END;
+		clrscr;
+		renderPionInGrille(i, j, last[i - 2,j - 2]);
+		render;
 	END;
 
 	FUNCTION selectorMain(main : mainJoueur; joueur : INTEGER) : pion;
@@ -429,16 +431,21 @@ IMPLEMENTATION
 		p.couleur := COULEUR_NULL;
 		p.forme := FORME_NULL;
 		stop := False;
+		pionNonNull := 0;
+
 		FOR i := 0 TO length(main) - 1 DO
 		BEGIN
 			IF main[i].couleur <> 0 THEN inc(pionNonNull);
 		END;
+
+		i := 0;
+
 		REPEAT
 			ch := readKey();
 			plot(' ', 3 + i * 2, HEIGHT - 2, 7, 0);
 			plot(' ',  3 + i * 2 + 1,HEIGHT - 2, 7, 0);
 			CASE ch OF
-				#77 : IF i < pionNonNull THEN inc(i);
+				#77 : IF i < pionNonNull - 1 THEN inc(i);
 				#75 : IF i > 0 THEN dec(i);
 				#13 : hasPlaced := True;
 				#114: swapPion := True;

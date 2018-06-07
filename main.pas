@@ -2,7 +2,7 @@ PROGRAM main;
 USES crt, sysutils, game, console, structures, legal, constants;
 
 VAR
-	i, ii, joueurJouant, nombreDeCoups, lastSize : INTEGER;
+	i, ii, joueurJouant, nombreDeCoups, lastSize, tmpMachine, tmpHumain : INTEGER;
 	nbrJoueurHumain, nbrJoueurMachine, nbrCouleurs, nbrFormes, nbrTuiles : INTEGER;
 	allJoueur : tabJoueur;
 	pos : position;
@@ -71,24 +71,35 @@ BEGIN
 
 	// on creer les mains
 	setLength(allJoueur, nbrJoueurHumain + nbrJoueurMachine + 1);
-
-	FOR i := 0 TO nbrJoueurHumain DO
+	tmpHumain := nbrJoueurHumain;
+	tmpMachine := nbrJoueurMachine;
+	FOR i := 0 TO nbrJoueurHumain + nbrJoueurMachine - 1 DO
 	BEGIN
-		allJoueur[i].main  := creerMain;
-		allJoueur[i].genre := True;
-		allJoueur[i].score := 0;
-	END;
-
-	FOR i := i TO nbrJoueurHumain + nbrJoueurMachine DO
-	BEGIN
-		allJoueur[i].main  := creerMain;
-		allJoueur[i].genre := False;
-		allJoueur[i].score := 0;
+		IF tmpHumain > 0 THEN
+		BEGIN
+			allJoueur[i].main  := creerMain;
+			allJoueur[i].genre := True;
+			allJoueur[i].score := 0;
+			writeln('humain', i);
+			dec(tmpHumain);
+		END
+		ELSE
+		BEGIN
+			IF tmpMachine > 0 THEN
+			BEGIN
+				allJoueur[i].main  := creerMain;
+				allJoueur[i].genre := False;
+				allJoueur[i].score := 0;
+				dec(tmpMachine);
+				writeln('ordi', i);
+			END;
+		END;
 	END;
 
 	isFirst := True;
 
 	REPEAT
+		renderText('Taille pioche :' + inttostr(getPiocheSize), 40, HEIGHT - 3, COL_WHITE, COL_BLACK);
 		lastSize := 0;
 		inc(joueurJouant);
 		joueurJouant := joueurJouant MOD (nbrJoueurHumain + nbrJoueurMachine);
@@ -101,8 +112,9 @@ BEGIN
 			t := initTabPos;
 			tabPions := initTabPion;
 			renderMain(3, HEIGHT - 3, joueurJouant, allJoueur[joueurJouant].main);
+
 			render;
-			IF renderPopUpWithResponce('Voulez vous changer votre pioche ? (o/n)') = 'o' THEN
+			IF renderPopUpWvithResponce('Voulez vous changer votre pioche ? (o/n)') = 'o' THEN
 				echangerPioche(allJoueur[joueurJouant].main)
 			ELSE
 			BEGIN
@@ -111,7 +123,7 @@ BEGIN
 					p := selectorMain(allJoueur[joueurJouant].main, joueurJouant);
 					IF NOT isFirst THEN
 					BEGIN
-						pos := selectorPos(g, pos.x, pos.y);
+						pos := selectorPos(g, 12, 12);
 						pos.x := pos.x - 2;
 						pos.y := pos.y - 2;
 					END
@@ -122,7 +134,7 @@ BEGIN
 					END;
 					choperPos(t, pos.x, pos.y, nombreDeCoups);
 					choperPion(tabPions, nombreDeCoups, p);
-					IF nCoups(g, t, tabPions, nombreDeCoups) OR isFirst THEN
+					IF (nCoups(g, t, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0)) OR isFirst THEN
 					BEGIN
 						ajouterPion(g, p, pos.x, pos.y, intToStr(joueurJouant));
 						removePionFromPioche(allJoueur[joueurJouant].main, p);
@@ -158,13 +170,11 @@ BEGIN
 				render;
 
 				lastSize := length(allJoueur[joueurJouant].main);
-				writeln(length(allJoueur[joueurJouant].main));
 				FOR i := 0 TO 6 - lastSize - 1 DO
 				BEGIN
 					setLength(allJoueur[joueurJouant].main, length(allJoueur[joueurJouant].main) + 1);
 					allJoueur[joueurJouant].main[lastSize + i] := piocher;
 				END;
-				writeln(length(allJoueur[joueurJouant].main));
 			END;
 		END
 		ELSE
