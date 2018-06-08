@@ -43,14 +43,18 @@ INTERFACE
               posX   : INTEGER;
               posY   : INTEGER;
       	END;
+
 		meilleurPion = RECORD
 			point : INTEGER;
 			x     : INTEGER;
 			y     : INTEGER;
 			p     : pion;
 		END;
+		  	matrice = ARRAY [0..2, 0..2] OF pion;
 CONST
 	PION_NULL : pion = (couleur: COULEUR_NULL; forme: FORME_NULL);
+    
+		
 
 IMPLEMENTATION
 END.
