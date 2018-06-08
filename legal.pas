@@ -4,6 +4,8 @@ USES constants  in 'core/constants.pas', sysutils, Math, crt,
 	structures in 'core/structures.pas';
 
 FUNCTION calculNombreDeVoisin(g : grille; x, y : INTEGER; dirInt : INTEGER) : INTEGER;
+FUNCTION calculNombreDeVoisinColonne(g : grille; x,y : INTEGER) : INTEGER;
+FUNCTION calculNombreDeVoisinLigne(g : grille; x,y : INTEGER) : INTEGER;
 FUNCTION verifNombreVoisin(g : grille; x, y: INTEGER) : BOOLEAN;
 FUNCTION findEtat(g : grille; x,y, dirInt : INTEGER) : STRING;
 FUNCTION concordance(g : grille; x, y : INTEGER) : BOOLEAN;
@@ -304,6 +306,7 @@ IMPLEMENTATION
 	VAR i : INTEGER;
 		t : tabPos;
 	BEGIN
+		setLength(t, 5);
 		FOR i := 0 TO 5 Do
 		BEGIN
 			t[i].x := 0;
@@ -316,6 +319,7 @@ IMPLEMENTATION
 	VAR i : INTEGER;
 		t : tabPion;
 	BEGIN
+		setLength(t, 5);
 		FOR i := 0 TO 5 Do
 		BEGIN
 			t[i].couleur := 0;

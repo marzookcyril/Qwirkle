@@ -1,5 +1,5 @@
 PROGRAM main;
-USES crt, sysutils, game, console, structures, legal, constants;
+USES crt, sysutils, game, console, structures, legal, constants, pAI;
 
 VAR
 	i, ii, joueurJouant, nombreDeCoups, lastSize, tmpMachine, tmpHumain : INTEGER;
@@ -12,6 +12,7 @@ VAR
 	t : tabPos;
 	responce : CHAR;
 	tabPions : tabPion;
+	coupsIA  : tabCoups;
 BEGIN
 	// initialisation des variables, on est jamais trop prudent avec
 	// pascal <3
@@ -114,7 +115,7 @@ BEGIN
 			renderMain(3, HEIGHT - 3, joueurJouant, allJoueur[joueurJouant].main);
 
 			render;
-			IF renderPopUpWvithResponce('Voulez vous changer votre pioche ? (o/n)') = 'o' THEN
+			IF renderPopUpWithResponce('Voulez vous changer votre pioche ? (o/n)') = 'o' THEN
 				echangerPioche(allJoueur[joueurJouant].main)
 			ELSE
 			BEGIN
@@ -137,7 +138,7 @@ BEGIN
 					IF (nCoups(g, t, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0)) OR isFirst THEN
 					BEGIN
 						ajouterPion(g, p, pos.x, pos.y, intToStr(joueurJouant));
-						removePionFromPioche(allJoueur[joueurJouant].main, p);
+						removePionFromMain(allJoueur[joueurJouant].main, p);
 						renderGame(g);
 						render;
 						responce := renderPopUpWithResponce('Un autre pion ?');
@@ -179,7 +180,44 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			// partie IA
+			t := initTabPos;
+			tabPions := initTabPion;
+
+			// on recupere tous les coups de l'IA
+			coupsIA := coupAIPaul(g, allJoueur[joueurJouant].main);
+			readln();
+			{*
+			FOR i := 0 TO length(coupsIA) - 1 DO
+			BEGIN
+				pos := coupsIA[i].pos;
+				p   := coupsIA[i].p;
+				choperPos(t, pos.x, pos.y, nombreDeCoups);
+				choperPion(tabPions, nombreDeCoups, p);
+				IF (nCoups(g, t, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0)) OR isFirst THEN
+				BEGIN
+					ajouterPion(g, p, pos.x, pos.y, intToStr(joueurJouant));
+					removePionFromPioche(allJoueur[joueurJouant].main, p);
+					renderGame(g);
+					render;
+				END
+				ELSE
+				BEGIN
+					writeln('IAPAUL : PION NON JOUABLE => ERREUR FATALE');
+				END;
+			END;
+			allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, t, nombreDeCoups);
+			renderScore(joueurJouant, allJoueur[joueurJouant].score);
+			renderGame(g);
+			renderHistorique;
+			render;
+
+			lastSize := length(allJoueur[joueurJouant].main);
+			FOR i := 0 TO 6 - lastSize - 1 DO
+			BEGIN
+				setLength(allJoueur[joueurJouant].main, length(allJoueur[joueurJouant].main) + 1);
+				allJoueur[joueurJouant].main[lastSize + i] := piocher;
+			END;
+			*}
 		END;
 	UNTIL hasWon(allJoueur[joueurJouant]) or stop;
 END.

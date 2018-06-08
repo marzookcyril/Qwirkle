@@ -20,6 +20,18 @@ INTERFACE
 		mainJoueur = ARRAY OF pion;
 		typePioche = ARRAY OF pion;
 
+		position = RECORD
+			x : INTEGER;
+			y : INTEGER;
+		END;
+
+		typeCoup   = RECORD
+			pos : position;
+			p   : pion;
+		END;
+
+		tabCoups = ARRAY OF typeCoup;
+
 		typeJoueur = RECORD
 			main : mainJoueur;
 			genre : BOOLEAN;
@@ -28,14 +40,9 @@ INTERFACE
 
 		tabJoueur = ARRAY OF typeJoueur;
 
-		position = RECORD
-			x : INTEGER;
-			y : INTEGER;
-		END;
 		tabdyn = ARRAY OF INTEGER;
-		tabPos = ARRAY[0..5] OF position;
-		tabPion = ARRAY[0..5] OF pion;
-
+		tabPos = ARRAY OF position;
+		tabPion = ARRAY OF pion;
 		dataHistorique = RECORD
               id     : INTEGER;
               joueur : STRING;

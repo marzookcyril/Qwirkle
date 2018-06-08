@@ -28,6 +28,7 @@ PROCEDURE renderMain(x,y, joueur : INTEGER ; main : mainJoueur);
 PROCEDURE renderPopUp(text : STRING);
 PROCEDURE renderTitle(title : STRING);
 PROCEDURE renderText(text : STRING; x, y, tCol, bgCol : INTEGER);
+PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
 PROCEDURE renderJoueurText(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
 FUNCTION renderPopUpWithResponce(text : STRING) : CHAR;

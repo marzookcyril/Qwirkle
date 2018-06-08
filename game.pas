@@ -8,11 +8,12 @@ PROCEDURE initPioche(nbrCouleurs, nbrFormes, nbrTuiles : INTEGER);
 PROCEDURE shufflePioche;
 FUNCTION creerMain: mainJoueur;
 FUNCTION hasWon(joueur : typeJoueur) : BOOLEAN;
-PROCEDURE removePionFromPioche(VAR main : mainJoueur; p : pion);
+PROCEDURE removePionFromMain(VAR main : mainJoueur; p : pion);
 PROCEDURE echangerPioche(VAR main : mainJoueur);
 PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 FUNCTION piocher : pion;
 FUNCTION getPiocheSize : INTEGER;
+PROCEDURE log(text : STRING);
 
 IMPLEMENTATION
 VAR
@@ -21,6 +22,12 @@ VAR
 	globalHumain : INTEGER;
 	globalMachine : INTEGER;
 	gNbrCouleurs, gNbrFormes, gNbrTuiles : INTEGER;
+
+	PROCEDURE log(text : STRING);
+	BEGIN
+		writeln(text);
+		readln();
+	END;
 
 	FUNCTION getPiocheSize : INTEGER;
 	BEGIN
@@ -128,7 +135,7 @@ VAR
 		removeFromArray := main;
 	END;
 
-	PROCEDURE removePionFromPioche(VAR main : mainJoueur; p : pion);
+	PROCEDURE removePionFromMain(VAR main : mainJoueur; p : pion);
 	VAR
 		i, indexToRemove : INTEGER;
 	BEGIN
