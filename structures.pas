@@ -43,7 +43,12 @@ INTERFACE
               posX   : INTEGER;
               posY   : INTEGER;
       	END;
-
+		meilleurPion = RECORD
+			point : INTEGER;
+			x     : INTEGER;
+			y     : INTEGER;
+			p     : pion;
+		END;
 CONST
 	PION_NULL : pion = (couleur: COULEUR_NULL; forme: FORME_NULL);
 

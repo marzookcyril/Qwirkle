@@ -18,6 +18,7 @@ FUNCTION point(g : grille; t : tabPos ; num : INTEGER): INTEGER;
 FUNCTION continu(g: grille ;x1,y1,x2,y2 : INTEGER): BOOLEAN;
 PROCEDURE choperPos(VAR t : tabPos ; x,y, num : INTEGER);
 PROCEDURE choperPion(VAR t : tabPion ;num : INTEGER; p : pion);
+FUNCTION calculVoisinShlag(g: grille;x,y: INTEGER;p: pion): INTEGER;
 
 
 IMPLEMENTATION
@@ -53,6 +54,25 @@ IMPLEMENTATION
 		END;
 		dirValue := tmp;
 	END;
+	
+	
+	FUNCTION calculVoisinShlag(g: grille;x,y: INTEGER;p: pion): INTEGER;
+	VAR i : INTEGER;
+	BEGIN
+		i :=0;
+		IF g[x,y-1].forme <> 0 THEN 
+			inc(i);
+		IF g[x,y+1].forme <> 0 THEN 
+			inc(i);
+		IF g[x-1,y].forme <> 0 THEN 
+			inc(i);
+		IF g[x+1,y].forme <> 0 THEN 
+			inc(i);
+		calculVoisinShlag := i;
+		
+	END;
+	
+	
 
 	FUNCTION calculNombreDeVoisin(g : grille; x, y: INTEGER; dirInt : INTEGER) : INTEGER;
 	VAR
@@ -218,8 +238,8 @@ IMPLEMENTATION
 
 	FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
 	BEGIN
-		WriteLn('concordanceGenerale ', concordanceGenerale(g,x,y,p));
-		writeln('dupli', duplicationPion(g,x,y,p));
+		//WriteLn('concordanceGenerale ', concordanceGenerale(g,x,y,p));
+		// writeln('dupli', duplicationPion(g,x,y,p));
 		IF (concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p)) THEN
 		BEGIN
 			placer := TRUE;

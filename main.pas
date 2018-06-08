@@ -1,5 +1,5 @@
 PROGRAM main;
-USES crt, sysutils, game, console, structures, legal, constants;
+USES crt, sysutils, game, console, structures, legal, constants,Uia;
 
 VAR
 	i, ii, joueurJouant, nombreDeCoups, lastSize, tmpMachine, tmpHumain : INTEGER;
@@ -7,7 +7,8 @@ VAR
 	allJoueur : tabJoueur;
 	pos : position;
 	g : grille;
-	p : pion;
+	p  : pion;
+	mpIA : meilleurPion;
 	stop, aFiniDeJouer, isFirst : BOOLEAN;
 	t : tabPos;
 	responce : CHAR;
@@ -104,17 +105,18 @@ BEGIN
 		inc(joueurJouant);
 		joueurJouant := joueurJouant MOD (nbrJoueurHumain + nbrJoueurMachine);
 		renderTitle('Tour du joueur ' + inttostr(joueurJouant) + '...');
-		renderPopUp('C''est au joueur : ' + inttostr(joueurJouant) + ' de jouer...');
+		
 		// on fait jouer le joueur humain / machine
 		IF allJoueur[joueurJouant].genre THEN
 		BEGIN
+			renderPopUp('C''est au joueur : ' + inttostr(joueurJouant) + ' de jouer...');
 			nombreDeCoups := 1;
 			t := initTabPos;
 			tabPions := initTabPion;
 			renderMain(3, HEIGHT - 3, joueurJouant, allJoueur[joueurJouant].main);
 
 			render;
-			IF renderPopUpWvithResponce('Voulez vous changer votre pioche ? (o/n)') = 'o' THEN
+			IF renderPopUpWithResponce('Voulez vous changer votre pioche ? (o/n)') = 'o' THEN
 				echangerPioche(allJoueur[joueurJouant].main)
 			ELSE
 			BEGIN
@@ -179,7 +181,29 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			// partie IA
+			renderMain(3, HEIGHT - 3, joueurJouant, allJoueur[joueurJouant].main);
+			renderGame(g);
+			render;
+			readln;
+			mpIA := pionMain(g,allJoueur[joueurJouant].main);
+			t := initTabPos;
+			tabPions := initTabPion;
+			
+			choperPos(t, mpIA.x, mpIA.y, 1);
+			IF ((mpIA.x=0) AND (mpIA.y = 0)) THEN 
+				echangerPioche(allJoueur[joueurJouant].main)
+			ELSE
+			BEGIN
+				ajouterPion(g,mpIA.p,mpIA.x,mpIA.y,intToStr(joueurJouant));
+				allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, t, 1);
+				removePionFromPioche(allJoueur[joueurJouant].main, mpIA.p);
+				renderHistorique;
+				allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, t, 1);
+				renderScore(joueurJouant, allJoueur[joueurJouant].score);
+			END;
+			renderGame(g);
+			render;
+			
 		END;
 	UNTIL hasWon(allJoueur[joueurJouant]) or stop;
 END.
