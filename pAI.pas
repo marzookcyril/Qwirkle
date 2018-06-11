@@ -7,10 +7,11 @@ TYPE
 	ptrBranche = ^Tbranche;
 	Tbranche = RECORD
 		avant       : ptrBranche;
-		pos         : position;
-		p           : pion;
 		points      : INTEGER;
 		sousBranche : ARRAY OF ptrBranche;
+		lastPion    : tabPion;
+		lastPos     : tabPos;
+		down        : INTEGER;
 	END;
 
 FUNCTION coupAIPaul(g : grille; main : mainJoueur) : tabCoups;
@@ -31,7 +32,6 @@ IMPLEMENTATION
 
 	PROCEDURE addBranche(branche, sousBranche : ptrBranche);
 	BEGIN
-		log('posX : ' + inttostr(sousBranche^.pos.x));
 		setLength(branche^.sousBranche, length(branche^.sousBranche) + 1);
 		branche^.sousBranche[length(branche^.sousBranche) - 1] := 	sousBranche;
 	END;
@@ -43,15 +43,33 @@ IMPLEMENTATION
 		new(tmp);
 		// on creer la sous branche
 		tmp^.avant := branche;
-		tmp^.pos.x := x;
-		tmp^.pos.y := y;
-		tmp^.p := p;
 		tmp^.points := -1;
+
 		setLength(tmp^.sousBranche, 0);
+
+		IF branche <> NIL THEN
+		BEGIN
+			tmp^.lastPion := branche^.lastPion;
+			setLength(tmp^.lastPion, length(tmp^.lastPion) + 1);
+			tmp^.lastPos := branche^.lastPos;
+			setLength(tmp^.lastPos, length(tmp^.lastPos) + 1);
+			tmp^.down := branche^.down + 1;
+		END
+		ELSE
+		BEGIN
+			tmp^.down := 0;
+			setLength(tmp^.lastPion, 1);
+			setLength(tmp^.lastPos, 1);
+		END;
+
+		tmp^.lastPos[tmp^.down].x := x;
+		tmp^.lastPos[tmp^.down].y := y;
+		tmp^.lastPion[tmp^.down].p := p;
 
 		createBranche := tmp;
 	END;
 
+	// la branche racine sert à garder les autres branches. Elle n'est jamais utilisée autrement
 	FUNCTION initArbre(g : grille; main : mainJoueur; tabMove : tabPossibleMovePosition) : ptrBranche;
 	VAR
 		i, j : INTEGER;
@@ -64,7 +82,7 @@ IMPLEMENTATION
 			BEGIN
 				IF placer(g, tabMove[i].x, tabMove[i].y, main[j]) THEN
 				BEGIN
-					tmpBranche := createBranche(racine, main[j], tabMove[i].x, tabMove[i].y);
+					tmpBranche := createBranche(NIL, main[j], tabMove[i].x, tabMove[i].y);
 					addBranche(racine, tmpBranche);
 				END;
 			END;
@@ -103,105 +121,53 @@ IMPLEMENTATION
 	VAR
 		i, j, x, y : INTEGER;
 		tmpMain : mainJoueur;
-		tmpGrille : grille;
+		tmpGrille, tmp2Grille : grille;
 		tabCoupPos : tabPos;
 		tabCoupPion : tabPion;
 		tmpBranche : ptrbranche;
 	BEGIN
-		// on pose le pion d'avant dans la grille
-		// on fait tout comme si il avait ete place
-		tmpGrille := g;
-		ajouterPion(tmpGrille, arbre^.p, arbre^.pos.x, arbre^.pos.y, 'AI');
-		tmpMain := main;
-		removePionFromMain(tmpMain, p);
-
-		// les fonctions de cyril...
-		tabCoupPos := creerTabPosPrec(arbre);
-		tabCoupPion := creerTabPionPrec(arbre);
-
-		// pour tous les pions dans la sousBranche
-		FOR i := 0 TO length(arbre^.sousBranche) - 1 DO
+		IF NOT ((arbre^.down > 6) OR (length(main) < 1)) THEN
 		BEGIN
-			setLength(tabCoupPos, length(tabCoupPos) + 1);
-			tabCoupPos[length(tabCoupPos) - 1].x := arbre^.sousBranche[i]^.pox.x + x;
-			tabCoupPos[length(tabCoupPos) - 1].y := arbre^.sousBranche[i]^.pox.y + y;
-			setLength(tabCoupPion, length(tabCoupPion) + 1);
-			tabCoupPion[length(tabCoupPos) - 1] := tmpMain[j];
-			// pour tous les pions dans la main
-			FOR j := 0 TO length(tmpMain) - 1 DO
+			// on pose le pion d'avant dans la grille
+			// on fait tout comme si il avait ete place
+			tmpGrille := g;
+
+			ajouterPion(tmpGrille, arbre^.lastPion[arbre^.down], arbre^.lastPos[arbre^.down].x, arbre^.[arbre^.down].y, 'AI');
+			tmpMain := main;
+			removePionFromMain(tmpMain, arbre^.p);
+
+			FOR x := -1 TO 1 DO
 			BEGIN
-				FOR x := -1 TO 1 DO
+				FOR y := -1 TO 1 DO
 				BEGIN
-					FOR y := -1 TO 1 DO
+					FOR i := 0 TO length(tmpMain) - 1 DO
 					BEGIN
+						//on ajoute le coups hypothétique voir si il marche
+						setLength(arbre^.lastPos, length(arbre^.lastPos) + 1);
+						setLength(arbre^.lastPion, length(arbre^.lastPion) + 1);
+						arbre^.lastPos[arbre^.down + 1].x := x;
+						arbre^.lastPos[arbre^.down + 1].y := y;
+						arbre^.lastPion[arbre^.down + 1].p := tmpMain[i];
 
-
-						// si ce coup est jouable, on l'ajoute à la branche
-						IF nCoups(tmpGrille, tabCoupPos, tabCoupPion, length(tabCoupPion)) THEN
+						IF nCoups(tmpGrille, arbre^.lastPos, arbre^.lastPion, arbre^.down + 1) THEN
 						BEGIN
-							tmpBranche := createBranche(arbre, tmpMain[j], arbre^.pox.x + x, arbre^.pox.y + y);
-							addBranche(arbre^.sousBranche[i], tmpBranche);
+							tmpBranche := createBranche(arbre, tmpMain[j], x, y);
+
+							// coucou je suis la récursivité !
+							createFullTree(tmpGrille, tmpBranche, tmpMain);
+
+							addBranche(arbre, tmpBranche);
 						END;
+
+						setLength(arbre^.lastPos, length(arbre^.lastPos) - 1);
+						setLength(arbre^.lastPion, length(arbre^.lastPion) - 1);
 					END;
 				END;
 			END;
-		END;
-	END;
-
-	FUNCTION creerTabPosPrec(arbre : ptrBranche) : tabPos;
-	VAR
-		tmp : ptrBranche;
-		tmpCoup : position;
-		tabDesCoups : tabPos;
-	BEGIN
-		tmp := arbre;
-		setLength(tabDesCoups, 0);
-
-		// on recupere tous les coups jouables
-		WHILE tmp^.avant <> NIL DO
+		ELSE
 		BEGIN
-			setLength(tabDesCoups, length(tabDesCoups) + 1);
-			tabDesCoups[length(tabDesCoups) - 1].pos := tmp^.pos;
-			tmp := tmp^.avant;
+			arbre^.points := point(g, arbre^.tabPos, arbre^.down);
 		END;
-
-		// on inverse le tab car on recupere du dernier au premier coup...
-		FOR i := 0 TO length(tabDesCoups) - 1 DO
-		BEGIN
-			tmpCoup := tabDesCoups[length(tabDesCoups) - i];
-			tabDesCoups[length(tabDesCoups) - i] := tabDesCoups[i];
-			tabDesCoups[i] := tmpCoup;
-		END;
-
-		creerTabCoupsPrec := tabDesCoups;
-	END;
-
-	FUNCTION creerTabPionPrec(arbre : ptrBranche) : tabPion;
-	VAR
-		tmp : ptrBranche;
-		tmpCoup : pion;
-		tabDesCoups : tabPion;
-	BEGIN
-		tmp := arbre;
-		setLength(tabDesCoups, 0);
-
-		// on recupere tous les coups jouables
-		WHILE tmp^.avant <> NIL DO
-		BEGIN
-			setLength(tabDesCoups, length(tabDesCoups) + 1);
-			tabDesCoups[length(tabDesCoups) - 1].p := tmp^.p;
-			tmp := tmp^.avant;
-		END;
-
-		// on inverse le tab car on recupere du dernier au premier coup...
-		FOR i := 0 TO length(tabDesCoups) - 1 DO
-		BEGIN
-			tmpCoup := tabDesCoups[length(tabDesCoups) - i];
-			tabDesCoups[length(tabDesCoups) - i] := tabDesCoups[i];
-			tabDesCoups[i] := tmpCoup;
-		END;
-
-		creerTabCoupsPrec := tabDesCoups;
 	END;
 
 	PROCEDURE afficherCoupsJouables(g : grille; tabMove : tabPossibleMovePosition);
@@ -236,15 +202,12 @@ IMPLEMENTATION
 		p.couleur := COULEUR_ROUGE;
 		p.forme := FORME_NULL;
 
-		log('sB[0] : ' + inttostr(arbre^.sousBranche[1]^.pos.x));
-		log('taille sousBranche ' + inttostr(length(arbre^.sousBranche)));
-
 		FOR i := 0 TO length(arbre^.sousBranche) - 1 DO
 		BEGIN
-			ajouterPion(tmpGrille,arbre^.sousBranche[i]^.p, arbre^.sousBranche[i]^.pos.x, arbre^.sousBranche[i]^.pos.y,'AI');
+			ajouterPion(tmpGrille,arbre^.sousBranche[i]^.lastPion[arbre^.down], arbre^.sousBranche[i]^.lastPos[arbre^.down].x, arbre^.sousBranche[i]^.lastPos[arbre^.down].y,'AI');
 			renderGame(tmpGrille);
 			render;
-			log('pos : ' + inttostr(arbre^.sousBranche[i]^.pos.x) + ',' + inttostr(arbre^.sousBranche[i]^.pos.y) + ',' + intToStr(i));
+			log('pos : ' + inttostr(arbre^.sousBranche[i]^.lastPos[arbre^.down].x) + ',' + inttostr(arbre^.sousBranche[i]^.lastPos[arbre^.down].y) + ',' + intToStr(i));
 		END;
 
 		renderGame(g);
