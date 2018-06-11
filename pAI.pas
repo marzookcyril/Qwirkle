@@ -14,9 +14,12 @@ TYPE
 		down        : INTEGER;
 	END;
 
-FUNCTION coupAIPaul(g : grille; main : mainJoueur) : tabCoups;
+FUNCTION coupAIPaul(g : grille; main : mainJoueur) : typeCoup;
 
 IMPLEMENTATION
+VAR
+	bestScore : INTEGER;
+	bestBranche : ptrBranche;
 
 	FUNCTION caseJouable(g : GRILLE; x,y : INTEGER) : BOOLEAN;
 	VAR
@@ -64,7 +67,7 @@ IMPLEMENTATION
 
 		tmp^.lastPos[tmp^.down].x := x;
 		tmp^.lastPos[tmp^.down].y := y;
-		tmp^.lastPion[tmp^.down].p := p;
+		tmp^.lastPion[tmp^.down] := p;
 
 		createBranche := tmp;
 	END;
@@ -126,47 +129,54 @@ IMPLEMENTATION
 		tabCoupPion : tabPion;
 		tmpBranche : ptrbranche;
 	BEGIN
-		IF NOT ((arbre^.down > 6) OR (length(main) < 1)) THEN
+		// on pose le pion d'avant dans la grille
+		// on fait tout comme si il avait ete place
+		tmpGrille := g;
+		ajouterPion(tmpGrille, arbre^.lastPion[arbre^.down], arbre^.lastPos[arbre^.down].x, arbre^.lastPos[arbre^.down].y, 'T');
+		tmpMain := main;
+		removePionFromMain(tmpMain, arbre^.lastPion[arbre^.down]);
+
+		FOR i := 0 TO length(tmpMain) - 1 DO
 		BEGIN
-			// on pose le pion d'avant dans la grille
-			// on fait tout comme si il avait ete place
-			tmpGrille := g;
-
-			ajouterPion(tmpGrille, arbre^.lastPion[arbre^.down], arbre^.lastPos[arbre^.down].x, arbre^.[arbre^.down].y, 'AI');
-			tmpMain := main;
-			removePionFromMain(tmpMain, arbre^.p);
-
 			FOR x := -1 TO 1 DO
 			BEGIN
 				FOR y := -1 TO 1 DO
 				BEGIN
-					FOR i := 0 TO length(tmpMain) - 1 DO
+					//on ajoute le coups hypothétique voir si il marche
+					setLength(arbre^.lastPos, length(arbre^.lastPos) + 1);
+					setLength(arbre^.lastPion, length(arbre^.lastPion) + 1);
+					arbre^.lastPos[arbre^.down + 1].x := arbre^.lastPos[arbre^.down].x + x;
+					arbre^.lastPos[arbre^.down + 1].y := arbre^.lastPos[arbre^.down].y + y;
+					arbre^.lastPion[arbre^.down + 1] := tmpMain[i];
+
+					IF nCoups(tmpGrille, arbre^.lastPos, arbre^.lastPion, arbre^.down + 1) AND (g[arbre^.lastPos[arbre^.down + 1].x, arbre^.lastPos[arbre^.down + 1].y].couleur = 0) THEN
 					BEGIN
-						//on ajoute le coups hypothétique voir si il marche
-						setLength(arbre^.lastPos, length(arbre^.lastPos) + 1);
-						setLength(arbre^.lastPion, length(arbre^.lastPion) + 1);
-						arbre^.lastPos[arbre^.down + 1].x := x;
-						arbre^.lastPos[arbre^.down + 1].y := y;
-						arbre^.lastPion[arbre^.down + 1].p := tmpMain[i];
+						tmpBranche := createBranche(arbre, tmpMain[j], arbre^.lastPos[arbre^.down + 1].x, arbre^.lastPos[arbre^.down + 1].y);
 
-						IF nCoups(tmpGrille, arbre^.lastPos, arbre^.lastPion, arbre^.down + 1) THEN
-						BEGIN
-							tmpBranche := createBranche(arbre, tmpMain[j], x, y);
+						// coucou je suis la récursivité !
+						createFullTree(tmpGrille, tmpBranche, tmpMain);
 
-							// coucou je suis la récursivité !
-							createFullTree(tmpGrille, tmpBranche, tmpMain);
-
-							addBranche(arbre, tmpBranche);
-						END;
-
-						setLength(arbre^.lastPos, length(arbre^.lastPos) - 1);
-						setLength(arbre^.lastPion, length(arbre^.lastPion) - 1);
+						addBranche(arbre, tmpBranche);
 					END;
+
+					setLength(arbre^.lastPos, length(arbre^.lastPos) - 1);
+					setLength(arbre^.lastPion, length(arbre^.lastPion) - 1);
 				END;
 			END;
-		ELSE
+		END;
+		// on a pas cree de sous branche, on va donc finir et remonter dans l'arbre
+		IF length(arbre^.sousBranche) < 1 THEN
 		BEGIN
-			arbre^.points := point(g, arbre^.tabPos, arbre^.down);
+			arbre^.points := point(g, arbre^.lastPos, arbre^.down);
+			IF arbre^.points > bestScore THEN
+			BEGIN
+				bestBranche := arbre;
+				bestScore := arbre^.points;
+				ajouterPion(tmpGrille, arbre^.lastPion[arbre^.down], arbre^.lastPos[arbre^.down].x, arbre^.lastPos[arbre^.down].y, 'T');
+				renderGame(tmpGrille);
+				render;
+				log('tour');
+			END;
 		END;
 	END;
 
@@ -182,7 +192,7 @@ IMPLEMENTATION
 
 		FOR i := 0 TO length(tabMove) - 1 DO
 		BEGIN
-			ajouterPion(tmpGrille,p,tabMove[i].x,tabMove[i].y,'AI');
+			ajouterPion(tmpGrille,p,tabMove[i].x,tabMove[i].y,'T');
 			renderGame(tmpGrille);
 			render;
 		END;
@@ -204,10 +214,9 @@ IMPLEMENTATION
 
 		FOR i := 0 TO length(arbre^.sousBranche) - 1 DO
 		BEGIN
-			ajouterPion(tmpGrille,arbre^.sousBranche[i]^.lastPion[arbre^.down], arbre^.sousBranche[i]^.lastPos[arbre^.down].x, arbre^.sousBranche[i]^.lastPos[arbre^.down].y,'AI');
+			ajouterPion(tmpGrille,arbre^.sousBranche[i]^.lastPion[arbre^.down], arbre^.sousBranche[i]^.lastPos[arbre^.down].x, arbre^.sousBranche[i]^.lastPos[arbre^.down].y,'T');
 			renderGame(tmpGrille);
 			render;
-			log('pos : ' + inttostr(arbre^.sousBranche[i]^.lastPos[arbre^.down].x) + ',' + inttostr(arbre^.sousBranche[i]^.lastPos[arbre^.down].y) + ',' + intToStr(i));
 		END;
 
 		renderGame(g);
@@ -215,18 +224,26 @@ IMPLEMENTATION
 	END;
 
 	// pour faire jouer l'ia faites appelle à cette fonction. Cette unique fonction
-	FUNCTION coupAIPaul(g : grille; main : mainJoueur) : tabCoups;
+	FUNCTION coupAIPaul(g : grille; main : mainJoueur) : typeCoup;
 	VAR
 		tabMove : tabPossibleMovePosition;
 		i : INTEGER;
 		p : pion;
 		tmpGrille : grille;
 		arbre : ptrBranche;
+		tmpFinal : typeCoup;
 	BEGIN
+		bestScore := 0;
+		bestBranche := NIL;
 		tabMove := findAllPosibleMove(g, main);
 		afficherCoupsJouables(g, tabMove);
 		arbre := initArbre(g, main, tabMove);
-		log('tailleArbre : ' + inttostr(length(arbre^.sousBranche)));
-		afficherBrancheArbre(g, arbre);
+		//log('tailleArbre : ' + inttostr(length(arbre^.sousBranche)));
+		//afficherBrancheArbre(g, arbre);
+		createFullTree(g, arbre^.sousBranche[0], main);
+
+		tmpFinal.p := bestBranche^.lastPion;
+		tmpFinal.pos := bestBranche^.lastPos;
+		coupAIPaul := tmpFinal;
 	END;
 END.

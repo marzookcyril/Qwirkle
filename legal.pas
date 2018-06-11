@@ -220,8 +220,6 @@ IMPLEMENTATION
 
 	FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
 	BEGIN
-		WriteLn('concordanceGenerale ', concordanceGenerale(g,x,y,p));
-		writeln('dupli', duplicationPion(g,x,y,p));
 		IF (concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p)) THEN
 		BEGIN
 			placer := TRUE;
@@ -254,9 +252,6 @@ IMPLEMENTATION
 		bool : BOOLEAN;
 	BEGIN
 		bool := FALSE;
-		writeln('XOR',((x1 = x2) XOR (y1 = y2)));
-		writeLn('placer ', placer(g,x2,y2,p2));
-		writeln('continue', continu(g,x1,y1,x2,y2));
 		IF (((x1 = x2) XOR (y1 = y2)) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2)) THEN
 		BEGIN
 			bool:= TRUE;
@@ -299,7 +294,6 @@ IMPLEMENTATION
 				END;
 			END;
 		END;
-		writeln('FINAL', nCoups);
 	END;
 
 	FUNCTION initTabPos(): tabPos;

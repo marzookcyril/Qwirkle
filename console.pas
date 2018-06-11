@@ -485,12 +485,15 @@ IMPLEMENTATION
 
 	PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
 	BEGIN
-		historique[historiqueIndex MOD 18].pion   := p;
-		historique[historiqueIndex MOD 18].posX   := x;
-		historique[historiqueIndex MOD 18].posY   := y;
-		historique[historiqueIndex MOD 18].id     := historiqueIndex;
-		historique[historiqueIndex MOD 18].joueur := joueur;
-		inc(historiqueIndex);
+		IF joueur <> 'T' THEN
+		BEGIN
+			historique[historiqueIndex MOD 18].pion   := p;
+			historique[historiqueIndex MOD 18].posX   := x;
+			historique[historiqueIndex MOD 18].posY   := y;
+			historique[historiqueIndex MOD 18].id     := historiqueIndex;
+			historique[historiqueIndex MOD 18].joueur := joueur;
+			inc(historiqueIndex);
+		END;
 	END;
 
 	PROCEDURE renderJoueurText(nbrJoueurHumain, nbrJoueurMachine : INTEGER);

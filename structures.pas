@@ -25,9 +25,13 @@ INTERFACE
 			y : INTEGER;
 		END;
 
+		tabdyn = ARRAY OF INTEGER;
+		tabPos = ARRAY OF position;
+		tabPion = ARRAY OF pion;
+
 		typeCoup   = RECORD
-			pos : position;
-			p   : pion;
+			pos : tabPos;
+			p   : tabPion;
 		END;
 
 		tabCoups = ARRAY OF typeCoup;
@@ -40,9 +44,7 @@ INTERFACE
 
 		tabJoueur = ARRAY OF typeJoueur;
 
-		tabdyn = ARRAY OF INTEGER;
-		tabPos = ARRAY OF position;
-		tabPion = ARRAY OF pion;
+
 		dataHistorique = RECORD
               id     : INTEGER;
               joueur : STRING;

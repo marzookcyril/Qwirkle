@@ -12,7 +12,7 @@ VAR
 	t : tabPos;
 	responce : CHAR;
 	tabPions : tabPion;
-	coupsIA  : tabCoups;
+	coupsIA  : typeCoup;
 BEGIN
 	// initialisation des variables, on est jamais trop prudent avec
 	// pascal <3
@@ -183,28 +183,36 @@ BEGIN
 			t := initTabPos;
 			tabPions := initTabPion;
 
+			renderMain(3, HEIGHT - 3, joueurJouant, allJoueur[joueurJouant].main);
+			render;
+
 			// on recupere tous les coups de l'IA
 			coupsIA := coupAIPaul(g, allJoueur[joueurJouant].main);
-			readln();
-			{*
-			FOR i := 0 TO length(coupsIA) - 1 DO
+			writeln(length(coupsIA.p));
+
+			FOR i := 0 TO length(coupsIA.p) - 1 DO
 			BEGIN
-				pos := coupsIA[i].pos;
-				p   := coupsIA[i].p;
-				choperPos(t, pos.x, pos.y, nombreDeCoups);
+				pos := coupsIA.pos[i];
+				p   := coupsIA.p[i];
+				ajouterPion(g, p, pos.x, pos.y, intToStr(joueurJouant));
+				renderGame(g);
+				render;
+				{choperPos(t, pos.x, pos.y, nombreDeCoups);
 				choperPion(tabPions, nombreDeCoups, p);
 				IF (nCoups(g, t, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0)) OR isFirst THEN
 				BEGIN
 					ajouterPion(g, p, pos.x, pos.y, intToStr(joueurJouant));
-					removePionFromPioche(allJoueur[joueurJouant].main, p);
+					removePionFromMain(allJoueur[joueurJouant].main, p);
 					renderGame(g);
 					render;
 				END
 				ELSE
 				BEGIN
 					writeln('IAPAUL : PION NON JOUABLE => ERREUR FATALE');
-				END;
+				END;}
 			END;
+			log('fin du tour de lia');
+			{
 			allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, t, nombreDeCoups);
 			renderScore(joueurJouant, allJoueur[joueurJouant].score);
 			renderGame(g);
@@ -217,7 +225,7 @@ BEGIN
 				setLength(allJoueur[joueurJouant].main, length(allJoueur[joueurJouant].main) + 1);
 				allJoueur[joueurJouant].main[lastSize + i] := piocher;
 			END;
-			*}
+			}
 		END;
 	UNTIL hasWon(allJoueur[joueurJouant]) or stop;
 END.
