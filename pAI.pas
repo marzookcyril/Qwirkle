@@ -20,6 +20,7 @@ IMPLEMENTATION
 VAR
 	bestScore, counter : INTEGER;
 	bestBranche : ptrBranche;
+	iter : int64;
 
 	FUNCTION caseJouable(g : GRILLE; x,y : INTEGER) : BOOLEAN;
 	VAR
@@ -120,6 +121,46 @@ VAR
 		findAllPosibleMove := possibleMove;
 	END;
 
+	FUNCTION findFourPos(g: grille; x, y : INTEGER) : tabPos;
+	VAR
+		i : INTEGER;
+		final : tabPos;
+	BEGIN
+		i := x;
+
+		// vers la droite
+		WHILE g[i,y].couleur <> 0 DO inc(i);
+
+		setLength(final, 1);
+		final[0].x := i;
+		final[0].y := y;
+
+		// gauche
+		i := x;
+		WHILE g[i,y].couleur <> 0 DO dec(i);
+
+		setLength(final, 2);
+		final[1].x := i;
+		final[1].y := y;
+
+		// haut
+		i := y;
+		WHILE g[x,i].couleur <> 0 DO dec(i);
+
+		setLength(final, 3);
+		final[2].x := i;
+		final[2].y := y;
+
+		i := y;
+		WHILE g[x,i].couleur <> 0 DO inc(i);
+
+		setLength(final, 4);
+		final[3].x := i;
+		final[3].y := y;
+
+		findFourPos := final;
+	END;
+
 	PROCEDURE createFullTree(g : grille; arbre : ptrBranche; main : mainJoueur);
 	VAR
 		i, j, x, y : INTEGER;
@@ -128,6 +169,7 @@ VAR
 		tabCoupPos : tabPos;
 		tabCoupPion : tabPion;
 		tmpBranche : ptrbranche;
+		allPos : tabPos;
 	BEGIN
 		// on pose le pion d'avant dans la grille
 		// on fait tout comme si il avait ete place
@@ -148,42 +190,46 @@ VAR
 
 		FOR i := 0 TO length(tmpMain) - 1 DO
 		BEGIN
-			FOR x := arbre^.lastPos[arbre^.down - 1].x - 1 TO arbre^.lastPos[arbre^.down - 1].x + 1 DO
+			allPos := findFourPos(tmpGrille, arbre^.lastPos[arbre^.down - 1].x, arbre^.lastPos[arbre^.down - 1].y);
+			FOR j := 0 TO length(allPos) - 1 DO
 			BEGIN
-				FOR y := arbre^.lastPos[arbre^.down - 1].y - 1 TO arbre^.lastPos[arbre^.down - 1].y + 1 DO
+				inc(iter);
+
+				x := allPos[j].x;
+				y := allPos[j].y;
+
+				//on ajoute le coups hypothétique voir si il marche
+				setLength(tabCoupPos, length(tabCoupPos) + 1);
+				setLength(tabCoupPion, length(tabCoupPion) + 1);
+				tabCoupPos[length(tabCoupPos) - 1].x := x;
+				tabCoupPos[length(tabCoupPos) - 1].y := y;
+				tabCoupPion[length(tabCoupPion) - 1] := tmpMain[i];
+
+				writeln('debut');
+				writeln(nCoups(tmpGrille, tabCoupPos, tabCoupPion, arbre^.down + 1));
+				writeln(tmpGrille[x, y].couleur = 0);
+				writeln('fin');
+
+				IF nCoups(tmpGrille, tabCoupPos, tabCoupPion, arbre^.down + 1) AND (tmpGrille[tabCoupPos[length(tabCoupPos) - 1].x, tabCoupPos[length(tabCoupPos) - 1].y].couleur = 0) AND (tmpMain[i].couleur <> 0) THEN
 				BEGIN
-					//on ajoute le coups hypothétique voir si il marche
-					setLength(tabCoupPos, length(tabCoupPos) + 1);
-					setLength(tabCoupPion, length(tabCoupPion) + 1);
-					tabCoupPos[length(tabCoupPos) - 1].x := x;
-					tabCoupPos[length(tabCoupPos) - 1].y := y;
-					tabCoupPion[length(tabCoupPion) - 1] := tmpMain[i];
-					writeln('debut');
-					writeln(nCoups(tmpGrille, tabCoupPos, tabCoupPion, arbre^.down + 1));
-					writeln(tmpGrille[x, y].couleur = 0);
-					writeln('fin');
-					IF nCoups(tmpGrille, tabCoupPos, tabCoupPion, arbre^.down + 1) AND (tmpGrille[tabCoupPos[length(tabCoupPos) - 1].x, tabCoupPos[length(tabCoupPos) - 1].y].couleur = 0) AND (tmpMain[i].couleur <> 0) THEN
-					BEGIN
-						writeln('je suis la NCOUPS', tmpMain[i].couleur <> 0);
-						tmpBranche := createBranche(arbre, tmpMain[i], x, y);
-						writeln('je suis la apres');
+					writeln('je suis la NCOUPS', tmpMain[i].couleur <> 0);
+					tmpBranche := createBranche(arbre, tmpMain[i], x, y);
+					writeln('je suis la apres');
 
-						// coucou je suis la récursivité !
-						createFullTree(tmpGrille, tmpBranche, tmpMain);
+					// coucou je suis la récursivité !
+					createFullTree(tmpGrille, tmpBranche, tmpMain);
 
-						addBranche(arbre, tmpBranche);
-						writeln('----------------------------------------');
-					END;
-
-					// si le coup ne marche pas on le supprime et passe au suivant
-					setLength(tabCoupPos, length(tabCoupPos) - 1);
-					setLength(tabCoupPion, length(tabCoupPion) - 1);
-					writeln('apres setLength', length(tabCoupPos));
+					addBranche(arbre, tmpBranche);
+					writeln('----------------------------------------');
 				END;
+
+				// si le coup ne marche pas on le supprime et passe au suivant
+				setLength(tabCoupPos, length(tabCoupPos) - 1);
+				setLength(tabCoupPion, length(tabCoupPion) - 1);
+				writeln('apres setLength', length(tabCoupPos));
 			END;
 		END;
-		writeln('++++++++++++++++++++++++++++');
-		writeln('fin de la main');
+
 		arbre^.points := point(g, arbre^.lastPos, arbre^.down);
 
 		IF arbre^.points > bestScore THEN
@@ -289,6 +335,7 @@ VAR
 		BEGIN
 			createFullTree(g, arbre^.sousBranche[i], main);
 		END;
+		writeln(iter);
 
 		log('FIN createFullTree');
 

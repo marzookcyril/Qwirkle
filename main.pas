@@ -6,13 +6,14 @@ VAR
 	nbrJoueurHumain, nbrJoueurMachine, nbrCouleurs, nbrFormes, nbrTuiles : INTEGER;
 	allJoueur : tabJoueur;
 	pos : position;
-	g : grille;
+	g, tmpGrille : grille;
 	p : pion;
 	stop, aFiniDeJouer, isFirst : BOOLEAN;
 	t : tabPos;
 	responce : CHAR;
 	tabPions : tabPion;
 	coupsIA  : typeCoup;
+	pionAEchanger : tabPion;
 BEGIN
 	// initialisation des variables, on est jamais trop prudent avec
 	// pascal <3
@@ -53,8 +54,10 @@ BEGIN
 
 	IF nbrJoueurHumain + nbrJoueurMachine = 0 THEN
 	BEGIN
-		nbrJoueurHumain  := 2;
-		nbrJoueurMachine := 0;
+		writeln('humain ?');
+		readln(nbrJoueurHumain);
+		writeln('machine ?');
+		readln(nbrJoueurMachine);
 	END;
 
 	initConsole;
@@ -63,7 +66,7 @@ BEGIN
 	initPioche(nbrCouleurs, nbrFormes, nbrTuiles);
 	initJoueur(nbrJoueurHumain, nbrJoueurMachine);
 	g := remplirGrille;
-	shufflePioche;
+	//shufflePioche;
 	renderMenuBorder;
 	renderTitle('Qwirkle par Cyril et Paul :');
 	render;
@@ -117,10 +120,15 @@ BEGIN
 			t := initTabPos;
 			tabPions := initTabPion;
 			renderMain(3, HEIGHT - 3, joueurJouant, allJoueur[joueurJouant].main);
-
 			render;
 			IF renderPopUpWithResponce('Voulez vous changer votre pioche ? (o/n)') = 'o' THEN
-				echangerPioche(allJoueur[joueurJouant].main)
+			BEGIN
+				pionAEchanger := remplacerMain(allJoueur[joueurJouant].main, joueurJouant);
+				FOR i := 0 TO length(pionAEchanger) - 1 DO
+				BEGIN
+					echangerPion(allJoueur[joueurJouant].main, pionAEchanger[i]);
+				END;
+			END
 			ELSE
 			BEGIN
 				REPEAT
@@ -186,6 +194,7 @@ BEGIN
 		BEGIN
 			t := initTabPos;
 			tabPions := initTabPion;
+			nombreDeCoups := 1;
 
 			renderMain(3, HEIGHT - 3, joueurJouant, allJoueur[joueurJouant].main);
 			render;
@@ -193,6 +202,7 @@ BEGIN
 			// on recupere tous les coups de l'IA
 			coupsIA := coupAIPaul(g, allJoueur[joueurJouant].main);
 			log(inttostr(length(coupsIA.p)));
+			tmpGrille := g;
 
 			FOR i := 0 TO length(coupsIA.p) - 1 DO
 			BEGIN
@@ -206,12 +216,14 @@ BEGIN
 					removePionFromMain(allJoueur[joueurJouant].main, p);
 					renderGame(g);
 					render;
+					inc(nombreDeCoups);
 				END
 				ELSE
 				BEGIN
 					writeln('IAPAUL : PION NON JOUABLE => ERREUR FATALE');
 				END;
 			END;
+
 			allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, t, nombreDeCoups);
 			renderScore(joueurJouant, allJoueur[joueurJouant].score);
 			renderGame(g);

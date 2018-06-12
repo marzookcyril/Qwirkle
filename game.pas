@@ -9,7 +9,7 @@ PROCEDURE shufflePioche;
 FUNCTION creerMain: mainJoueur;
 FUNCTION hasWon(joueur : typeJoueur) : BOOLEAN;
 PROCEDURE removePionFromMain(VAR main : mainJoueur; p : pion);
-PROCEDURE echangerPioche(VAR main : mainJoueur);
+PROCEDURE echangerPion(VAR main : mainJoueur; p : pion);
 PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 FUNCTION piocher : pion;
 FUNCTION getPiocheSize : INTEGER;
@@ -34,19 +34,22 @@ VAR
 		getPiocheSize := gNbrFormes * gNbrTuiles * gNbrCouleurs - globalIndexPioche;
 	END;
 
-	PROCEDURE echangerPioche(VAR main : mainJoueur);
+	PROCEDURE echangerPion(VAR main : mainJoueur; p : pion);
 	VAR
 		i, rand : INTEGER;
 		tmp : pion;
 	BEGIN
-		IF globalIndexPioche + 6 < gNbrCouleurs * gNbrFormes * gNbrTuiles THEN
+		IF globalIndexPioche + 1 < gNbrCouleurs * gNbrFormes * gNbrTuiles THEN
 		BEGIN
 			FOR i := 0 TO length(main) - 1 DO
 			BEGIN
-				rand := random(globalIndexPioche);
-				tmp := main[i];
-				main[i] := globalPioche[rand];
-				globalPioche[rand] := tmp;
+				IF (main[i].couleur = p.couleur) AND (main[i].forme = p.forme)THEN
+				BEGIN
+					rand := random(globalIndexPioche);
+					tmp := main[i];
+					main[i] := globalPioche[rand];
+					globalPioche[rand] := tmp;
+				END;
 			END;
 		END;
 	END;

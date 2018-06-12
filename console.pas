@@ -34,6 +34,7 @@ PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
 FUNCTION renderPopUpWithResponce(text : STRING) : CHAR;
 FUNCTION selectorMain(main : mainJoueur; joueur : INTEGER) : pion;
 FUNCTION selectorPos(g: grille; x, y : INTEGER) : position;
+FUNCTION remplacerMain(main : mainJoueur; joueur : INTEGER) : tabPion;
 
 IMPLEMENTATION
 	VAR
@@ -209,10 +210,10 @@ IMPLEMENTATION
 		x1, x2, y1, y2, i : INTEGER;
 	BEGIN
 		lastglobalScreen := globalScreen;
-		x1 := WIDTH DIV 2 - length(text) DIV 2 - 2;
-		x2 := WIDTH DIV 2 + length(text) DIV 2 + 3;
-		y1 := HEIGHT DIV 2 - 1;
-		y2 := HEIGHT DIV 2 + 1;
+		x1 := 0;
+		x2 := length(text) + 3;
+		y1 := 0;
+		y2 := 2;
 
 
 		FOR i := x1 TO x2 - 1 DO
@@ -245,10 +246,10 @@ IMPLEMENTATION
 		x1, x2, y1, y2, i : INTEGER;
 	BEGIN
 		lastglobalScreen := globalScreen;
-		x1 := WIDTH DIV 2 - length(text) DIV 2 - 2;
-		x2 := WIDTH DIV 2 + length(text) DIV 2 + 3;
-		y1 := HEIGHT DIV 2 - 1;
-		y2 := HEIGHT DIV 2 + 1;
+		x1 := 0;
+		x2 := length(text) + 3;
+		y1 := 0;
+		y2 := 2;
 
 
 		FOR i := x1 TO x2 - 1 DO
@@ -404,6 +405,90 @@ IMPLEMENTATION
 		clrscr;
 		renderPionInGrille(i, j, last[i - 2,j - 2]);
 		render;
+	END;
+
+	FUNCTION remplacerMain(main : mainJoueur; joueur : INTEGER) : tabPion;
+	VAR
+		i, j, pionNonNull : integer;
+		finalPion : tabPion;
+		change : ARRAY [0..5] OF BOOLEAN;
+		ch : char;
+		stop : BOOLEAN;
+	BEGIN
+		FOR i := 0 TO 5 DO change[i] := False;
+		renderMain(3, HEIGHT - 3, joueur, main);
+		
+		renderPopUp('utilisez les fleches et "F" pour finir');
+		
+		FOR i := 0 TO length(main) - 1 DO
+		BEGIN
+			IF main[i].couleur <> 0 THEN inc(pionNonNull);
+		END;
+		
+		i := 0;
+		plot('/', 3 + i * 2, HEIGHT - 2, 7, 0);
+		plot('\',  3 + i * 2 + 1,HEIGHT - 2, 7, 0);
+		render;
+		REPEAT
+			REPEAT
+				ch := readKey();
+				plot(' ', 3 + i * 2, HEIGHT - 2, 7, 0);
+				plot(' ',  3 + i * 2 + 1,HEIGHT - 2, 7, 0);
+				FOR j := 0 TO 5 DO
+				BEGIN
+					IF change[j] THEN
+					BEGIN
+						plot('@', 3 + j * 2, HEIGHT - 2, 7, 0);
+						plot('@',  3 + j * 2 + 1,HEIGHT - 2, 7, 0);
+					END
+					ELSE
+					BEGIN
+						plot(' ', 3 + j * 2, HEIGHT - 2, 7, 0);
+						plot(' ',  3 + j * 2 + 1,HEIGHT - 2, 7, 0);
+					END;
+				END;
+			
+				CASE ch OF
+					#77 : IF i < pionNonNull - 1 THEN inc(i);
+					#75 : IF i > 0 THEN dec(i);
+					'f' : stop := True;
+				END;
+				plot('/', 3 + i * 2, HEIGHT - 2, 7, 0);
+				plot('\',  3 + i * 2 + 1,HEIGHT - 2, 7, 0);
+				render;
+			UNTIL (ch = #13) or stop;
+
+			change[i] := not Change[i];
+
+			clrscr;
+			FOR j := 0 TO 5 DO
+				BEGIN
+					IF change[j] THEN
+					BEGIN
+						plot('@', 3 + j * 2, HEIGHT - 2, 7, 0);
+						plot('@',  3 + j * 2 + 1,HEIGHT - 2, 7, 0);
+					END
+					ELSE
+					BEGIN
+						plot(' ', 3 + j * 2, HEIGHT - 2, 7, 0);
+						plot(' ',  3 + j * 2 + 1,HEIGHT - 2, 7, 0);
+					END;
+				END;
+			clrscr;
+			render;
+		UNTIL stop;
+
+		FOR j := 0 TO 5 DO
+		BEGIN
+			IF change[j] THEN
+			BEGIN
+				setLength(finalPion, length(finalPion) + 1);
+				finalPion[length(finalPion) - 1] := main[j];
+			END;
+		END;		
+		
+		remplacerMain := finalPion;
+		
 	END;
 
 	FUNCTION selectorMain(main : mainJoueur; joueur : INTEGER) : pion;
