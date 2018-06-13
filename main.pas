@@ -66,7 +66,7 @@ BEGIN
 	initPioche(nbrCouleurs, nbrFormes, nbrTuiles);
 	initJoueur(nbrJoueurHumain, nbrJoueurMachine);
 	g := remplirGrille;
-	//shufflePioche;
+	shufflePioche;
 	renderMenuBorder;
 	renderTitle('Qwirkle par Cyril et Paul :');
 	render;
@@ -112,10 +112,11 @@ BEGIN
 		inc(joueurJouant);
 		joueurJouant := joueurJouant MOD (nbrJoueurHumain + nbrJoueurMachine);
 		renderTitle('Tour du joueur ' + inttostr(joueurJouant) + '...');
-		renderPopUp('C''est au joueur : ' + inttostr(joueurJouant) + ' de jouer...');
+		
 		// on fait jouer le joueur humain / machine
 		IF allJoueur[joueurJouant].genre THEN
 		BEGIN
+			renderPopUp('C''est au joueur : ' + inttostr(joueurJouant) + ' de jouer...');
 			nombreDeCoups := 1;
 			t := initTabPos;
 			tabPions := initTabPion;
@@ -201,7 +202,6 @@ BEGIN
 
 			// on recupere tous les coups de l'IA
 			coupsIA := coupAIPaul(g, allJoueur[joueurJouant].main);
-			log(inttostr(length(coupsIA.p)));
 			tmpGrille := g;
 
 			FOR i := 0 TO length(coupsIA.p) - 1 DO
@@ -238,5 +238,5 @@ BEGIN
 			END;
 
 		END;
-	UNTIL hasWon(allJoueur[joueurJouant]) or stop;
+	UNTIL hasWon(g, allJoueur[joueurJouant]) or stop;
 END.

@@ -7,7 +7,6 @@ FUNCTION remplirGrille(): grille;
 PROCEDURE initPioche(nbrCouleurs, nbrFormes, nbrTuiles : INTEGER);
 PROCEDURE shufflePioche;
 FUNCTION creerMain: mainJoueur;
-FUNCTION hasWon(joueur : typeJoueur) : BOOLEAN;
 PROCEDURE removePionFromMain(VAR main : mainJoueur; p : pion);
 PROCEDURE echangerPion(VAR main : mainJoueur; p : pion);
 PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
@@ -155,17 +154,6 @@ VAR
 		globalHumain  := nbrJoueurHumain;
 		globalMachine := nbrJoueurMachine;
 		renderJoueurText(nbrJoueurHumain, nbrJoueurMachine);
-	END;
-
-	FUNCTION hasWon(joueur : typeJoueur) : BOOLEAN;
-	BEGIN
-		IF ((length(joueur.main) = 0) AND (globalIndexPioche >= gNbrCouleurs * gNbrFormes * gNbrTuiles)) THEN
-		BEGIN
-			joueur.score := joueur.score + 6;
-			hasWon := TRUE;
-		END
-		ELSE
-			hasWon := FALSE;
 	END;
 
 	FUNCTION piocher : pion;

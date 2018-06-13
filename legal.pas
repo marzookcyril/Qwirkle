@@ -12,12 +12,12 @@ FUNCTION concordance(g : grille; x, y : INTEGER) : BOOLEAN;
 FUNCTION concordanceGenerale(g: grille ; x,y : INTEGER; p : pion): BOOLEAN;
 FUNCTION duplicationPion(g : grille; x,y  : INTEGER; p : pion) : BOOLEAN;
 FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
-FUNCTION plusieursCoups(g: grille; x1,y1,x2,y2: INTEGER; p1,p2 : pion) : BOOLEAN;
+FUNCTION plusieursCoups(g: grille; x1,y1,x2,y2,x3,y3 : INTEGER; p1,p2 : pion) : BOOLEAN;
 FUNCTION nCoups(g: grille; t : tabPos; p : tabPion; num : INTEGER) : BOOLEAN;
 FUNCTION initTabPos(): tabPos;
 FUNCTION initTabPion(): tabPion;
 FUNCTION point(g : grille; t : tabPos ; num : INTEGER): INTEGER;
-FUNCTION continu(g: grille ;x1,y1,x2,y2 : INTEGER): BOOLEAN;
+FUNCTION continu(g: grille ;x1,y1,x2,y2,x3,y3 : INTEGER): BOOLEAN;
 PROCEDURE choperPos(VAR t : tabPos ; x,y, num : INTEGER);
 PROCEDURE choperPion(VAR t : tabPion ;num : INTEGER; p : pion);
 
@@ -228,31 +228,37 @@ IMPLEMENTATION
 			placer := FALSE;
 	END;
 
-	FUNCTION continu(g: grille ;x1,y1,x2,y2 : INTEGER): BOOLEAN;
+	FUNCTION continu(g: grille ;x1,y1,x2,y2,x3,y3 : INTEGER): BOOLEAN;
 	VAR
 		cont: BOOLEAN;
 	BEGIN
 		cont := FALSE;
 		IF x1 = x2 THEN
 		BEGIN
-			IF ((x2 > x1 - 6) AND (x2 < x1 + 6)) THEN
-				cont := TRUE;
+			IF ((y2 > y1 - 6) AND (y2 < y1 + 6)) THEN
+			BEGIN
+				IF (y2 = y3 + 1) OR (y2 = y3 - 1) THEN
+					cont := TRUE
+			END;
 		END;
 		IF y1 = y2 THEN
 		BEGIN
-			IF ((y2 > y1 - 6) AND (y2 < y1 + 6)) THEN
-				cont := TRUE;
+			IF ((x2 > x1 - 6) AND (x2 < x1 + 6)) THEN
+			BEGIN
+				IF (x2 = x3 + 1) OR (x2 = x3 - 1) THEN
+					cont := TRUE
+			END;
 		END;
 		continu := cont;
 	END;
 
 
-	FUNCTION plusieursCoups(g: grille; x1,y1,x2,y2 : INTEGER; p1,p2 : pion) : BOOLEAN;
+	FUNCTION plusieursCoups(g: grille; x1,y1,x2,y2,x3,y3 : INTEGER; p1,p2 : pion) : BOOLEAN;
 	VAR
 		bool : BOOLEAN;
 	BEGIN
 		bool := FALSE;
-		IF (((x1 = x2) XOR (y1 = y2)) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2)) THEN
+		IF (((x1 = x2) XOR (y1 = y2)) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2,x3,y3)) THEN
 		BEGIN
 			bool:= TRUE;
 		END;
@@ -274,7 +280,7 @@ IMPLEMENTATION
 			END;
 			2 :
 			BEGIN
-				IF plusieursCoups(g, t[0].x, t[0].y, t[1].x,t[1].y, p[0], p[1]) THEN
+				IF plusieursCoups(g, t[0].x, t[0].y, t[1].x, t[1].y, t[0].x, t[0].y, p[0], p[1]) THEN
 				BEGIN
 					nCoups := TRUE;
 				END
@@ -285,7 +291,7 @@ IMPLEMENTATION
 			BEGIN
 				IF (num > 2) THEN
 				BEGIN
-					IF plusieursCoups(g, t[0].x,t[0].y,t[num - 1].x,t[num - 1].y, p[0],p[num - 1]) AND plusieursCoups(g, t[1].x,t[1].y,t[num - 1].x,t[num - 1].y, p[1],p[num - 1]) THEN
+					IF plusieursCoups(g, t[0].x,t[0].y,t[num - 1].x,t[num - 1].y,t[num - 2].x,t[num - 2].y,  p[0],p[num - 1]) AND plusieursCoups(g, t[1].x,t[1].y,t[num - 1].x,t[num - 1].y,t[num - 2].x,t[num - 2].y, p[1],p[num - 1]) THEN
 					BEGIN
 						nCoups := TRUE;
 					END
