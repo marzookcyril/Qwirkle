@@ -24,7 +24,7 @@ PROCEDURE renderMenuBorder(g : grille);
 PROCEDURE renderScore(joueur, score : INTEGER);
 PROCEDURE renderHistorique;
 PROCEDURE renderGame(g : grille);
-PROCEDURE renderMain(x,y, joueur : INTEGER ; main : mainJoueur);
+PROCEDURE renderMain(x,y, joueur : INTEGER ; main : tabPion);
 PROCEDURE renderPopUp(text : STRING);
 PROCEDURE renderTitle(title : STRING);
 PROCEDURE renderText(text : STRING; x, y, tCol, bgCol : INTEGER);
@@ -32,9 +32,9 @@ PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
 PROCEDURE renderJoueurText(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 PROCEDURE addToHistorique(p : pion; x, y : INTEGER; joueur : STRING);
 FUNCTION renderPopUpWithResponce(text : STRING) : CHAR;
-FUNCTION selectorMain(main : mainJoueur; joueur : INTEGER) : pion;
+FUNCTION selectorMain(main : tabPion; joueur : INTEGER) : pion;
 FUNCTION selectorPos(g: grille; x, y : INTEGER) : position;
-FUNCTION remplacerMain(main : mainJoueur; joueur : INTEGER) : tabPion;
+FUNCTION remplacerMain(main : tabPion; joueur : INTEGER) : tabPion;
 FUNCTION getHeight : INTEGER;
 PROCEDURE calculBordure(g : grille);
 
@@ -132,6 +132,7 @@ IMPLEMENTATION
 	BEGIN
 		getPion := g[(TAILLE_GRILLE DIV 2) - xSeparation + x, (TAILLE_GRILLE DIV 2) - xSeparation + y];
 	END;
+
 
 	PROCEDURE initConsole;
 	VAR
@@ -401,7 +402,7 @@ IMPLEMENTATION
 		
 	END;
 
-	PROCEDURE renderMain(x,y, joueur : INTEGER ; main : mainJoueur);
+	PROCEDURE renderMain(x,y, joueur : INTEGER ; main : tabPion);
 	VAR
 		i : INTEGER;
 	BEGIN
@@ -485,7 +486,7 @@ IMPLEMENTATION
 		render;
 	END;
 
-	FUNCTION remplacerMain(main : mainJoueur; joueur : INTEGER) : tabPion;
+	FUNCTION remplacerMain(main : tabPion; joueur : INTEGER) : tabPion;
 	VAR
 		i, j, pionNonNull : integer;
 		finalPion : tabPion;
@@ -569,7 +570,7 @@ IMPLEMENTATION
 		
 	END;
 
-	FUNCTION selectorMain(main : mainJoueur; joueur : INTEGER) : pion;
+	FUNCTION selectorMain(main : tabPion; joueur : INTEGER) : pion;
 	VAR
 		hasPlaced, swapPion, stop : BOOLEAN;
 		ch        : char;
@@ -637,8 +638,10 @@ IMPLEMENTATION
 	VAR
 		i,j : INTEGER;
 	BEGIN
-		writeln(xSeparation);
-		readln;
+		clearScreen(0);
+		calculBordure(g);
+		renderMenuBorder(g);
+		
 		FOR i := 0 TO 2 * xSeparation - 1 DO
 		BEGIN
 			FOR j := 0 TO 2 * xSeparation - 1 DO

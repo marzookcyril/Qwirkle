@@ -1,16 +1,39 @@
 PROGRAM main;
 USES crt, sysutils, game, console, structures, legal, constants, pAI;
 
+VAR	
+	tmpAllJoueur : tabJoueur;
+
+FUNCTION mainVide(joueur : typeJoueur) : BOOLEAN;
+VAR
+	i : INTEGER;
+	stop : BOOLEAN;
+BEGIN
+	stop := False;
+	IF length(joueur.main) - 1 <= 0 THEN
+		mainVide := True
+	ELSE
+	BEGIN
+		FOR i := 0 TO length(joueur.main) - 1 DO
+		BEGIN
+			IF joueur.main[i].couleur = 0 THEN
+				stop := True;
+		END;
+	END;
+	mainVide := stop;
+END;
+
 FUNCTION hasWon(g : grille; VAR joueur : typeJoueur) : BOOLEAN;
 BEGIN
-	writeln(coupAIPaul(g, joueur.main).pos[0].x);
-	IF (getPiocheSize = 0) AND ((length(joueur.main) = 0) OR (coupAIPaul(g, joueur.main).pos[0].x = -1)) THEN
+	IF (getPiocheSize = 0) AND mainVide(joueur) THEN
 	BEGIN
 		hasWon := True;
 		joueur.score := joueur.score + 6;
 	END
 	ELSE
+	BEGIN
 		hasWon := False;
+	END;
 END;
 
 VAR
@@ -87,6 +110,7 @@ BEGIN
 
 	// on creer les mains
 	setLength(allJoueur, nbrJoueurHumain + nbrJoueurMachine + 1);
+	setLength(tmpAllJoueur, nbrJoueurHumain + nbrJoueurMachine + 1);
 	tmpHumain := nbrJoueurHumain;
 	tmpMachine := nbrJoueurMachine;
 	FOR i := 0 TO nbrJoueurHumain + nbrJoueurMachine - 1 DO
@@ -197,8 +221,11 @@ BEGIN
 				lastSize := length(allJoueur[joueurJouant].main);
 				FOR i := 0 TO 6 - lastSize - 1 DO
 				BEGIN
-					setLength(allJoueur[joueurJouant].main, length(allJoueur[joueurJouant].main) + 1);
-					allJoueur[joueurJouant].main[lastSize + i] := piocher;
+					IF getPiocheSize + 1 < maxPiocheSize THEN
+					BEGIN
+						setLength(allJoueur[joueurJouant].main, length(allJoueur[joueurJouant].main) + 1);
+						allJoueur[joueurJouant].main[lastSize + i] := piocher;
+					END;
 				END;
 			END;
 		END
@@ -214,9 +241,28 @@ BEGIN
 			// on recupere tous les coups de l'IA
 			coupsIA := coupAIPaul(g, allJoueur[joueurJouant].main);
 			tmpGrille := g;
+		
+			{IF (length(coupsIA.p) = 1) AND (coupsIA.pos[0].x <> -1) THEN
+			BEGIN
+				tmpGrille := g;
+				ajouterPion(tmpGrille, PION_ROUGE, coupsIA.pos[0].x, coupsIA.pos[0].y, 'T');
+				renderGame(tmpGrille);
+				render;
+				log('erreur' + inttostr(coupsIA.p[0].forme) + inttostr(coupsIA.p[0].couleur));
+				ajouterPion(tmpGrille, coupsIA.p[0], coupsIA.pos[0].x, coupsIA.pos[0].y, 'T');
+				renderGame(tmpGrille);
+				render;
+				log('erreur');
+				p := coupsIA.p[0];
+				pos := coupsIA.pos[0];
+				choperPos(t, pos.x, pos.y, nombreDeCoups);
+				choperPion(tabPions, nombreDeCoups, p);
+				writeln(nCoups(g, t, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0));
+				log('fin' + inttostr(getPiocheSize) + ',' + inttostr(length(allJoueur[joueurJouant].main)));
+			END;}
 			
 			IF coupsIA.pos[0].x <> -1 THEN
-			BEGIN 
+			BEGIN
 				FOR i := 0 TO length(coupsIA.p) - 1 DO
 				BEGIN
 					p := coupsIA.p[i];
@@ -233,13 +279,17 @@ BEGIN
 					END
 					ELSE
 					BEGIN
-						writeln('IAPAUL : PION NON JOUABLE => ERREUR FATALE');
+						log('IAPAUL : PION NON JOUABLE => ERREUR FATALE');
 					END;
 				END;
 			END
 			ELSE
 			BEGIN
-				writeln('peut rien jouer');
+				FOR i := 0 TO length(allJoueur[joueurJouant].main) - 1 DO
+				BEGIN
+					IF getPiocheSize - 1 >= 0 THEN
+						echangerPion(allJoueur[joueurJouant].main, allJoueur[joueurJouant].main[i]);
+				END;
 			END;
 
 			allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, t, nombreDeCoups);
@@ -251,10 +301,14 @@ BEGIN
 			lastSize := length(allJoueur[joueurJouant].main);
 			FOR i := 0 TO 6 - lastSize - 1 DO
 			BEGIN
-				setLength(allJoueur[joueurJouant].main, length(allJoueur[joueurJouant].main) + 1);
-				allJoueur[joueurJouant].main[lastSize + i] := piocher;
+				IF getPiocheSize - 1 >= 0 THEN
+				BEGIN
+					setLength(allJoueur[joueurJouant].main, length(allJoueur[joueurJouant].main) + 1);
+					allJoueur[joueurJouant].main[lastSize + i] := piocher;
+				END;
 			END;
-
+			
 		END;
 	UNTIL hasWon(g, allJoueur[joueurJouant]) or stop;
+	readln;
 END.

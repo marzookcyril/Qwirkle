@@ -17,7 +17,6 @@ INTERFACE
 		END;
 
 		grille     = ARRAY [0..50 - 1, 0..50 - 1] OF pion;
-		mainJoueur = ARRAY OF pion;
 		typePioche = ARRAY OF pion;
 
 		position = RECORD
@@ -37,7 +36,7 @@ INTERFACE
 		tabCoups = ARRAY OF typeCoup;
 
 		typeJoueur = RECORD
-			main : mainJoueur;
+			main : tabPion;
 			genre : BOOLEAN;
 			score : INTEGER;
 		END;

@@ -14,7 +14,9 @@ TYPE
 		down        : INTEGER;
 	END;
 
-FUNCTION coupAIPaul(g : grille; main : mainJoueur) : typeCoup;
+FUNCTION coupAIPaul(g : grille; main : tabPion) : typeCoup;
+FUNCTION initArbre(g : grille; main : tabPion; tabMove : tabPossibleMovePosition) : ptrBranche;
+FUNCTION findAllPosibleMove(g : grille; main : tabPion) : tabPossibleMovePosition;
 
 IMPLEMENTATION
 VAR
@@ -74,7 +76,7 @@ VAR
 	END;
 
 	// la branche racine sert à garder les autres branches. Elle n'est jamais utilisée autrement
-	FUNCTION initArbre(g : grille; main : mainJoueur; tabMove : tabPossibleMovePosition) : ptrBranche;
+	FUNCTION initArbre(g : grille; main : tabPion; tabMove : tabPossibleMovePosition) : ptrBranche;
 	VAR
 		i, j : INTEGER;
 		racine, tmpBranche : ptrbranche;
@@ -84,7 +86,7 @@ VAR
 		BEGIN
 			FOR j := 0 TO length(main) - 1 DO
 			BEGIN
-				IF placer(g, tabMove[i].x, tabMove[i].y, main[j]) OR ((length(tabMove) = 1) AND (tabMove[0].x = 12)) THEN
+				IF placer(g, tabMove[i].x, tabMove[i].y, main[j]) OR ((length(tabMove) = 1) AND (tabMove[0].x = TAILLE_GRILLE DIV 2)) THEN
 				BEGIN
 					tmpBranche := createBranche(NIL, main[j], tabMove[i].x, tabMove[i].y);
 					addBranche(racine, tmpBranche);
@@ -97,7 +99,7 @@ VAR
 
 	// recupere toutes les positions jouables sur la grille et leur affecte un attribut
 	// etat qui dicte ce que l'on peut jouer à l'endroit étudié
-	FUNCTION findAllPosibleMove(g : grille; main : mainJoueur) : tabPossibleMovePosition;
+	FUNCTION findAllPosibleMove(g : grille; main : tabPion) : tabPossibleMovePosition;
 	VAR
 		x, y : INTEGER;
 		possibleMove : tabPossibleMovePosition;
@@ -168,10 +170,10 @@ VAR
 		findFourPos := final;
 	END;
 
-	PROCEDURE createFullTree(g : grille; arbre : ptrBranche; main : mainJoueur);
+	PROCEDURE createFullTree(g : grille; arbre : ptrBranche; main : tabPion);
 	VAR
 		i, j, x, y : INTEGER;
-		tmpMain : mainJoueur;
+		tmpMain : tabPion;
 		tmpGrille, tmp2Grille : grille;
 		tabCoupPos : tabPos;
 		tabCoupPion : tabPion;
@@ -230,7 +232,7 @@ VAR
 	END;
 
 	// pour faire jouer l'ia faites appelle à cette fonction. Cette unique fonction
-	FUNCTION coupAIPaul(g : grille; main : mainJoueur) : typeCoup;
+	FUNCTION coupAIPaul(g : grille; main : tabPion) : typeCoup;
 	VAR
 		tabMove : tabPossibleMovePosition;
 		i, counter : INTEGER;
@@ -239,13 +241,11 @@ VAR
 		arbre, tmp : ptrBranche;
 		tmpFinal : typeCoup;
 	BEGIN
-		bestScore := 0;
-		counter := 0;
+		bestScore := -10;
 		bestBranche := NIL;
 		
 		tabMove := findAllPosibleMove(g, main);
 		arbre := initArbre(g, main, tabMove);
-		
 		
 		FOR i := 0 TO length(arbre^.sousBranche) - 1 DO
 		BEGIN

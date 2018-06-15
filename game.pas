@@ -6,12 +6,13 @@ PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur
 FUNCTION remplirGrille(): grille;
 PROCEDURE initPioche(nbrCouleurs, nbrFormes, nbrTuiles : INTEGER);
 PROCEDURE shufflePioche;
-FUNCTION creerMain: mainJoueur;
-PROCEDURE removePionFromMain(VAR main : mainJoueur; p : pion);
-PROCEDURE echangerPion(VAR main : mainJoueur; p : pion);
+FUNCTION creerMain: tabPion;
+PROCEDURE removePionFromMain(VAR main : tabPion; p : pion);
+PROCEDURE echangerPion(VAR main : tabPion; p : pion);
 PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 FUNCTION piocher : pion;
 FUNCTION getPiocheSize : INTEGER;
+FUNCTION maxPiocheSize : INTEGER;
 PROCEDURE log(text : STRING);
 
 
@@ -33,8 +34,13 @@ VAR
 	BEGIN
 		getPiocheSize := gNbrFormes * gNbrTuiles * gNbrCouleurs - globalIndexPioche;
 	END;
+	
+	FUNCTION maxPiocheSize : INTEGER;
+	BEGIN
+		maxPiocheSize := gNbrFormes * gNbrTuiles * gNbrCouleurs;
+	END;
 
-	PROCEDURE echangerPion(VAR main : mainJoueur; p : pion);
+	PROCEDURE echangerPion(VAR main : tabPion; p : pion);
 	VAR
 		i, rand : INTEGER;
 		tmp : pion;
@@ -89,7 +95,7 @@ VAR
 		globalPioche[b] := tmp;
 	END;
 
-	PROCEDURE swapLastMain(VAR main : mainJoueur; a: INTEGER);
+	PROCEDURE swapLastMain(VAR main : tabPion; a: INTEGER);
 	VAR
 		tmp : pion;
 	BEGIN
@@ -131,14 +137,14 @@ VAR
 		remplirGrille := g;
 	END;
 
-	FUNCTION removeFromArray(main : mainJoueur; i : INTEGER) : mainJoueur;
+	FUNCTION removeFromArray(main : tabPion; i : INTEGER) : tabPion;
 	BEGIN
 		swapLastMain(main, i);
 		setLength(main, length(main) - 1);
 		removeFromArray := main;
 	END;
 
-	PROCEDURE removePionFromMain(VAR main : mainJoueur; p : pion);
+	PROCEDURE removePionFromMain(VAR main : tabPion; p : pion);
 	VAR
 		i, indexToRemove : INTEGER;
 	BEGIN
@@ -168,9 +174,9 @@ VAR
 			piocher := PION_NULL;
 	END;
 
-	FUNCTION creerMain: mainJoueur;
+	FUNCTION creerMain: tabPion;
 	VAR
-		main : mainJoueur;
+		main : tabPion;
 		i : INTEGER;
 	BEGIN
 		WriteLn('output');
