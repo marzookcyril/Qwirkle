@@ -20,7 +20,7 @@ TYPE
 
 PROCEDURE render;
 PROCEDURE initConsole;
-PROCEDURE renderMenuBorder;
+PROCEDURE renderMenuBorder(g : grille);
 PROCEDURE renderScore(joueur, score : INTEGER);
 PROCEDURE renderHistorique;
 PROCEDURE renderGame(g : grille);
@@ -35,15 +35,22 @@ FUNCTION renderPopUpWithResponce(text : STRING) : CHAR;
 FUNCTION selectorMain(main : mainJoueur; joueur : INTEGER) : pion;
 FUNCTION selectorPos(g: grille; x, y : INTEGER) : position;
 FUNCTION remplacerMain(main : mainJoueur; joueur : INTEGER) : tabPion;
+FUNCTION getHeight : INTEGER;
+PROCEDURE calculBordure(g : grille);
 
 IMPLEMENTATION
 	VAR
 		// Surface principale
-		globalScreen : ARRAY [0..WIDTH - 1, 0..HEIGHT - 1] OF printable;
-		lastglobalScreen : ARRAY [0..WIDTH - 1, 0..HEIGHT - 1] OF printable;
+		WIDTH, HEIGHT, tailleMenu : INTEGER;
+		globalScreen : ARRAY OF ARRAY OF printable;
+		lastglobalScreen : ARRAY OF ARRAY OF printable;
 		historique   : ARRAY [0..18] OF dataHistorique;
 		historiqueIndex : INTEGER;
 		isInPopUp : BOOLEAN;
+		
+		
+		// separation en grille et autre
+		xSeparation, ySeparation : INTEGER;
 
 	// efface lécran en appliquant la couleur bgColor à tout lécran.
 	PROCEDURE clearScreen (bgColor :  BYTE);
@@ -60,11 +67,79 @@ IMPLEMENTATION
 			END;
 		END;
 	END;
+	
+	FUNCTION abs(n : INTEGER) : INTEGER;
+	BEGIN
+		IF n < 0 THEN
+			abs := -n
+		ELSE
+			abs := n;
+	END;
+	
+	FUNCTION min(a, b :INTEGER) : INTEGER;
+	BEGIN
+		IF a > b THEN
+			min := b
+		ELSE
+			min := a;
+	END;
+	
+	FUNCTION max(a, b :INTEGER) : INTEGER;
+	BEGIN
+		IF a < b THEN
+			max := b
+		ELSE
+			max := a;
+	END;
+	
+	PROCEDURE calculBordure(g : grille);
+	VAR
+		i, j : INTEGER;
+	BEGIN
+		xSeparation := 10;
+		ySeparation := 10;
+		FOR i := 0 TO TAILLE_GRILLE - 1 DO
+		BEGIN
+			FOR j := 0 TO TAILLE_GRILLE - 1 DO
+			BEGIN
+				IF (g[i, j].couleur <> 0) AND (abs((TAILLE_GRILLE DIV 2) - i) > xSeparation) THEN
+				BEGIN
+					xSeparation := abs((TAILLE_GRILLE DIV 2) - i);
+				END;
+				IF (g[i, j].couleur <> 0) AND (abs((TAILLE_GRILLE DIV 2) - j) > ySeparation) THEN
+				BEGIN
+					ySeparation := abs((TAILLE_GRILLE DIV 2) - j);
+				END;
+			END;
+		END;
+		xSeparation := max(xSeparation, ySeparation);
+		HEIGHT := 2 * xSeparation + 9;
+		WIDTH := 2 * xSeparation + 2 * 30;
+	END;
+	
+	FUNCTION getHeight : INTEGER;
+	BEGIN
+		getHeight := HEIGHT;
+	END;
+	
+	FUNCTION getWidth : INTEGER;
+	BEGIN
+		getWidth := WIDTH;
+	END;
+	
+	// retourne le pion de la vraie grille dans le referentielle de la grille d'affichage
+	FUNCTION getPion(g : grille; x,y : INTEGER) : pion;
+	BEGIN
+		getPion := g[(TAILLE_GRILLE DIV 2) - xSeparation + x, (TAILLE_GRILLE DIV 2) - xSeparation + y];
+	END;
 
 	PROCEDURE initConsole;
 	VAR
 		i : INTEGER;
 	BEGIN
+		WIDTH := 90;
+		HEIGHT := 45;
+		setLength(globalScreen,WIDTH,HEIGHT);
 		isInPopUp := False;
 		historiqueIndex := 0;
 		FOR i := 0 TO length(historique) - 1 DO
@@ -277,16 +352,16 @@ IMPLEMENTATION
 		renderPopUpWithResponce := readKey;
 	END;
 
-	PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
-	BEGIN
-		plot(FOR_TAB[pion.forme,1], 2 * x - 1, y + 2, COL_WHITE, COL_TAB[pion.couleur]);
-		plot(FOR_TAB[pion.forme,2],     2 * x, y + 2, COL_WHITE, COL_TAB[pion.couleur]);
-	END;
-
 	PROCEDURE renderPion(x,y : INTEGER; pion : pion);
 	BEGIN
 		plot(FOR_TAB[pion.forme,1],     x, y, COL_WHITE, COL_TAB[pion.couleur]);
 		plot(FOR_TAB[pion.forme,2], x + 1, y, COL_WHITE, COL_TAB[pion.couleur]);
+	END;
+	
+	PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
+	BEGIN
+		plot(FOR_TAB[pion.forme,1], 2 * x - 1 + 4, y + 4, COL_WHITE, COL_TAB[pion.couleur]);
+		plot(FOR_TAB[pion.forme,2],     2 * x + 4, y + 4, COL_WHITE, COL_TAB[pion.couleur]);
 	END;
 
 	PROCEDURE renderTitle(title : STRING);
@@ -295,8 +370,10 @@ IMPLEMENTATION
 		renderText(title, 1, 1, COL_WHITE,COL_BLACK);
 	END;
 
-	PROCEDURE renderMenuBorder;
+	PROCEDURE renderMenuBorder(g : grille);
 	BEGIN
+		calculBordure(g);
+		// carre bordure
 		renderLine(        0,      0, WIDTH - 1,      0, 7, 0);
 		renderLine(        0,      0,         0, HEIGHT - 1, 7, 0);
 		renderLine(        0, HEIGHT - 1, WIDTH - 1, HEIGHT - 1, 7, 0);
@@ -305,22 +382,23 @@ IMPLEMENTATION
 		plot('+',0,HEIGHT - 1,7,0);
 		plot('+',WIDTH - 1,0,7,0);
 		plot('+',WIDTH - 1,HEIGHT - 1,7,0);
-		renderLine(53,1,53, HEIGHT - 2, 7, 0);
-		renderLine(0,2,53,2, 7, 0);
-		renderLine(53 , 11, WIDTH - 2, 11, COL_WHITE, COL_BLACK);
-		renderLine(0 , HEIGHT - 5, 53, HEIGHT - 5, COL_WHITE, COL_BLACK);
-		plot('+', 53, HEIGHT - 5, 7, 0);
+		
+		renderNumber(2,3, 2 * xSeparation + 1, 3);
+		renderNumber(1,4, 1, 2 * ySeparation + 3);
+		
+		// ligne separation grille et histo
+		renderLine(4 * xSeparation + 4, 0, 4 * xSeparation + 4, HEIGHT - 1, 7, 0); 
+		plot('+', 4 * xSeparation + 4, 0, 7, 0);
+		plot('+', 4 * xSeparation + 4, HEIGHT - 1, 7, 0);
+		renderLine(0, 2, 4 * xSeparation + 4, 2, 7, 0); 
+		plot('+', 0, 2, 7, 0);
+		plot('+', 4 * xSeparation + 4, 2, 7, 0);
+		
+		renderLine(0, HEIGHT - 5, 4 * xSeparation + 4, HEIGHT - 5, 7, 0); 
 		plot('+', 0, HEIGHT - 5, 7, 0);
-		plot('+', 53, 11, 7, 0);
-		plot('+', WIDTH - 1, 11, 7, 0);
-		plot('+',53,0,7,0);
-		plot('+',53,HEIGHT - 1,7,0);
-		plot('+',0,2,7,0);
-		plot('+',53,2,7,0);
-		renderNumber(2,3, 26, 3);
-		renderNumber(1,4, 1, 28);
-		renderText('*-* HISTORIQUE *-*', 63,  12, COL_WHITE, COL_BLACK);
-		renderText('*-* SCORE *-*', 65,  1, COL_WHITE, COL_BLACK);
+		plot('+', 4 * xSeparation + 4, HEIGHT - 5, 7, 0);
+		
+		
 	END;
 
 	PROCEDURE renderMain(x,y, joueur : INTEGER ; main : mainJoueur);
@@ -339,7 +417,7 @@ IMPLEMENTATION
 		x,y : INTEGER;
 	BEGIN
 		x := 58;
-		y := 10 + i;
+		y := 10;
 		IF node.id >= 0 THEN
 		BEGIN
 			renderText('MOV ' + inttostr(node.id), x, y, COL_WHITE, COL_BLACK );
@@ -554,15 +632,19 @@ IMPLEMENTATION
 		END;
 	END;
 
+	
 	PROCEDURE renderGame(g : grille);
 	VAR
 		i,j : INTEGER;
 	BEGIN
-		FOR i := 0 TO 24 DO
+		writeln(xSeparation);
+		readln;
+		FOR i := 0 TO 2 * xSeparation - 1 DO
 		BEGIN
-			FOR j := 0 TO 24 DO
+			FOR j := 0 TO 2 * xSeparation - 1 DO
 			BEGIN
-				renderPionInGrille(i + 2, j + 2, g[i,j]);
+				//g[(TAILLE_GRILLE DIV 2 + i),(TAILLE_GRILLE DIV 2) + j]
+				renderPionInGrille(i, j, getPion(g, i, j));
 			END;
 		END;
 	END;

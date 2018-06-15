@@ -14,6 +14,7 @@ FUNCTION piocher : pion;
 FUNCTION getPiocheSize : INTEGER;
 PROCEDURE log(text : STRING);
 
+
 IMPLEMENTATION
 VAR
 	globalPioche : typePioche;

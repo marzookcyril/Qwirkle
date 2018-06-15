@@ -16,7 +16,7 @@ INTERFACE
 			forme   : INTEGER;
 		END;
 
-		grille     = ARRAY [0..TAILLE_GRILLE - 1, 0..TAILLE_GRILLE - 1] OF pion;
+		grille     = ARRAY [0..50 - 1, 0..50 - 1] OF pion;
 		mainJoueur = ARRAY OF pion;
 		typePioche = ARRAY OF pion;
 
@@ -55,6 +55,7 @@ INTERFACE
 
 CONST
 	PION_NULL : pion = (couleur: COULEUR_NULL; forme: FORME_NULL);
+	PION_ROUGE : pion = (couleur: COULEUR_ROUGE; forme: FORME_NULL);
 
 IMPLEMENTATION
 END.

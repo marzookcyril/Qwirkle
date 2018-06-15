@@ -120,9 +120,9 @@ VAR
 		
 		IF length(possibleMove) < 1 THEN
 		BEGIN
-			setLength(possibleMove, length(possibleMove) + 1);
-			possibleMove[length(possibleMove) - 1].x := 12;
-			possibleMove[length(possibleMove) - 1].y := 12;
+			setLength(possibleMove, 1);
+			possibleMove[0].x := TAILLE_GRILLE DIV 2;
+			possibleMove[0].y := TAILLE_GRILLE DIV 2;
 		END;
 
 		findAllPosibleMove := possibleMove;
@@ -242,20 +242,33 @@ VAR
 		bestScore := 0;
 		counter := 0;
 		bestBranche := NIL;
+		
 		tabMove := findAllPosibleMove(g, main);
 		arbre := initArbre(g, main, tabMove);
+		
 		
 		FOR i := 0 TO length(arbre^.sousBranche) - 1 DO
 		BEGIN
 			createFullTree(g, arbre^.sousBranche[i], main);
 		END;
-		// on va explorer ce que fait notre cher IA
 		
 		IF bestBranche <> NIL THEN
 		BEGIN
+			
 			tmpFinal.p := bestBranche^.lastPion;
 			tmpFinal.pos := bestBranche^.lastPos;
 			coupAIPaul := tmpFinal;
-		END;		
+		END
+		ELSE
+		BEGIN
+			setLength(tmpFinal.pos, 1);
+			setLength(tmpFinal.p, 1);
+			tmpFinal.pos[0].x := -1;
+			tmpFinal.pos[0].y := -1;
+			tmpFinal.p[0].couleur := -1;
+			tmpFinal.p[0].forme := -1;
+			
+			coupAIPaul := tmpFinal;
+		END;
 	END;
 END.
