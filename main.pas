@@ -240,7 +240,6 @@ BEGIN
 
 			// on recupere tous les coups de l'IA
 			coupsIA := coupAIPaul(g, allJoueur[joueurJouant].main);
-			tmpGrille := g;
 		
 			{IF (length(coupsIA.p) = 1) AND (coupsIA.pos[0].x <> -1) THEN
 			BEGIN

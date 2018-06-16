@@ -63,7 +63,7 @@ IMPLEMENTATION
 	BEGIN
 		i := 0;
 		dir := dirValue(dirInt);
-		WHILE g[x + (i+1) * dir.x, y + (i+1) * dir.y].forme <> FORME_NULL DO
+		WHILE ((x + (i+1) * dir.x) > 0) AND (x + (i+1) * dir.x < length(g) - 1) AND (y + (i+1) * dir.y > 0) AND (y + (i+1) * dir.y < length(g) - 1) AND (g[x + (i+1) * dir.x, y + (i+1) * dir.y].forme <> FORME_NULL) DO
 			inc(i);
 		calculNombreDeVoisin := i;
 	END;

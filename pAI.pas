@@ -32,7 +32,7 @@ VAR
 		estDejaOccupe := NOT (g[x,y].couleur <> 0);
 		nestPasSeule  := (calculNombreDeVoisinLigne(g,x,y) + calculNombreDeVoisinColonne(g,x,y) > 0);
 		etatsOK       := (findEtat(g,x,y,1) = findEtat(g,x,y,3)) AND (findEtat(g,x,y,2) = findEtat(g,x,y,4));
-
+		
 		caseJouable  := nestPasSeule AND estDejaOccupe AND nbrVoisin AND etatsOK;
 	END;
 
@@ -105,11 +105,11 @@ VAR
 		possibleMove : tabPossibleMovePosition;
 	BEGIN
 		setLength(possibleMove, 0);
-
+		
 		// on parcourt toute la grille pour voire où on peut mettre des pions
-		FOR x := 1 TO TAILLE_GRILLE - 2 DO
+		FOR x := 0 TO length(g) - 1 DO
 		BEGIN
-			FOR y := 1 TO TAILLE_GRILLE - 2 DO
+			FOR y := 0 TO length(g) - 1 DO
 			BEGIN
 				IF caseJouable(g,x,y) THEN
 				BEGIN
@@ -119,6 +119,8 @@ VAR
 				END;
 			END;
 		END;
+		
+		
 		
 		IF length(possibleMove) < 1 THEN
 		BEGIN
@@ -182,9 +184,10 @@ VAR
 	BEGIN
 		// on pose le pion d'avant dans la grille
 		// on fait tout comme si il avait ete place
-
+		setLength(tmpGrille, length(g), length(g));
 		tmpGrille := g;
 		ajouterPion(tmpGrille, arbre^.lastPion[arbre^.down - 1], arbre^.lastPos[arbre^.down - 1].x, arbre^.lastPos[arbre^.down - 1].y, 'T');
+		writeln('marche');
 		tmpMain := main;
 
 		tabCoupPos := arbre^.lastPos;
@@ -237,12 +240,12 @@ VAR
 		tabMove : tabPossibleMovePosition;
 		i, counter : INTEGER;
 		p : pion;
-		tmpGrille : grille;
 		arbre, tmp : ptrBranche;
 		tmpFinal : typeCoup;
 	BEGIN
 		bestScore := -10;
 		bestBranche := NIL;
+		
 		
 		tabMove := findAllPosibleMove(g, main);
 		arbre := initArbre(g, main, tabMove);

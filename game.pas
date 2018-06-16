@@ -115,10 +115,53 @@ VAR
 		END;
 	END;
 
+	// on agrandit la grille de 1 par 1
+	PROCEDURE redimensionnerGrille(VAR g : grille);
+	VAR
+		tmpGrille : grille;
+		i, j : INTEGER;
+	BEGIN
+		setLength(tmpGrille, length(g), length(g));
+		tmpGrille := g;
+		setLength(g, length(g) + 2, length(g) + 2);
+		FOR i := 0 TO length(tmpGrille) - 1 DO
+		BEGIN
+			FOR j := 1 TO length(tmpGrille) - 1 DO
+			BEGIN
+				g[i + 1, j + 1] := PION_NULL;
+				g[i + 1, j + 1] := tmpGrille[i,j];
+			END;
+		END;
+		renderGame(tmpGrille);
+		render;
+	END;
+
 	PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 	BEGIN
-		g[x,y] := pionAAjouter;
-		addToHistorique(pionAAjouter, x, y, joueur);
+		IF (x < 0) OR (y < 0) OR (y > length(g) - 1) OR (x > length(g) - 1)THEN
+		BEGIN
+			redimensionnerGrille(g);
+			
+			IF (x < 0) OR (y < 0) THEN
+			BEGIN
+				g[x + 1,y + 1] := pionAAjouter;
+				addToHistorique(pionAAjouter, x + 1, y + 1, joueur);
+			END
+			ELSE
+			BEGIN
+				IF (x > length(g) - 3) OR (y > length(g) - 3) THEN
+				BEGIN
+					addToHistorique(pionAAjouter, x, y, joueur);
+					g[x,y] := pionAAjouter;
+				END;
+			END;
+		END
+		ELSE
+		BEGIN
+			g[x,y] := pionAAjouter;
+			addToHistorique(pionAAjouter, x, y, joueur);
+		END;
+		writeln('pion add');
 	END;
 
 	FUNCTION remplirGrille(): grille;
@@ -126,9 +169,10 @@ VAR
 		i , j    : INTEGER;
 		g        : grille;
 	BEGIN
-		FOR i := 0 TO TAILLE_GRILLE -1 DO
+		setLength(g, 20, 20);
+		FOR i := 0 TO 20 -1 DO
 		BEGIN
-			FOR j := 0 TO TAILLE_GRILLE -1 DO
+			FOR j := 0 TO 20 -1 DO
 			BEGIN
 				g[i,j].couleur := COULEUR_NULL;
 				g[i,j].forme   := FORME_NULL;
@@ -179,7 +223,6 @@ VAR
 		main : tabPion;
 		i : INTEGER;
 	BEGIN
-		WriteLn('output');
 		setLength(main, 6);
 		FOR i := 0 TO 5 DO
 			main[i] := piocher;

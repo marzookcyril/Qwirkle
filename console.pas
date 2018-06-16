@@ -93,26 +93,8 @@ IMPLEMENTATION
 	END;
 	
 	PROCEDURE calculBordure(g : grille);
-	VAR
-		i, j : INTEGER;
 	BEGIN
-		xSeparation := 10;
-		ySeparation := 10;
-		FOR i := 0 TO TAILLE_GRILLE - 1 DO
-		BEGIN
-			FOR j := 0 TO TAILLE_GRILLE - 1 DO
-			BEGIN
-				IF (g[i, j].couleur <> 0) AND (abs((TAILLE_GRILLE DIV 2) - i) > xSeparation) THEN
-				BEGIN
-					xSeparation := abs((TAILLE_GRILLE DIV 2) - i);
-				END;
-				IF (g[i, j].couleur <> 0) AND (abs((TAILLE_GRILLE DIV 2) - j) > ySeparation) THEN
-				BEGIN
-					ySeparation := abs((TAILLE_GRILLE DIV 2) - j);
-				END;
-			END;
-		END;
-		xSeparation := max(xSeparation, ySeparation);
+		xSeparation := length(g) DIV 2;
 		HEIGHT := 2 * xSeparation + 9;
 		WIDTH := 2 * xSeparation + 2 * 30;
 	END;
@@ -355,14 +337,14 @@ IMPLEMENTATION
 
 	PROCEDURE renderPion(x,y : INTEGER; pion : pion);
 	BEGIN
-		plot(FOR_TAB[pion.forme,1],     x, y, COL_WHITE, COL_TAB[pion.couleur]);
-		plot(FOR_TAB[pion.forme,2], x + 1, y, COL_WHITE, COL_TAB[pion.couleur]);
+		//plot(FOR_TAB[pion.forme,1],     x, y, COL_WHITE, COL_TAB[pion.couleur]);
+		//plot(FOR_TAB[pion.forme,2], x + 1, y, COL_WHITE, COL_TAB[pion.couleur]);
 	END;
 	
 	PROCEDURE renderPionInGrille(x,y : INTEGER; pion : pion);
 	BEGIN
-		plot(FOR_TAB[pion.forme,1], 2 * x - 1 + 4, y + 4, COL_WHITE, COL_TAB[pion.couleur]);
-		plot(FOR_TAB[pion.forme,2],     2 * x + 4, y + 4, COL_WHITE, COL_TAB[pion.couleur]);
+		//plot(FOR_TAB[pion.forme,1], 2 * x - 1 + 4, y + 4, COL_WHITE, COL_TAB[pion.couleur]);
+		//plot(FOR_TAB[pion.forme,2],     2 * x + 4, y + 4, COL_WHITE, COL_TAB[pion.couleur]);
 	END;
 
 	PROCEDURE renderTitle(title : STRING);
@@ -385,7 +367,7 @@ IMPLEMENTATION
 		plot('+',WIDTH - 1,HEIGHT - 1,7,0);
 		
 		renderNumber(2,3, 2 * xSeparation + 1, 3);
-		renderNumber(1,4, 1, 2 * ySeparation + 3);
+		renderNumber(1,4, 1, 2 * xSeparation + 3);
 		
 		// ligne separation grille et histo
 		renderLine(4 * xSeparation + 4, 0, 4 * xSeparation + 4, HEIGHT - 1, 7, 0); 
@@ -398,8 +380,6 @@ IMPLEMENTATION
 		renderLine(0, HEIGHT - 5, 4 * xSeparation + 4, HEIGHT - 5, 7, 0); 
 		plot('+', 0, HEIGHT - 5, 7, 0);
 		plot('+', 4 * xSeparation + 4, HEIGHT - 5, 7, 0);
-		
-		
 	END;
 
 	PROCEDURE renderMain(x,y, joueur : INTEGER ; main : tabPion);

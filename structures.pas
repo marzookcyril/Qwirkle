@@ -15,8 +15,13 @@ INTERFACE
 			couleur : INTEGER;
 			forme   : INTEGER;
 		END;
+	
+		couleur =  RECORD
+			col1 : INTEGER;
+			col2 : INTEGER;
+		END;
 
-		grille     = ARRAY [0..50 - 1, 0..50 - 1] OF pion;
+		grille     = ARRAY OF ARRAY OF pion;
 		typePioche = ARRAY OF pion;
 
 		position = RECORD
@@ -54,7 +59,8 @@ INTERFACE
 
 CONST
 	PION_NULL : pion = (couleur: COULEUR_NULL; forme: FORME_NULL);
-	PION_ROUGE : pion = (couleur: COULEUR_ROUGE; forme: FORME_NULL);
+	PION_ROUGE : pion = (couleur: 1; forme: 12);
+	PION_FLECHE : pion = (couleur : 7; forme: 11);
 
 IMPLEMENTATION
 END.

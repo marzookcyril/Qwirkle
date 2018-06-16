@@ -2,13 +2,12 @@ UNIT constants;
 INTERFACE
 	CONST
 		// CONSTANTES DU MOTEUR DAFFICHAGE
-
-		COL_TAB : ARRAY [0..6] OF INTEGER = (0,4,2,6,3,5,1);
-		FOR_TAB : ARRAY [0..10] OF STRING  = ('  ','{}','**','++', ')(','[]','##', '<>', '><', 'OO', '||');
+		
+		FOR_TAB : ARRAY [0..12] OF STRING  = ('  ','{}','**','++', ')(','[]','##', '<>', '><', 'OO', '||', '/\', '@@');
 
 		NUMBERED_COLS    = FALSE;
 
-		TAILLE_GRILLE    = 50;
+		TAILLE_GRILLE    = 75;
 
 		// CONSTANTES DU MOTEUR DE JEU
 		COULEUR_ROUGE  = 1;
