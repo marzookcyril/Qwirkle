@@ -7,8 +7,9 @@ VAR
 	i, j : INTEGER;
 	mainTest : tabPion;
 	test : tabPion;
+	joueur : tabJoueur;
 BEGIN
-	setLength(g, 20, 20);
+	setLength(g, 30, 30);
 	
 	FOR i := 0 TO length(g) - 1 DO
 	BEGIN
@@ -23,8 +24,13 @@ BEGIN
 	initPioche(3, 6, 6);
 	initConsole(g);
 	mainTest := creerMain;
-	test := multiplePionSelector(g, mainTest);
 	
-	FOR i := 0 TO length(test) - 1 DO
-		writeln(test[i].couleur);
+	setLength(joueur, 2);
+	
+	joueur[0].genre := True;
+	joueur[1].genre := True;
+	joueur[0].score := 10;
+	joueur[1].score := 15;
+	
+	renderScore(joueur);
 END.

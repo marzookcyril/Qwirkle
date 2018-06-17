@@ -6,9 +6,11 @@ USES constants, crt, structures, sysutils, game;
 PROCEDURE renderGrille(g : grille);
 PROCEDURE renderMain(main : tabPion);
 PROCEDURE initConsole(g : grille);
+PROCEDURE renderScore (joueur : tabJoueur);
 FUNCTION mainSelector(main : tabPion) : pion;
-FUNCTION posSelector(g : grille) : position;
+FUNCTION posSelector(g : grille; main : tabPion) : position;
 FUNCTION multiplePionSelector(g : grille; main : tabPion) : tabPion;
+
 
 IMPLEMENTATION
 VAR
@@ -184,7 +186,7 @@ VAR
 		copyGrille := newGrille;
 	END;
 
-	FUNCTION posSelector(g : grille) : position;
+	FUNCTION posSelector(g : grille; main : tabPion) : position;
 	VAR
 		posX, posY : INTEGER;
 		hasChoosenAPosToPlay : BOOLEAN;
@@ -201,6 +203,7 @@ VAR
 			clrscr;
 			g[posX, posY] := PION_ROUGE;
 			renderGrille(g);
+			renderMain(main);
 			
 			ch := readkey();
 			writeln(ord(ch));
@@ -230,6 +233,7 @@ VAR
 		selector := 1;
 		
 		REPEAT
+			clrscr;
 			renderGrille(g);
 		
 			hasFinished := False;
@@ -239,13 +243,13 @@ VAR
 			write('|');
 			FOR i := 0 TO (tailleGrille) DO
 			BEGIN
-				IF (i > 0) AND (i < (length(pionChoisis))) AND pionChoisis[i] THEN
+				IF selector = i THEN
 				BEGIN
-					renderPion(PION_ROUGE);
+					renderPion(PION_FLECHE);
 				END
 				ELSE
-					IF selector = i THEN
-						renderPion(PION_FLECHE)
+					IF (i > 0) AND (i < (length(pionChoisis))) AND pionChoisis[i] THEN
+						renderPion(PION_ROUGE)
 					ELSE
 						write('  ');
 			END;
@@ -277,5 +281,38 @@ VAR
 		
 		multiplePionSelector := finalTab;
 	END;
-
+	
+	PROCEDURE renderScore (joueur : tabJoueur);
+	VAR
+		score : STRING;
+		i, j : INTEGER;
+	BEGIN
+		renderLigne(tailleGrille * 2 + 3);
+		FOR i := 0 TO 3 DO
+		BEGIN
+			IF joueur[i].score <> 0 THEN
+			BEGIN
+				IF joueur[i].genre THEN
+					score := ' Joueur n°' + inttostr(i) + ': ' + inttostr(joueur[i].score)
+				ELSE
+					score := ' Ordin. n°' + inttostr(i) + ': ' + inttostr(joueur[i].score);
+			END
+			ELSE
+				score := '';
+				
+			IF i MOD 2 = 0 THEN
+			BEGIN
+				write('|');
+				write(score);
+				FOR j := 0 TO (tailleGrille * 2 + 3) DIV 2 - length(score) DO write(' ');
+			END
+			ELSE
+			BEGIN
+				write(score);
+				FOR j := ((tailleGrille * 2 + 3) DIV 2) + length(score) TO (tailleGrille * 2 + 3) - 1 DO write(' ');
+				writeln('|');
+			END;
+		END;
+		renderLigne(tailleGrille * 2 + 3);
+	END;
 END.
