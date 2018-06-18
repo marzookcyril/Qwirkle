@@ -1,31 +1,9 @@
 PROGRAM main;
-USES crt, sysutils, game, console, structures, legal, constants, pAI;
-
-VAR	
-	tmpAllJoueur : tabJoueur;
-
-FUNCTION mainVide(joueur : typeJoueur) : BOOLEAN;
-VAR
-	i : INTEGER;
-	stop : BOOLEAN;
-BEGIN
-	stop := False;
-	IF length(joueur.main) - 1 <= 0 THEN
-		mainVide := True
-	ELSE
-	BEGIN
-		FOR i := 0 TO length(joueur.main) - 1 DO
-		BEGIN
-			IF joueur.main[i].couleur = 0 THEN
-				stop := True;
-		END;
-	END;
-	mainVide := stop;
-END;
+USES crt, sysutils, game, console2, structures, legal, constants, pAI;
 
 FUNCTION hasWon(g : grille; VAR joueur : typeJoueur) : BOOLEAN;
 BEGIN
-	IF (getPiocheSize = 0) AND mainVide(joueur) THEN
+	IF (getPiocheSize = 0) AND (length(joueur.main) = 0) THEN
 	BEGIN
 		hasWon := True;
 		joueur.score := joueur.score + 6;
@@ -43,7 +21,7 @@ VAR
 	pos : position;
 	g, tmpGrille : grille;
 	p : pion;
-	stop, aFiniDeJouer, isFirst : BOOLEAN;
+	stop, aFiniDeJouer, isFirst, nCoupss : BOOLEAN;
 	t : tabPos;
 	responce : CHAR;
 	tabPions : tabPion;
@@ -83,8 +61,8 @@ BEGIN
 	writeln('Parametres : ', nbrJoueurHumain, nbrJoueurMachine, nbrCouleurs, nbrFormes, nbrTuiles);
 
 	// si les parametres sont vides, on mets les parametres par defaut
-	IF nbrCouleurs      = 0 THEN nbrCouleurs      := 6;
-	IF nbrFormes        = 0 THEN nbrFormes        := 6;
+	IF nbrCouleurs      = 0 THEN nbrCouleurs      := 9;
+	IF nbrFormes        = 0 THEN nbrFormes        := 9;
 	IF nbrTuiles        = 0 THEN nbrTuiles        := 3;
 
 	IF nbrJoueurHumain + nbrJoueurMachine = 0 THEN
@@ -95,22 +73,19 @@ BEGIN
 		readln(nbrJoueurMachine);
 	END;
 
-	initConsole;
-
+	
 	// on creer la pioche
 	initPioche(nbrCouleurs, nbrFormes, nbrTuiles);
+	initLegal(nbrFormes - 1);
 	initJoueur(nbrJoueurHumain, nbrJoueurMachine);
 	g := remplirGrille;
+	initConsole(g);
 	shufflePioche;
-	renderMenuBorder(g);
-	renderTitle('Qwirkle par Cyril et Paul :');
-	render;
 
 	joueurJouant := -1;
 
 	// on creer les mains
-	setLength(allJoueur, nbrJoueurHumain + nbrJoueurMachine + 1);
-	setLength(tmpAllJoueur, nbrJoueurHumain + nbrJoueurMachine + 1);
+	setLength(allJoueur, nbrJoueurHumain + nbrJoueurMachine);
 	tmpHumain := nbrJoueurHumain;
 	tmpMachine := nbrJoueurMachine;
 	FOR i := 0 TO nbrJoueurHumain + nbrJoueurMachine - 1 DO
@@ -135,31 +110,26 @@ BEGIN
 	END;
 
 	isFirst := True;
-{
-	p.couleur := COULEUR_ROUGE;
-	p.forme := FORME_TREFLE;
-	ajouterPion(g, p, 12,12,'D');
-}
-
+	
 	REPEAT
 		//renderText('Taille pioche :' + inttostr(getPiocheSize), 40, getHeight - 3, COL_WHITE, COL_BLACK);
+		clrscr;
 		lastSize := 0;
 		inc(joueurJouant);
 		joueurJouant := joueurJouant MOD (nbrJoueurHumain + nbrJoueurMachine);
-		renderTitle('Tour du joueur ' + inttostr(joueurJouant) + '...');
+		renderTextWillFullBordure('Tour du joueur ' + inttostr(joueurJouant) + '...');
 		
 		// on fait jouer le joueur humain / machine
 		IF allJoueur[joueurJouant].genre THEN
 		BEGIN
-			renderPopUp('C''est au joueur : ' + inttostr(joueurJouant) + ' de jouer...');
 			nombreDeCoups := 1;
 			t := initTabPos;
 			tabPions := initTabPion;
-			renderMain(3, getHeight - 3, joueurJouant, allJoueur[joueurJouant].main);
-			render;
-			IF renderPopUpWithResponce('Voulez vous changer votre pioche ? (o/n)') = 'o' THEN
+			renderGrille(g);
+			renderMain(allJoueur[joueurJouant].main);
+			IF renderPopUpWithResponce('Changer votre pioche ? (o/n)') = 'o' THEN
 			BEGIN
-				pionAEchanger := remplacerMain(allJoueur[joueurJouant].main, joueurJouant);
+				pionAEchanger := multiplePionSelector(g, allJoueur[joueurJouant].main);
 				FOR i := 0 TO length(pionAEchanger) - 1 DO
 				BEGIN
 					echangerPion(allJoueur[joueurJouant].main, pionAEchanger[i]);
@@ -169,26 +139,25 @@ BEGIN
 			BEGIN
 				REPEAT
 					aFiniDeJouer := True;
-					p := selectorMain(allJoueur[joueurJouant].main, joueurJouant);
+					p := mainSelector(g, allJoueur[joueurJouant].main);
 					IF NOT isFirst THEN
 					BEGIN
-						pos := selectorPos(g, TAILLE_GRILLE DIV 2, TAILLE_GRILLE DIV 2);
-						pos.x := pos.x - 2;
-						pos.y := pos.y - 2;
+						pos := posSelector(g, allJoueur[joueurJouant].main);
 					END
 					ELSE
 					BEGIN
-						pos.x := TAILLE_GRILLE DIV 2;
-						pos.y := TAILLE_GRILLE DIV 2;
+						pos.x := length(g) DIV 2;
+						pos.y := length(g) DIV 2;
 					END;
+					clrscr;
 					choperPos(t, pos.x, pos.y, nombreDeCoups);
 					choperPion(tabPions, nombreDeCoups, p);
-					IF (nCoups(g, t, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0)) OR isFirst THEN
+					nCoupss := nCoups(g, t, tabPions, nombreDeCoups);
+					IF (nCoupss AND (g[pos.x, pos.y].couleur = 0)) OR isFirst THEN
 					BEGIN
 						ajouterPion(g, p, pos.x, pos.y, intToStr(joueurJouant));
 						removePionFromMain(allJoueur[joueurJouant].main, p);
-						renderGame(g);
-						render;
+						renderGrille(g);
 						responce := renderPopUpWithResponce('Un autre pion ?');
 						isFirst := False;
 						IF responce = 'o' THEN
@@ -203,7 +172,7 @@ BEGIN
 					END
 					ELSE
 					BEGIN
-						renderPopUp('Pas possible de jouer la');
+						renderTextWithBordure('Pas possible de jouer la');
 						responce := renderPopUpWithResponce('Un autre pion ?');
 						IF responce = 'o' THEN
 							aFiniDeJouer := False
@@ -213,10 +182,8 @@ BEGIN
 				UNTIL aFiniDeJouer;
 
 				allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, t, nombreDeCoups);
-				//renderScore(joueurJouant, allJoueur[joueurJouant].score);
-				renderGame(g);
-				//renderHistorique;
-				render;
+				renderScore(allJoueur);
+				renderGrille(g);
 
 				lastSize := length(allJoueur[joueurJouant].main);
 				FOR i := 0 TO 6 - lastSize - 1 DO
@@ -235,31 +202,12 @@ BEGIN
 			tabPions := initTabPion;
 			nombreDeCoups := 1;
 
-			renderMain(3, getHeight - 3, joueurJouant, allJoueur[joueurJouant].main);
-			render;
-
 			// on recupere tous les coups de l'IA
+			//writeln('----------');
+			//writeln('Je suis la');
 			coupsIA := coupAIPaul(g, allJoueur[joueurJouant].main);
-		
-			{IF (length(coupsIA.p) = 1) AND (coupsIA.pos[0].x <> -1) THEN
-			BEGIN
-				tmpGrille := g;
-				ajouterPion(tmpGrille, PION_ROUGE, coupsIA.pos[0].x, coupsIA.pos[0].y, 'T');
-				renderGame(tmpGrille);
-				render;
-				log('erreur' + inttostr(coupsIA.p[0].forme) + inttostr(coupsIA.p[0].couleur));
-				ajouterPion(tmpGrille, coupsIA.p[0], coupsIA.pos[0].x, coupsIA.pos[0].y, 'T');
-				renderGame(tmpGrille);
-				render;
-				log('erreur');
-				p := coupsIA.p[0];
-				pos := coupsIA.pos[0];
-				choperPos(t, pos.x, pos.y, nombreDeCoups);
-				choperPion(tabPions, nombreDeCoups, p);
-				writeln(nCoups(g, t, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0));
-				log('fin' + inttostr(getPiocheSize) + ',' + inttostr(length(allJoueur[joueurJouant].main)));
-			END;}
-			
+			//writeln('Je suis laa');
+			//writeln('==========');
 			IF coupsIA.pos[0].x <> -1 THEN
 			BEGIN
 				FOR i := 0 TO length(coupsIA.p) - 1 DO
@@ -272,13 +220,8 @@ BEGIN
 					BEGIN
 						ajouterPion(g, p, pos.x, pos.y, intToStr(joueurJouant));
 						removePionFromMain(allJoueur[joueurJouant].main, p);
-						renderGame(g);
-						render;
 						inc(nombreDeCoups);
-					END
-					ELSE
-					BEGIN
-						log('IAPAUL : PION NON JOUABLE => ERREUR FATALE');
+						isFirst := False;
 					END;
 				END;
 			END
@@ -292,10 +235,8 @@ BEGIN
 			END;
 
 			allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, t, nombreDeCoups);
-			//renderScore(joueurJouant, allJoueur[joueurJouant].score);
-			renderGame(g);
-			//renderHistorique;
-			render;
+			renderScore(allJoueur);
+			renderGrille(g);
 
 			lastSize := length(allJoueur[joueurJouant].main);
 			FOR i := 0 TO 6 - lastSize - 1 DO
@@ -308,6 +249,18 @@ BEGIN
 			END;
 			
 		END;
-	UNTIL hasWon(g, allJoueur[joueurJouant]) or stop;
-	readln;
+	UNTIL hasWon(g, allJoueur[joueurJouant]);
+	
+	clrscr;
+	renderScore(allJoueur);
+	renderGrille(g);
+	
+	FOR i := 0 TO length(allJoueur) - 1 DO
+		IF allJoueur[i].score > lastSize THEN
+		BEGIN
+			joueurJouant := i;
+			lastSize := allJoueur[i].score;
+		END;	
+	renderPopUpWithResponce('fin de la partie, le gagnant est : ' + inttostr(joueurJouant));
+	clrscr;
 END.

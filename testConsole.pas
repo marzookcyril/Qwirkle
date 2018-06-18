@@ -25,12 +25,10 @@ BEGIN
 	initConsole(g);
 	mainTest := creerMain;
 	
-	setLength(joueur, 2);
+	setLength(joueur, 1);
 	
 	joueur[0].genre := True;
-	joueur[1].genre := True;
 	joueur[0].score := 10;
-	joueur[1].score := 15;
 	
 	renderScore(joueur);
 END.

@@ -1,6 +1,6 @@
 UNIT game;
 INTERFACE
-USES crt, sysutils, constants, structures, console;
+USES crt, sysutils, constants, structures;
 
 PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 FUNCTION remplirGrille(): grille;
@@ -13,7 +13,9 @@ PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 FUNCTION piocher : pion;
 FUNCTION getPiocheSize : INTEGER;
 FUNCTION maxPiocheSize : INTEGER;
+FUNCTION copyGrille(a : grille) : grille;
 PROCEDURE log(text : STRING);
+PROCEDURE redimensionnerGrille(VAR g : grille);
 
 
 IMPLEMENTATION
@@ -23,6 +25,23 @@ VAR
 	globalHumain : INTEGER;
 	globalMachine : INTEGER;
 	gNbrCouleurs, gNbrFormes, gNbrTuiles : INTEGER;
+
+	FUNCTION copyGrille(a : grille) : grille;
+	VAR
+		i, j : INTEGER;
+		newGrille : grille;
+	BEGIN
+		setLength(newGrille, length(a), length(a));
+		FOR i := 0 TO length(a) - 1 DO
+		BEGIN
+			FOR j := 0 TO length(a) - 1 DO
+			BEGIN
+				newGrille[i, j] := a[i, j];
+			END;
+		END;
+		
+		copyGrille := newGrille;
+	END;
 
 	PROCEDURE log(text : STRING);
 	BEGIN
@@ -121,8 +140,7 @@ VAR
 		tmpGrille : grille;
 		i, j : INTEGER;
 	BEGIN
-		setLength(tmpGrille, length(g), length(g));
-		tmpGrille := g;
+		tmpGrille := copyGrille(g);
 		setLength(g, length(g) + 2, length(g) + 2);
 		FOR i := 0 TO length(tmpGrille) - 1 DO
 		BEGIN
@@ -132,36 +150,22 @@ VAR
 				g[i + 1, j + 1] := tmpGrille[i,j];
 			END;
 		END;
-		renderGame(tmpGrille);
-		render;
 	END;
 
 	PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 	BEGIN
-		IF (x < 0) OR (y < 0) OR (y > length(g) - 1) OR (x > length(g) - 1)THEN
+		IF (x < 1) OR (y < 1) OR (y > length(g) - 2) OR (x > length(g) - 2)THEN
 		BEGIN
 			redimensionnerGrille(g);
-			
-			IF (x < 0) OR (y < 0) THEN
-			BEGIN
-				g[x + 1,y + 1] := pionAAjouter;
-				addToHistorique(pionAAjouter, x + 1, y + 1, joueur);
-			END
-			ELSE
-			BEGIN
-				IF (x > length(g) - 3) OR (y > length(g) - 3) THEN
-				BEGIN
-					addToHistorique(pionAAjouter, x, y, joueur);
-					g[x,y] := pionAAjouter;
-				END;
-			END;
+			IF (x < 1) OR (y < 1) THEN
+				g[x + 1, y + 1] := pionAAjouter;
+			IF (y > length(g) - 1) OR (x > length(g) - 1) THEN
+				g[x, y] := pionAAjouter;
 		END
 		ELSE
 		BEGIN
 			g[x,y] := pionAAjouter;
-			addToHistorique(pionAAjouter, x, y, joueur);
 		END;
-		writeln('pion add');
 	END;
 
 	FUNCTION remplirGrille(): grille;
@@ -204,7 +208,6 @@ VAR
 	BEGIN
 		globalHumain  := nbrJoueurHumain;
 		globalMachine := nbrJoueurMachine;
-		renderJoueurText(nbrJoueurHumain, nbrJoueurMachine);
 	END;
 
 	FUNCTION piocher : pion;

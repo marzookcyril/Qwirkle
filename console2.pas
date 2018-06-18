@@ -7,7 +7,11 @@ PROCEDURE renderGrille(g : grille);
 PROCEDURE renderMain(main : tabPion);
 PROCEDURE initConsole(g : grille);
 PROCEDURE renderScore (joueur : tabJoueur);
-FUNCTION mainSelector(main : tabPion) : pion;
+PROCEDURE renderTextWithBordure(text : STRING);
+PROCEDURE renderTextWillFullBordure(text : STRING);
+
+FUNCTION renderPopUpWithResponce(text : STRING) : CHAR;
+FUNCTION mainSelector(g : grille; main : tabPion) : pion;
 FUNCTION posSelector(g : grille; main : tabPion) : position;
 FUNCTION multiplePionSelector(g : grille; main : tabPion) : tabPion;
 
@@ -101,14 +105,14 @@ VAR
 		END;
 	END;
 	
-	PROCEDURE renderTextWithBordure(text : STRING; taille : INTEGER);
+	PROCEDURE renderTextWithBordure(text : STRING);
 	VAR
 		i : INTEGER;
 	BEGIN
 		write('|');
-		FOR i := 0 TO taille - 2 DO
+		FOR i := 0 TO tailleGrille * 2 + 3 - 2 DO
 		BEGIN
-			IF (i < length(text)) AND (i > 0) THEN
+			IF (i < length(text) + 1) AND (i > 0) THEN
 				write(text[i])
 			ELSE
 				write(' ');
@@ -116,12 +120,19 @@ VAR
 		writeln('|');
 	END;
 	
+	PROCEDURE renderTextWillFullBordure(text : STRING);
+	BEGIN
+		renderLigne(tailleGrille * 2 + 3);
+		renderTextWithBordure(text);
+		renderLigne(tailleGrille * 2 + 3);
+	END;
+	
 	PROCEDURE renderMainNoLigneAfter(text : STRING; main : tabPion);
 	VAR
 		i : INTEGER;
 	BEGIN
 		renderLigne(tailleGrille * 2 + 3);
-		renderTextWithBordure(text, tailleGrille * 2 + 3);
+		renderTextWithBordure(text);
 		
 		write('|  ');
 		FOR i := 0 TO length(main) - 1 DO
@@ -133,34 +144,38 @@ VAR
 		writeln('|');
 	END;
 	
-	FUNCTION mainSelector(main : tabPion) : pion;
+	FUNCTION mainSelector(g : grille; main : tabPion) : pion;
 	VAR
 		i : INTEGER;
 		ch : CHAR;
 		hasChoosePionToPlay : BOOLEAN;
 	BEGIN
-		hasChoosePionToPlay := False;
-		renderMainNoLigneAfter('Choissisez votre pion : ', main);
-		
-		write('|');
-		FOR i := 0 TO selector * 2  - 1 DO write(' ');
-		renderPion(PION_FLECHE);
-		FOR i := 0 TO tailleGrille * 2 + 3 - (selector * 2 + 4) DO write(' ');
-		writeln('|');
-		
-		renderLigne(tailleGrille * 2 + 3);
-		
-		ch := readkey();
-		CASE ch OF
-			#77 : IF selector < length(main) THEN inc(selector);
-			#75 : IF selector > 1 THEN dec(selector);
-			'f' : hasChoosePionToPlay := True;
-		END;
-		
-		IF hasChoosePionToPlay THEN
-			mainSelector := main[selector]
-		ELSE
-			mainSelector := PION_NULL;
+		REPEAT
+			clrscr;
+			renderGrille(g);
+			hasChoosePionToPlay := False;
+			renderMainNoLigneAfter('Choissisez votre pion : ', main);
+			
+			write('|');
+			FOR i := 0 TO selector * 2  - 1 DO write(' ');
+			renderPion(PION_FLECHE);
+			FOR i := 0 TO tailleGrille * 2 + 3 - (selector * 2 + 4) DO write(' ');
+			writeln('|');
+			
+			renderLigne(tailleGrille * 2 + 3);
+			
+			ch := readkey();
+			CASE ch OF
+				#77 : IF selector < length(main) THEN inc(selector);
+				#75 : IF selector > 1 THEN dec(selector);
+				'f' : hasChoosePionToPlay := True;
+			END;
+			
+			IF hasChoosePionToPlay THEN
+				mainSelector := main[selector - 1]
+			ELSE
+				mainSelector := PION_NULL;
+		UNTIL hasChoosePionToPlay;
 	END;
 
 	PROCEDURE renderMain(main : tabPion);
@@ -169,44 +184,27 @@ VAR
 		renderLigne(tailleGrille * 2 + 3);
 	END;
 
-	FUNCTION copyGrille(a : grille) : grille;
-	VAR
-		i, j : INTEGER;
-		newGrille : grille;
-	BEGIN
-		setLength(newGrille, length(a), length(a));
-		FOR i := 0 TO length(a) - 1 DO
-		BEGIN
-			FOR j := 0 TO length(a) - 1 DO
-			BEGIN
-				newGrille[i, j] := a[i, j];
-			END;
-		END;
-		
-		copyGrille := newGrille;
-	END;
-
 	FUNCTION posSelector(g : grille; main : tabPion) : position;
 	VAR
 		posX, posY : INTEGER;
 		hasChoosenAPosToPlay : BOOLEAN;
-		lastGrille : grille;
+		lastGrille, lastGrille2 : grille;
 		ch : CHAR;
 	BEGIN
 		lastGrille := copyGrille(g);
+		lastGrille2 := copyGrille(g);
 		hasChoosenAPosToPlay := False;
 		posX := tailleGrille DIV 2;
 		posY := tailleGrille DIV 2;
 		
 		REPEAT
-			g := copyGrille(lastGrille);
+			lastGrille := copyGrille(lastGrille2);
 			clrscr;
-			g[posX, posY] := PION_ROUGE;
-			renderGrille(g);
+			lastGrille[posX, posY] := PION_ROUGE;
+			renderGrille(lastGrille);
 			renderMain(main);
 			
 			ch := readkey();
-			writeln(ord(ch));
 			case ch of
 				#72 : IF (posY - 1 >= 0) THEN dec(posY);
 				#75 : IF (posX - 1 >= 0) THEN dec(posX);
@@ -218,6 +216,8 @@ VAR
 		
 		posSelector.x := posX;
 		posSelector.y := posY;
+		setLength(lastGrille, 0, 0);
+		setLength(lastGrille2, 0, 0);
 	END;
 
 	FUNCTION multiplePionSelector(g : grille; main : tabPion) : tabPion;
@@ -282,37 +282,85 @@ VAR
 		multiplePionSelector := finalTab;
 	END;
 	
+	PROCEDURE renderLigneScore(joueur : tabJoueur; a,b : INTEGER);
+	VAR
+		i : INTEGER;
+		score : STRING;
+	BEGIN
+		write('|');
+		IF a <> b THEN
+		BEGIN
+			IF joueur[a].genre THEN
+				score := ' Joueur n°' + inttostr(a) + ': ' + inttostr(joueur[a].score)
+			ELSE
+				score := ' Ordin. n°' + inttostr(a) + ': ' + inttostr(joueur[a].score);
+			
+			write(score);
+			
+			FOR i := 0 TO (tailleGrille * 2 + 3) DIV 2 - length(score) DO write(' ');
+			
+			IF joueur[b].genre THEN
+				score := ' Joueur n°' + inttostr(b) + ': ' + inttostr(joueur[b].score)
+			ELSE
+				score := ' Ordin. n°' + inttostr(b) + ': ' + inttostr(joueur[b].score);
+			
+			write(score);
+			
+			FOR i := 0 TO (tailleGrille * 2 + 3) DIV 2 - length(score) DO write(' ');
+		END
+		ELSE
+		BEGIN
+			IF joueur[a].genre THEN
+				score := ' Joueur n°' + inttostr(a) + ': ' + inttostr(joueur[a].score)
+			ELSE
+				score := ' Ordin. n°' + inttostr(a) + ': ' + inttostr(joueur[a].score);
+			
+			write(score);
+			
+			FOR i := 0 TO (tailleGrille * 2 + 3) - length(score) - 1 DO write(' ');
+		END;
+		
+		writeln('|');
+	END;
+	
+	FUNCTION renderPopUpWithResponce(text : STRING) : CHAR;
+	BEGIN
+		renderLigne(tailleGrille * 2 + 3);
+		renderTextWithBordure(text);
+		renderLigne(tailleGrille * 2 + 3);
+		renderPopUpWithResponce := readkey;
+	END;
+	
 	PROCEDURE renderScore (joueur : tabJoueur);
 	VAR
 		score : STRING;
 		i, j : INTEGER;
 	BEGIN
 		renderLigne(tailleGrille * 2 + 3);
-		FOR i := 0 TO 3 DO
-		BEGIN
-			IF joueur[i].score <> 0 THEN
+		
+		CASE length(joueur) OF
+			1 : renderLigneScore(joueur, 0, 0);
+			2 : renderLigneScore(joueur, 0, 1);
+			ELSE
 			BEGIN
-				IF joueur[i].genre THEN
-					score := ' Joueur n°' + inttostr(i) + ': ' + inttostr(joueur[i].score)
+				IF length(joueur) MOD 2 = 0 THEN
+				BEGIN
+					FOR i := 0 TO length(joueur) DIV 2 - 1 DO
+					BEGIN
+						renderLigneScore(joueur, i * 2, i * 2 + 1);
+					END;
+				END
 				ELSE
-					score := ' Ordin. n°' + inttostr(i) + ': ' + inttostr(joueur[i].score);
-			END
-			ELSE
-				score := '';
-				
-			IF i MOD 2 = 0 THEN
-			BEGIN
-				write('|');
-				write(score);
-				FOR j := 0 TO (tailleGrille * 2 + 3) DIV 2 - length(score) DO write(' ');
-			END
-			ELSE
-			BEGIN
-				write(score);
-				FOR j := ((tailleGrille * 2 + 3) DIV 2) + length(score) TO (tailleGrille * 2 + 3) - 1 DO write(' ');
-				writeln('|');
+				BEGIN
+					FOR i := 0 TO length(joueur) DIV 2 - 1 DO
+					BEGIN
+						renderLigneScore(joueur, i * 2, i * 2 + 1);
+					END;
+					renderLigneScore(joueur, length(joueur), length(joueur));
+				END;
 			END;
 		END;
+		
 		renderLigne(tailleGrille * 2 + 3);
 	END;
 END.

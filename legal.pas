@@ -1,7 +1,6 @@
 UNIT legal;
 INTERFACE
-USES constants  in 'core/constants.pas', sysutils, Math, crt,
-	structures in 'core/structures.pas';
+USES constants, sysutils, Math, crt, structures, game;
 
 FUNCTION calculNombreDeVoisin(g : grille; x, y : INTEGER; dirInt : INTEGER) : INTEGER;
 FUNCTION calculNombreDeVoisinColonne(g : grille; x,y : INTEGER) : INTEGER;
@@ -17,12 +16,19 @@ FUNCTION nCoups(g: grille; t : tabPos; p : tabPion; num : INTEGER) : BOOLEAN;
 FUNCTION initTabPos(): tabPos;
 FUNCTION initTabPion(): tabPion;
 FUNCTION point(g : grille; t : tabPos ; num : INTEGER): INTEGER;
-FUNCTION continu(g: grille ;x1,y1,x2,y2,x3,y3 : INTEGER): BOOLEAN;
+FUNCTION continu(x1,y1,x2,y2,x3,y3 : INTEGER): BOOLEAN;
 PROCEDURE choperPos(VAR t : tabPos ; x,y, num : INTEGER);
 PROCEDURE choperPion(VAR t : tabPion ;num : INTEGER; p : pion);
-
+PROCEDURE initLegal(qwirkle : INTEGER);
 
 IMPLEMENTATION
+VAR
+	qwirkleSize : INTEGER;
+
+	PROCEDURE initLegal(qwirkle : INTEGER);
+	BEGIN
+		qwirkleSize := qwirkle;
+	END;
 
 	// dir :    2
 	//        1   3
@@ -73,9 +79,9 @@ IMPLEMENTATION
 		verif : BOOLEAN;
 	BEGIN
 		verif := TRUE;
-		IF NOT (calculNombreDeVoisin(g,x,y,1) + (calculNombreDeVoisin(g,x,y,3)) <= 5) THEN
+		IF NOT (calculNombreDeVoisin(g,x,y,1) + (calculNombreDeVoisin(g,x,y,3)) <= qwirkleSize) THEN
 			verif := FALSE;
-		IF NOT (calculNombreDeVoisin(g,x,y,2) + (calculNombreDeVoisin(g,x,y,4)) <= 5) THEN
+		IF NOT (calculNombreDeVoisin(g,x,y,2) + (calculNombreDeVoisin(g,x,y,4)) <= qwirkleSize) THEN
 			verif := FALSE;
 		verifNombreVoisin := verif;
 	END;
@@ -111,40 +117,54 @@ IMPLEMENTATION
 				nbrVoisinPeu := calculNombreDeVoisin(g, x, y, (dirInt + 2) MOD 4);
 				dir := dirValue((dirInt + 2) MOD 4);
 				// le voisin opposé est seul
-				IF nbrVoisinPeu = 0 THEN
-					findEtat := '000';
-				IF nbrVoisinPeu = 1 THEN
-					findEtat := '0' + inttostr(g[x + dir.x, y + dir.y].forme) + inttostr(g[x + dir.x, y + dir.y].couleur);
-				IF nbrVoisinPeu > 1 THEN
+				IF (x + dir.x < 0) OR (x + dir.x > length(g) - 1) OR (y + dir.y < 0) OR (y + dir.y > length(g) - 1) THEN
 				BEGIN
-					IF g[x + dir.x, y + dir.y].forme = g[x + 2 * dir.x, y + 2 * dir.y].forme THEN
-						findEtat :=  'F' + inttostr(g[x + dir.x, y + dir.y].forme) + '0';
-					IF g[x + dir.x, y + dir.y].couleur = g[x + 2 * dir.x, y + 2 * dir.y].couleur THEN
-						findEtat :=  'C' + inttostr(g[x + dir.x, y + dir.y].couleur) + '0';
+					findEtat := '000';
+				END
+				ELSE
+				BEGIN
+					IF nbrVoisinPeu = 0 THEN
+						findEtat := '000';
+					IF nbrVoisinPeu = 1 THEN
+						findEtat := '0' + inttostr(g[x + dir.x, y + dir.y].forme) + inttostr(g[x + dir.x, y + dir.y].couleur);
+					IF nbrVoisinPeu > 1 THEN
+					BEGIN
+						IF g[x + dir.x, y + dir.y].forme = g[x + 2 * dir.x, y + 2 * dir.y].forme THEN
+							findEtat :=  'F' + inttostr(g[x + dir.x, y + dir.y].forme) + '0';
+						IF g[x + dir.x, y + dir.y].couleur = g[x + 2 * dir.x, y + 2 * dir.y].couleur THEN
+							findEtat :=  'C' + inttostr(g[x + dir.x, y + dir.y].couleur) + '0';
+					END;
 				END;
 			END;
 
 			IF nbrVoisin = 1 THEN
 			BEGIN
 				dirBis := dirValue((dirInt + 2) MOD 4);
-				IF g[x + dirBis.x, y + dirBis.y].forme <> 0 THEN
+				IF (x + dirBis.x < 0) OR (x + dirBis.x > length(g) - 1) OR (y + dirBis.y < 0) OR (y + dirBis.y > length(g) - 1) THEN
 				BEGIN
-					IF g[x + dir.x, y + dir.y].forme = g[x + dirBis.x, y + dirBis.y].forme THEN
-					BEGIN
-						findEtat :=  'F' + inttostr(g[x + dir.x, y + dir.y].forme) + '0';
-					END
-					ELSE
-					BEGIN
-						IF g[x + dir.x, y + dir.y].couleur = g[x + dirBis.x, y + dirBis.y].couleur THEN
-						BEGIN
-							findEtat :=  'C' + inttostr(g[x + dir.x, y + dir.y].couleur) + '0';
-						END
-						ELSE
-							findEtat := '404';
-					END;
+					findEtat := '0' + inttostr(g[x + dir.x, y + dir.y].forme) + inttostr(g[x + dir.x, y + dir.y].couleur);
 				END
 				ELSE
-					findEtat := '0' + inttostr(g[x + dir.x, y + dir.y].forme) + inttostr(g[x + dir.x, y + dir.y].couleur);
+				BEGIN
+					IF g[x + dirBis.x, y + dirBis.y].forme <> 0 THEN
+					BEGIN
+						IF g[x + dir.x, y + dir.y].forme = g[x + dirBis.x, y + dirBis.y].forme THEN
+						BEGIN
+							findEtat :=  'F' + inttostr(g[x + dir.x, y + dir.y].forme) + '0';
+						END
+						ELSE
+						BEGIN
+							IF g[x + dir.x, y + dir.y].couleur = g[x + dirBis.x, y + dirBis.y].couleur THEN
+							BEGIN
+								findEtat :=  'C' + inttostr(g[x + dir.x, y + dir.y].couleur) + '0';
+							END
+							ELSE
+								findEtat := '404';
+						END;
+					END
+					ELSE
+						findEtat := '0' + inttostr(g[x + dir.x, y + dir.y].forme) + inttostr(g[x + dir.x, y + dir.y].couleur);
+				END;
 			END;
 		END;
 	END;
@@ -180,46 +200,53 @@ IMPLEMENTATION
 		tmp : ARRAY [0..500] OF INTEGER;
 		erreur : boolean;
 		i, ii : INTEGER;
+		tmpGrille : grille;
 	BEGIN
-		g[x,y] := p;
+		tmpGrille := copyGrille(g);
+		tmpGrille[x,y] := p;
 		erreur := FALSE;
 
 		FOR i := 0 TO 499 DO
 			tmp[i] := 0;
 
-		i := x - calculNombreDeVoisin(g, x, y, 1);
-		WHILE NOT erreur AND (i <= x + calculNombreDeVoisin(g, x, y, 3)) DO
-			IF tmp[injection(g[i, y].forme, g[i, y].couleur)] <> 0 THEN
+		i := x - calculNombreDeVoisin(tmpGrille, x, y, 1);
+		WHILE NOT erreur AND (i <= x + calculNombreDeVoisin(tmpGrille, x, y, 3)) DO
+			IF tmp[injection(tmpGrille[i, y].forme, tmpGrille[i, y].couleur)] <> 0 THEN
 			BEGIN
 				erreur := TRUE;
 			END
 			ELSE
 			BEGIN
-				tmp[injection(g[i, y].forme, g[i, y].couleur)] := 1;
+				tmp[injection(tmpGrille[i, y].forme, tmpGrille[i, y].couleur)] := 1;
 				inc(i);
 			END;
 
 		FOR i := 0 TO 499 DO
 			tmp[i] := 0;
 
-		i := y - calculNombreDeVoisin(g, x, y, 2);
-		WHILE NOT erreur AND (i <= y + calculNombreDeVoisin(g, x, y, 4)) DO
-			IF tmp[injection(g[x, i].forme, g[x, i].couleur)] <> 0 THEN
+		i := y - calculNombreDeVoisin(tmpGrille, x, y, 2);
+		WHILE NOT erreur AND (i <= y + calculNombreDeVoisin(tmpGrille, x, y, 4)) DO
+			IF tmp[injection(tmpGrille[x, i].forme, tmpGrille[x, i].couleur)] <> 0 THEN
 			BEGIN
 				erreur := TRUE;
 			END
 			ELSE
 			BEGIN
-				tmp[injection(g[x, i].forme, g[x, i].couleur)] := 1;
+				tmp[injection(tmpGrille[x, i].forme, tmpGrille[x, i].couleur)] := 1;
 				inc(i);
 			END;
 
 
 		duplicationPion := NOT erreur;
+		setLength(tmpGrille, 0, 0);
 	END;
 
 	FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
 	BEGIN
+		(*writeln('-----');
+		writeln('cood ', concordanceGenerale(g,x,y,p));
+		writeln('dupl ', duplicationPion(g,x,y,p));
+		writeln('-----');*)
 		IF (concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p)) THEN
 		BEGIN
 			placer := TRUE;
@@ -228,7 +255,7 @@ IMPLEMENTATION
 			placer := FALSE;
 	END;
 
-	FUNCTION continu(g: grille ;x1,y1,x2,y2,x3,y3 : INTEGER): BOOLEAN;
+	FUNCTION continu(x1,y1,x2,y2,x3,y3 : INTEGER): BOOLEAN;
 	VAR
 		cont: BOOLEAN;
 	BEGIN
@@ -258,10 +285,17 @@ IMPLEMENTATION
 		bool : BOOLEAN;
 	BEGIN
 		bool := FALSE;
-		IF (((x1 = x2) XOR (y1 = y2)) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2,x3,y3)) THEN
+		(*writeln('----');
+		writeln('xor ',(x1 = x2) XOR (y1 = y2));
+		writeln('plc ', placer(g,x2,y2,p2));
+		writeln('con ', continu(g,x1,y1,x2,y2,x3,y3));
+		writeln('----');*)
+		IF (((x1 = x2) XOR (y1 = y2)) AND placer(g,x2,y2,p2) AND continu(x1,y1,x2,y2,x3,y3)) THEN
 		BEGIN
 			bool:= TRUE;
+			
 		END;
+		
 		plusieursCoups:= bool;
 	END;
 
@@ -291,7 +325,7 @@ IMPLEMENTATION
 			BEGIN
 				IF (num > 2) THEN
 				BEGIN
-					IF plusieursCoups(g, t[0].x,t[0].y,t[num - 1].x,t[num - 1].y,t[num - 2].x,t[num - 2].y,  p[0],p[num - 1]) AND plusieursCoups(g, t[1].x,t[1].y,t[num - 1].x,t[num - 1].y,t[num - 2].x,t[num - 2].y, p[1],p[num - 1]) THEN
+					IF plusieursCoups(g, t[0].x,t[0].y,t[num - 1].x,t[num - 1].y,t[num - 2].x,t[num - 2].y,  p[0], p[num - 1]) AND plusieursCoups(g, t[1].x,t[1].y,t[num - 1].x,t[num - 1].y,t[num - 2].x,t[num - 2].y, p[1],p[num - 1]) THEN
 					BEGIN
 						nCoups := TRUE;
 					END
@@ -397,13 +431,13 @@ IMPLEMENTATION
 		points := 0;
 		IF num = 1 THEN
 		BEGIN
-			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < 5) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
+			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
 				points := points + calculNombreDeVoisinLigne(g, t[0].x, t[0].y) + 1;
-			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = 5) THEN
+			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = qwirkleSize) THEN
 				points := points + 12;
-			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < 5) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
+			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
 				points := points + calculNombreDeVoisinColonne(g, t[0].x, t[0].y) + 1;
-			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) = 5) THEN
+			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) = qwirkleSize) THEN
 				points := points + 12;
 		END
 		ELSE
@@ -413,28 +447,28 @@ IMPLEMENTATION
 			BEGIN
 				FOR i := 0 TO num - 1 DO
 				BEGIN
-					IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) < 5) AND (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) > 0) THEN
+					IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) < qwirkleSize) AND (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) > 0) THEN
 						points := points + calculNombreDeVoisinLigne(g, t[i].x, t[i].y) + 1;
-					IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) = 5) THEN
+					IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) = qwirkleSize) THEN
 						points := points + 12;
 				END;
-				IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < 5) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
+				IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
 					points := points + calculNombreDeVoisinColonne(g, t[0].x, t[0].y) + 1;
-				IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) = 5) THEN
+				IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) = qwirkleSize) THEN
 					points := points + 12;
 			END;
 			IF t[0].y = t[1].y THEN
 			BEGIN
 				FOR i := 0 TO num - 1 DO
 				BEGIN
-					IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) < 5) AND (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) > 0) THEN
+					IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) < qwirkleSize) AND (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) > 0) THEN
 						points := points + calculNombreDeVoisinColonne(g, t[i].x, t[i].y) + 1;
-					IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) = 5) THEN
+					IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) = qwirkleSize) THEN
 						points := points + 12;
 				END;
-				IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < 5) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
+				IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
 					points := points + calculNombreDeVoisinLigne(g, t[0].x, t[0].y) + 1;
-				IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = 5) THEN
+				IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = qwirkleSize) THEN
 					points := points + 12;
 			END;
 		END;

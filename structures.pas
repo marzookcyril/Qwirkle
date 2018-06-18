@@ -59,7 +59,7 @@ INTERFACE
 
 CONST
 	PION_NULL : pion = (couleur: COULEUR_NULL; forme: FORME_NULL);
-	PION_ROUGE : pion = (couleur: 1; forme: 12);
+	PION_ROUGE : pion = (couleur: COL_RED; forme: 12);
 	PION_FLECHE : pion = (couleur : 7; forme: 11);
 
 IMPLEMENTATION
