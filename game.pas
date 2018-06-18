@@ -144,7 +144,7 @@ VAR
 		setLength(g, length(g) + 2, length(g) + 2);
 		FOR i := 0 TO length(tmpGrille) - 1 DO
 		BEGIN
-			FOR j := 1 TO length(tmpGrille) - 1 DO
+			FOR j := 0 TO length(tmpGrille) - 1 DO
 			BEGIN
 				g[i + 1, j + 1] := PION_NULL;
 				g[i + 1, j + 1] := tmpGrille[i,j];

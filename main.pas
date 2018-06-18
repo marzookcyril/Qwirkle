@@ -15,14 +15,14 @@ BEGIN
 END;
 
 VAR
-	i, ii, joueurJouant, nombreDeCoups, lastSize, tmpMachine, tmpHumain : INTEGER;
+	i, ii, joueurJouant, nombreDeCoups, lastSize, tmpMachine, tmpHumain, index, antiBoucleInf : INTEGER;
 	nbrJoueurHumain, nbrJoueurMachine, nbrCouleurs, nbrFormes, nbrTuiles : INTEGER;
 	allJoueur : tabJoueur;
 	pos : position;
 	g, tmpGrille : grille;
 	p : pion;
 	stop, aFiniDeJouer, isFirst, nCoupss : BOOLEAN;
-	t : tabPos;
+	t,score : tabPos;
 	responce : CHAR;
 	tabPions : tabPion;
 	coupsIA  : typeCoup;
@@ -61,9 +61,9 @@ BEGIN
 	writeln('Parametres : ', nbrJoueurHumain, nbrJoueurMachine, nbrCouleurs, nbrFormes, nbrTuiles);
 
 	// si les parametres sont vides, on mets les parametres par defaut
-	IF nbrCouleurs      = 0 THEN nbrCouleurs      := 9;
-	IF nbrFormes        = 0 THEN nbrFormes        := 9;
-	IF nbrTuiles        = 0 THEN nbrTuiles        := 3;
+	IF nbrCouleurs      = 0 THEN nbrCouleurs      := 10;
+	IF nbrFormes        = 0 THEN nbrFormes        := 10;
+	IF nbrTuiles        = 0 THEN nbrTuiles        := 10;
 
 	IF nbrJoueurHumain + nbrJoueurMachine = 0 THEN
 	BEGIN
@@ -111,6 +111,9 @@ BEGIN
 
 	isFirst := True;
 	
+	index := 0;
+	antiBoucleInf := 0;
+	
 	REPEAT
 		//renderText('Taille pioche :' + inttostr(getPiocheSize), 40, getHeight - 3, COL_WHITE, COL_BLACK);
 		clrscr;
@@ -118,7 +121,7 @@ BEGIN
 		inc(joueurJouant);
 		joueurJouant := joueurJouant MOD (nbrJoueurHumain + nbrJoueurMachine);
 		renderTextWillFullBordure('Tour du joueur ' + inttostr(joueurJouant) + '...');
-		
+		inc(index);
 		// on fait jouer le joueur humain / machine
 		IF allJoueur[joueurJouant].genre THEN
 		BEGIN
@@ -199,6 +202,7 @@ BEGIN
 		ELSE
 		BEGIN
 			t := initTabPos;
+			score := initTabPos;
 			tabPions := initTabPion;
 			nombreDeCoups := 1;
 
@@ -208,6 +212,7 @@ BEGIN
 			coupsIA := coupAIPaul(g, allJoueur[joueurJouant].main);
 			//writeln('Je suis laa');
 			//writeln('==========');
+			renderMain(allJoueur[joueurJouant].main);
 			IF coupsIA.pos[0].x <> -1 THEN
 			BEGIN
 				FOR i := 0 TO length(coupsIA.p) - 1 DO
@@ -216,9 +221,10 @@ BEGIN
 					pos := coupsIA.pos[i];
 					choperPos(t, pos.x, pos.y, nombreDeCoups);
 					choperPion(tabPions, nombreDeCoups, p);
-					IF (nCoups(g, t, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0)) OR isFirst THEN
+					IF (nCoups(g, t, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0) AND (nombreDeCoups < 6)) OR isFirst THEN
 					BEGIN
 						ajouterPion(g, p, pos.x, pos.y, intToStr(joueurJouant));
+						choperPos(score, pos.x, pos.y, nombreDeCoups);
 						removePionFromMain(allJoueur[joueurJouant].main, p);
 						inc(nombreDeCoups);
 						isFirst := False;
@@ -234,7 +240,12 @@ BEGIN
 				END;
 			END;
 
-			allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, t, nombreDeCoups);
+			allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, score, nombreDeCoups);
+			IF point(g, score, nombreDeCoups) = 0 THEN
+				inc(antiBoucleInf)
+			ELSE
+				antiBoucleInf := 0;
+			
 			renderScore(allJoueur);
 			renderGrille(g);
 
@@ -249,7 +260,8 @@ BEGIN
 			END;
 			
 		END;
-	UNTIL hasWon(g, allJoueur[joueurJouant]);
+		writeln((antiBoucleInf < 10));
+	UNTIL ((antiBoucleInf > 10) OR hasWon(g, allJoueur[joueurJouant]));
 	
 	clrscr;
 	renderScore(allJoueur);

@@ -49,7 +49,29 @@ VAR
 	PROCEDURE addBranche(branche, sousBranche : ptrBranche);
 	BEGIN
 		setLength(branche^.sousBranche, length(branche^.sousBranche) + 1);
-		branche^.sousBranche[length(branche^.sousBranche) - 1] := 	sousBranche;
+		branche^.sousBranche[length(branche^.sousBranche) - 1] := sousBranche;
+	END;
+	
+	FUNCTION copyMain(main : tabPion) : tabPion;
+	VAR
+		i : INTEGER;
+		tmp : tabPion;
+	BEGIN
+		setLength(tmp, length(main));
+		FOR i := 0 TO length(main) - 1 DO
+			tmp[i] := main[i];
+		copyMain := tmp;
+	END;
+	
+	FUNCTION copyTabPos(main : tabPos) : tabPos;
+	VAR
+		i : INTEGER;
+		tmp : tabPos;
+	BEGIN
+		setLength(tmp, length(main));
+		FOR i := 0 TO length(main) - 1 DO
+			tmp[i] := main[i];
+		copyTabPos := tmp;
 	END;
 
 	FUNCTION createBranche(branche : ptrBranche; p : pion; x,y : INTEGER) : ptrBranche;
@@ -65,9 +87,9 @@ VAR
 
 		IF branche <> NIL THEN
 		BEGIN
-			tmp^.lastPion := branche^.lastPion;
+			tmp^.lastPion := copyMain(branche^.lastPion);
 			setLength(tmp^.lastPion, length(branche^.lastPion) + 1);
-			tmp^.lastPos := branche^.lastPos;
+			tmp^.lastPos := copyTabPos(branche^.lastPos);
 			setLength(tmp^.lastPos, length(branche^.lastPos) + 1);
 			tmp^.down := branche^.down + 1;
 		END
@@ -195,11 +217,11 @@ VAR
 		// on pose le pion d'avant dans la grille
 		// on fait tout comme si il avait ete place
 		tmpGrille := copyGrille(g);
+		tmpMain := copyMain(main);
 		ajouterPion(tmpGrille, arbre^.lastPion[arbre^.down - 1], arbre^.lastPos[arbre^.down - 1].x, arbre^.lastPos[arbre^.down - 1].y, 'T');
-		tmpMain := main;
 
-		tabCoupPos := arbre^.lastPos;
-		tabCoupPion := arbre^.lastPion;
+		tabCoupPos := copyTabPos(arbre^.lastPos);
+		tabCoupPion := copyMain(arbre^.lastPion);
 
 		FOR i := 0 TO length(tmpMain) - 1 DO
 		BEGIN
@@ -263,14 +285,17 @@ VAR
 	VAR
 		i : INTEGER;
 	BEGIN
-		WHILE length(arbre^.sousBranche) <> 0 DO
-			FOR i := 0 TO length(arbre^.sousBranche) DO
-				clearTree(arbre^.sousBranche[i]);
-				
-		setLength(arbre^.lastPion, 0);
-		setLength(arbre^.lastPos, 0);
-		setLength(arbre^.sousBranche, 0);
-		dispose(arbre);
+		IF arbre = NIL THEN
+		BEGIN
+			WHILE length(arbre^.sousBranche) <> 0 DO
+				FOR i := 0 TO length(arbre^.sousBranche) DO
+					clearTree(arbre^.sousBranche[i]);
+		
+			setLength(arbre^.lastPion, 0);
+			setLength(arbre^.lastPos, 0);
+			setLength(arbre^.sousBranche, 0);
+			dispose(arbre);
+		END;
 	END;
 
 	// pour faire jouer l'ia faites appelle à cette fonction. Cette unique fonction
@@ -294,9 +319,13 @@ VAR
 			createFullTree(g, arbre^.sousBranche[i], main);
 		END;
 		
+		writeln(' je suis avant le clear');
+		
+		clearTree(arbre);
+		
 		//writeln('apres fullTree');
 		
-		IF length(bestBranche.p) <> 0THEN
+		IF length(bestBranche.p) <> 0 THEN
 		BEGIN
 			tmpFinal.p := bestBranche.p;
 			tmpFinal.pos := bestBranche.pos;
