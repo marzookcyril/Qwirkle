@@ -313,17 +313,15 @@ VAR
 		arbre := initArbre(g, main, tabMove);
 		
 		//writeln('apres tabMove et arbre');
-		
+		writeln('avant CfullTree');
 		FOR i := 0 TO length(arbre^.sousBranche) - 1 DO
 		BEGIN
 			createFullTree(g, arbre^.sousBranche[i], main);
 		END;
-		
-		writeln(' je suis avant le clear');
+		writeln('apres fullTree');
 		
 		clearTree(arbre);
 		
-		//writeln('apres fullTree');
 		
 		IF length(bestBranche.p) <> 0 THEN
 		BEGIN

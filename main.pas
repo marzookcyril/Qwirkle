@@ -61,9 +61,9 @@ BEGIN
 	writeln('Parametres : ', nbrJoueurHumain, nbrJoueurMachine, nbrCouleurs, nbrFormes, nbrTuiles);
 
 	// si les parametres sont vides, on mets les parametres par defaut
-	IF nbrCouleurs      = 0 THEN nbrCouleurs      := 10;
-	IF nbrFormes        = 0 THEN nbrFormes        := 10;
-	IF nbrTuiles        = 0 THEN nbrTuiles        := 10;
+	IF nbrCouleurs      = 0 THEN nbrCouleurs      := 6;
+	IF nbrFormes        = 0 THEN nbrFormes        := 6;
+	IF nbrTuiles        = 0 THEN nbrTuiles        := 5;
 
 	IF nbrJoueurHumain + nbrJoueurMachine = 0 THEN
 	BEGIN
