@@ -16,7 +16,9 @@ FUNCTION maxPiocheSize : INTEGER;
 FUNCTION copyGrille(a : grille) : grille;
 PROCEDURE log(text : STRING);
 PROCEDURE redimensionnerGrille(VAR g : grille);
-
+FUNCTION copyMain(main : tabPion) : tabPion;
+FUNCTION copyTabPos(main : tabPos) : tabPos;
+PROCEDURE delayy(s : INTEGER);
 
 IMPLEMENTATION
 VAR
@@ -25,6 +27,11 @@ VAR
 	globalHumain : INTEGER;
 	globalMachine : INTEGER;
 	gNbrCouleurs, gNbrFormes, gNbrTuiles : INTEGER;
+
+	PROCEDURE delayy(s : INTEGER);
+	BEGIN
+		delay(s);
+	END;
 
 	FUNCTION copyGrille(a : grille) : grille;
 	VAR
@@ -112,6 +119,28 @@ VAR
 		tmp := globalPioche[a];
 		globalPioche[a] := globalPioche[b];
 		globalPioche[b] := tmp;
+	END;
+
+	FUNCTION copyMain(main : tabPion) : tabPion;
+	VAR
+		i : INTEGER;
+		tmp : tabPion;
+	BEGIN
+		setLength(tmp, length(main));
+		FOR i := 0 TO length(main) - 1 DO
+			tmp[i] := main[i];
+		copyMain := tmp;
+	END;
+	
+	FUNCTION copyTabPos(main : tabPos) : tabPos;
+	VAR
+		i : INTEGER;
+		tmp : tabPos;
+	BEGIN
+		setLength(tmp, length(main));
+		FOR i := 0 TO length(main) - 1 DO
+			tmp[i] := main[i];
+		copyTabPos := tmp;
 	END;
 
 	PROCEDURE swapLastMain(VAR main : tabPion; a: INTEGER);

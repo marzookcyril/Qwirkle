@@ -85,6 +85,7 @@ VAR
 	allJoueur : tabJoueur;
 	g, tmpGrille : grille;
 	p : pion;
+	coup : typeCoup;
 	stop, aFiniDeJouer, isFirst, nCoupss : BOOLEAN;
 	responce : CHAR;
 	taille, length : INTEGER;
@@ -94,7 +95,7 @@ BEGIN
 	
 	nbrCouleurs := 6;
 	nbrFormes   := 6;
-	nbrTuiles   := 5;
+	nbrTuiles   := 3;
 
 	writeln('humain ?');
 	readln(nbrJoueurHumain);
@@ -154,8 +155,10 @@ BEGIN
 		isFirst := False;
 		
 		renderGrille(g);
+		renderMainUI(allJoueur[joueurJouant].main);
 		
-		renderGrilleUI(g);
+		supprimerPion(g, allJoueur[joueurJouant].main);
+		
 		
 		gFlip();
 		
@@ -164,14 +167,15 @@ BEGIN
 				exit;
     END;
     
+    writeln('FIN DU JEU');
+    
     WHILE TRUE DO
 	BEGIN
+		
 		gFlip();
 		
 		while (sdl_update = 1) do
 			if (sdl_do_quit) then
 				exit;
     END;
-    
-    writeln('tout est ok');
 END.

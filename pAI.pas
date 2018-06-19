@@ -51,28 +51,7 @@ VAR
 		setLength(branche^.sousBranche, length(branche^.sousBranche) + 1);
 		branche^.sousBranche[length(branche^.sousBranche) - 1] := sousBranche;
 	END;
-	
-	FUNCTION copyMain(main : tabPion) : tabPion;
-	VAR
-		i : INTEGER;
-		tmp : tabPion;
-	BEGIN
-		setLength(tmp, length(main));
-		FOR i := 0 TO length(main) - 1 DO
-			tmp[i] := main[i];
-		copyMain := tmp;
-	END;
-	
-	FUNCTION copyTabPos(main : tabPos) : tabPos;
-	VAR
-		i : INTEGER;
-		tmp : tabPos;
-	BEGIN
-		setLength(tmp, length(main));
-		FOR i := 0 TO length(main) - 1 DO
-			tmp[i] := main[i];
-		copyTabPos := tmp;
-	END;
+
 
 	FUNCTION createBranche(branche : ptrBranche; p : pion; x,y : INTEGER) : ptrBranche;
 	VAR

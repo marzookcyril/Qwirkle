@@ -570,6 +570,7 @@ procedure gFillCircle(cx, cy, radius : real; color : gColor);
     *)
     
     function sdl_get_keypressed : integer;
+    function sdl_get_left_mouse_pressed : BOOLEAN;
 
 
 Implementation
@@ -1541,6 +1542,14 @@ begin
         exit(-1);
     
     exit(_event.key.keysym.sym);
+end;
+
+function sdl_get_left_mouse_pressed : BOOLEAN;
+begin
+    if (_event.type_ <> SDL_MOUSEBUTTONUP) and (_event.button.button = SDL_BUTTON_LEFT) then
+        exit(TRUE);
+    
+    exit(FALSE);
 end;
 
 
