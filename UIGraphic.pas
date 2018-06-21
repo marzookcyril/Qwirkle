@@ -18,8 +18,7 @@ CONST
 PROCEDURE renderGrilleUI(g : grille);
 PROCEDURE loadImagePion;
 PROCEDURE renderMainUI(main : tabPion);
-FUNCTION placerPion(g : grille; main : tabPion) : typeCoup;
-FUNCTION supprimerPion(g : grille; main : tabPion) : tabPion;
+FUNCTION faireJoueurJoueur(g : grille; main : tabPion) : typeCoup;
 
 IMPLEMENTATION
 VAR
@@ -112,107 +111,120 @@ VAR
 		END;
 	END;
 
-	FUNCTION supprimerPion(g : grille; main : tabPion) : tabPion;
-	VAR
-		hasFinished, stop : BOOLEAN;
-		tmpMain   : tabPion;
-		choose : position;
-		taille : INTEGER;
+	FUNCTION boutonSupprimer : BOOLEAN;
 	BEGIN
-		hasFinished := False;
-		stop := false;
-		tmpMain   := copyMain(main);
-		setLength(supprimerPion, 0);
-		REPEAT
-		
-			clearScreen;
-			renderGrilleUI(g);
-			
-			IF stop THEN
-			BEGIN
-				delayy(300);
-				stop := false;
-			END;
-			
-			afficherImage(poubelle, xMain + 40 * 7 + 20, yMain + 20, 40);
-			afficherImage(tick, xMain + 40 * 8 + 20, yMain + 20, 40);
-			
-			taille := (40*20) DIV length(g);
-			while (sdl_update = 1) do
-				if (sdl_do_quit) then
-					exit;
-			renderMainUI(tmpMain);
-			
-			IF sdl_mouse_left_down THEN
-			BEGIN
-				choose := getPos(sdl_get_mouse_x, sdl_get_mouse_y, xMain, yMain,xMain + length(main) * 40, yMain + 40, 40);
-			END;
-			
-			IF (choose.x <> -1) AND sdl_get_left_mouse_pressed THEN
-			BEGIN
-				afficherImage(TAB_IMAGE_LOAD[(main[choose.x - 1].couleur - 1) * 6 + main[choose.x - 1].forme - 1], sdl_get_mouse_x, sdl_get_mouse_y, 40);
-			END;
-			
-			IF (choose.x <> -1) AND NOT sdl_get_left_mouse_pressed AND (getPos(sdl_get_mouse_x, sdl_get_mouse_y, xMain + 7 * 40, yMain, xMain + 8 * 40, yMain + 40, 40).x = 1) THEN
-			BEGIN
-				writeln('je sius la fdp');
-				setLength(supprimerPion, length(supprimerPion) + 1);
-				supprimerPion[length(supprimerPion) + 1] := tmpMain[choose.x - 1];
-				
-				removePionFromMain(tmpMain, tmpMain[choose.x - 1]);
-				stop := True;
-			END;
-			
-			IF sdl_mouse_left_down AND (getPos(sdl_get_mouse_x, sdl_get_mouse_y, xMain + 8 * 40, yMain, xMain + 9 * 40, yMain + 40, 40).x = 1) THEN
-				hasFinished := True;
-			
-			
-			gFlip();
-		UNTIL hasFinished;
+		boutonSupprimer := (getPos(sdl_get_mouse_x, sdl_get_mouse_y, xMain + 9 * 40, yMain, xMain + 10 * 40, yMain + 40, 40).x = 1);
 	END;
 
-	FUNCTION placerPion(g : grille; main : tabPion) : typeCoup;
-	VAR
-		hasPlaced : BOOLEAN;
-		tmpMain   : tabPion;
-		choose : position;
-		taille : INTEGER;
+	FUNCTION boutonValider : BOOLEAN;
 	BEGIN
+		boutonValider := (getPos(sdl_get_mouse_x, sdl_get_mouse_y, xMain + 8 * 40, yMain, xMain + 9 * 40, yMain + 40, 40).x = 1);
+	END;
+	
+	// -1 -> est pas dans la main
+	// entre 0 et tailleDeMain -> retourne le pion sur lequel on est
+	FUNCTION pionDeLaMain (main : tabPion) : INTEGER;
+	VAR
+		resultatGetPos : INTEGER;
+	BEGIN
+		resultatGetPos := getPos(sdl_get_mouse_x, sdl_get_mouse_y, xMain, yMain, xMain + length(main) * 40, yMain + 40, 40).x;
 		
-		hasPlaced := False;
-		tmpMain := copyMain(main);
-		taille := (40*20) DIV length(g);
-		choose.x := -1;
+		IF (resultatGetPos > 0) AND (resultatGetPos < length(main)) THEN
+			pionDeLaMain := resultatGetPos
+		ELSE
+			pionDeLaMain := -1;
+	END;
+	
+	FUNCTION posGrille (taillePion, tailleGrille : INTEGER) : position;
+	BEGIN
+		posGrille := getPos(sdl_get_mouse_x, sdl_get_mouse_y, xTab, yTab, tailleGrille, tailleGrille, taillePion);
+	END;
+	
+	PROCEDURE renderToCursor(img : gImage);
+	BEGIN
+		afficherImage(img, sdl_get_mouse_x, sdl_get_mouse_y, 40);
+	END;
+
+	FUNCTION faireJoueurJoueur(g : grille; main : tabPion) : typeCoup;
+	VAR
+		taille, i : INTEGER;
+		hasPlay, renderCursor, aJoueUneFois : BOOLEAN;
+		test : typeCoup;
+		tmpGrille : grille;
+		tmpMain   : tabPion;
+		pionCursor : pion;
+		typeCoup : INTEGER;
+	BEGIN
+		hasPlay := False;
+		tmpGrille := copyGrille(g);
+		tmpMain   := copyMain(main);
+		typeCoup  := 0; // 1 -> est en train de supprimer 2 -> est en train de placer des pions 0 -> n'a rien choisis
+		renderCursor := False;
+		aJoueUneFois := False;
+		
+		setLength(test.p, 0);
+		setLength(test.pos, 0);
 		
 		REPEAT
+			taille := (40*20) DIV length(tmpGrille);
 			clearScreen;
-			renderGrilleUI(g);
+		
 			while (sdl_update = 1) do
 				if (sdl_do_quit) then
 					exit;
 		
-			writeln('dans la boucle',sdl_mouse_left_down);
-			renderMainUI(main);
-			IF sdl_mouse_left_down THEN
+			renderGrilleUI(tmpGrille);
+			renderMainUI(tmpMain);
+			afficherImage(poubelle, xMain + 9 * 40 + 20, yMain + 20, 40);
+			afficherImage(tick, xMain + 8 * 40 + 20, yMain + 20, 40);
+			
+			// fais un rendu du pion sur le curseur
+			IF renderCursor THEN
+				renderToCursor(TAB_IMAGE_LOAD[(pionCursor.couleur - 1) * 6 + pionCursor.forme - 1]);
+			
+			// prend un pion dans la main
+			IF (pionDeLaMain(tmpMain) <> -1) AND sdl_mouse_left_down THEN
 			BEGIN
-				choose := getPos(sdl_get_mouse_x, sdl_get_mouse_y, xMain, yMain,xMain + length(main) * 40, yMain + 40, 40);
-				writeln('pressed', choose.x);
-			END;
-			IF (choose.x <> -1) AND sdl_get_left_mouse_pressed THEN
-			BEGIN
-				afficherImage(TAB_IMAGE_LOAD[(main[choose.x - 1].couleur - 1) * 6 + main[choose.x - 1].forme - 1], sdl_get_mouse_x, sdl_get_mouse_y, 40);
+				renderCursor := True;
+				pionCursor := tmpMain[pionDeLaMain(tmpMain) - 1]; 
 			END;
 			
-			IF (choose.x <> -1) AND NOT sdl_get_left_mouse_pressed THEN
+			//supprimer des pions
+			IF renderCursor AND ((typeCoup = 0) OR (typeCoup = 1)) AND boutonSupprimer AND NOT sdl_get_left_mouse_pressed THEN
 			BEGIN
-				hasPlaced := True;
-				setLength(placerPion.pos, 1);
-				setLength(placerPion.p, 1);
-				placerPion.pos[0] := getPos(sdl_get_mouse_x, sdl_get_mouse_y, xTab, yTab, xTab + length(g) * taille, yTab + length(g) * taille, taille);
-				placerPion.p[0]   := main[choose.x - 1];
+				typeCoup := 1;
+				setLength(test.p, length(test.p) + 1);
+				test.p[high(test.p)] := pionCursor;
+				removePionFromMain(tmpMain, pionCursor);
+				renderCursor := False;
+				aJoueUneFois := True;
+			END;
+			
+			// mettre des pions dans la grille
+			IF renderCursor AND ((typeCoup = 0) OR (typeCoup = 2)) AND (posGrille(taille, xTab + length(tmpGrille) * taille).x <> -1) AND NOT sdl_get_left_mouse_pressed THEN
+			BEGIN
+				renderCursor := False;
+				ajouterPion(tmpGrille, pionCursor, posGrille(taille, xTab + length(tmpGrille) * taille).x - 1, posGrille(taille, xTab + length(tmpGrille) * taille).y - 1, '');
+				setLength(test.p, length(test.p) + 1);
+				test.p[high(test.p)] := pionCursor;
+				setLength(test.pos, length(test.pos) + 1);
+				test.pos[high(test.pos)] := posGrille(taille, xTab + length(tmpGrille) * taille);
+				aJoueUneFois := True;
+			END;
+			
+			// si on relache le bouton gauche, on arrete de prendre le pion
+			IF renderCursor AND NOT sdl_get_left_mouse_pressed THEN
+				renderCursor := False;
+		
+			// validation du tour
+			IF NOT renderCursor AND boutonValider AND sdl_mouse_left_down AND aJoueUneFois THEN
+			BEGIN
+				writeln('fin du tour');
+				hasPlay := True;
 			END;
 			
 			gFlip();
-		UNTIL hasPlaced;
+		UNTIL hasPlay;
+		faireJoueurJoueur := test;
 	END;
 END.

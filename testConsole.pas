@@ -15,82 +15,88 @@ BEGIN
 	END;
 END;
 
-PROCEDURE mainLoop(VAR g : grille;VAR allJoueur : tabJoueur; VAR joueurJouant, antiBoucleInf : INTEGER; isFirst : BOOLEAN);
+FUNCTION mainLoop(VAR g : grille; VAR joueur : typeJoueur; coup : typeCoup;VAR  antiBoucleInf :  INTEGER; VAR isFirst : BOOLEAN) : BOOLEAN;
 VAR
-	i, nombreDeCoups, lastSize : INTEGER;
+	i, nombreCoups, lastSize : INTEGER;
+	t, score : tabPos;
 	tabPions : tabPion;
-	t,score : tabPos;
-	coupsIA  : typeCoup;
-	pionAEchanger : tabPion;
-	pos : position;
-	p : pion;
+	finalEtat : BOOLEAN;
 BEGIN
-
+	score := initTabPos;
+	IF (NOT joueur.genre AND (coup.pos[0].x <> 0)) OR (joueur.genre) AND (length(coup.pos) <> length(coup.p)) THEN
+	BEGIN
 		t := initTabPos;
-		score := initTabPos;
 		tabPions := initTabPion;
-		nombreDeCoups := 1;
-
-		writeln('dans IA');
-		coupsIA := coupAIPaul(g, allJoueur[joueurJouant].main);
-		writeln('apres IA');
-		IF coupsIA.pos[0].x <> -1 THEN
+		nombreCoups := 1;
+		FOR i := 0 TO length(coup.p) - 1 DO
 		BEGIN
-			FOR i := 0 TO length(coupsIA.p) - 1 DO
+			choperPos(t, coup.pos[i].x, coup.pos[i].y, nombreCoups);
+			choperPion(tabPions, i, coup.p[i]);
+			IF (nCoups(g, t, tabPions, nombreCoups) AND (g[coup.pos[i].x, coup.pos[i].y].couleur = 0)) OR isFirst THEN
 			BEGIN
-				p := coupsIA.p[i];
-				pos := coupsIA.pos[i];
-				choperPos(t, pos.x, pos.y, nombreDeCoups);
-				choperPion(tabPions, nombreDeCoups, p);
-				IF (nCoups(g, t, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0) AND (nombreDeCoups < 6)) OR isFirst THEN
-				BEGIN
-					ajouterPion(g, p, pos.x, pos.y, intToStr(joueurJouant));
-					choperPos(score, pos.x, pos.y, nombreDeCoups);
-					removePionFromMain(allJoueur[joueurJouant].main, p);
-					inc(nombreDeCoups);
-					isFirst := False;
-				END;
+				ajouterPion(g, coup.p[i], coup.pos[i].x, coup.pos[i].y, '');
+				choperPos(score, coup.pos[i].x, coup.pos[i].y, nombreCoups);
+				removePionFromMain(joueur.main, coup.p[i]);
+				inc(nombreCoups);
+				isFirst := False;
+				finalEtat := True;
+			END;
+		END;
+	END
+	ELSE
+	BEGIN
+		IF (coup.pos[0].x <> -1) THEN
+		BEGIN
+			FOR i := 0 TO length(joueur.main) - 1 DO
+			BEGIN
+				IF getPiocheSize - 1 >= 0 THEN
+					echangerPion(joueur.main, joueur.main[i]);
 			END;
 		END
 		ELSE
 		BEGIN
-			FOR i := 0 TO length(allJoueur[joueurJouant].main) - 1 DO
+			FOR i := 0 TO length(coup.p) - 1 DO
 			BEGIN
 				IF getPiocheSize - 1 >= 0 THEN
-					echangerPion(allJoueur[joueurJouant].main, allJoueur[joueurJouant].main[i]);
+					echangerPion(joueur.main, coup.p[i]);
 			END;
-		END;
+		END
+	END;
+	
+	joueur.score := joueur.score + point(g, score, nombreCoups);
 
-		allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, score, nombreDeCoups);
-		IF point(g, score, nombreDeCoups) = 0 THEN
-			inc(antiBoucleInf)
-		ELSE
-			antiBoucleInf := 0;
+	IF point(g, score, nombreCoups) = 0 THEN
+	BEGIN
+		inc(antiBoucleInf);
+		finalEtat := False;
+	END
+	ELSE
+	BEGIN
+		antiBoucleInf := 0;
+	END;
 
-		lastSize := length(allJoueur[joueurJouant].main);
-		
-		FOR i := 0 TO 6 - lastSize - 1 DO
+	lastSize := length(joueur.main);
+	
+	FOR i := 0 TO 6 - lastSize - 1 DO
+	BEGIN
+		IF getPiocheSize - 1 >= 0 THEN
 		BEGIN
-			IF getPiocheSize - 1 >= 0 THEN
-			BEGIN
-				setLength(allJoueur[joueurJouant].main, length(allJoueur[joueurJouant].main) + 1);
-				allJoueur[joueurJouant].main[lastSize + i] := piocher;
-			END;
+			setLength(joueur.main, length(joueur.main) + 1);
+			joueur.main[lastSize + i] := piocher;
 		END;
+	END;
+	
+	writeln(finalEtat);
+	mainLoop := finalEtat;
 END;
 
 VAR 
-	i, ii, joueurJouant, nombreDeCoups, lastSize, tmpMachine, tmpHumain, index, antiBoucleInf : INTEGER;
+	i, joueurJouant, tmpMachine, tmpHumain, antiBoucleInf : INTEGER;
 	nbrJoueurHumain, nbrJoueurMachine, nbrCouleurs, nbrFormes, nbrTuiles : INTEGER;
 	allJoueur : tabJoueur;
-	g, tmpGrille : grille;
-	p : pion;
+	g : grille;
 	coup : typeCoup;
-	stop, aFiniDeJouer, isFirst, nCoupss : BOOLEAN;
-	responce : CHAR;
-	taille, length : INTEGER;
-    font : PTTF_Font;
-    text_image : gImage;
+	isFirst, tests : BOOLEAN;
 BEGIN
 	
 	nbrCouleurs := 6;
@@ -142,8 +148,8 @@ BEGIN
 	joueurJouant := -1;
 	
 	loadImagePion;
-	
-	stop := False;
+    
+    // boucle principale
     WHILE (NOT ((antiBoucleInf > 20) OR hasWon(g, allJoueur[joueurJouant]))) DO
     BEGIN
 		inc(joueurJouant);
@@ -151,14 +157,27 @@ BEGIN
 		
 		gClear(WHITE);
 		
-		mainLoop(g, allJoueur, joueurJouant, antiBoucleInf, isFirst);
+		//mainLoop(g, allJoueur, joueurJouant, antiBoucleInf, isFirst);
+		
+		renderGrilleUI(g);
+		
+		REPEAT
+			IF allJoueur[joueurJouant].genre THEN
+			BEGIN
+				coup := faireJoueurJoueur(g, allJoueur[joueurJouant].main);
+				writeln('fin du tour joueur humain');
+			END
+			ELSE
+			BEGIN
+				coup := coupAIPaul(g, allJoueur[joueurJouant].main);
+				writeln('fin du tour joueur AI');
+			END;
+			tests := mainLoop(g, allJoueur[joueurJouant], coup, antiBoucleInf, isFirst);
+			writeln('Resultat de mainLoop : ', tests);
+		UNTIL tests;
+		
+		writeln('WTF');
 		isFirst := False;
-		
-		renderGrille(g);
-		renderMainUI(allJoueur[joueurJouant].main);
-		
-		supprimerPion(g, allJoueur[joueurJouant].main);
-		
 		
 		gFlip();
 		

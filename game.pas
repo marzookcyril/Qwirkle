@@ -183,13 +183,27 @@ VAR
 
 	PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
 	BEGIN
-		IF (x < 1) OR (y < 1) OR (y > length(g) - 2) OR (x > length(g) - 2)THEN
+		IF (x <= 1) OR (y <= 1) OR (y >= length(g) - 1) OR (x >= length(g) - 1) THEN
 		BEGIN
 			redimensionnerGrille(g);
-			IF (x < 1) OR (y < 1) THEN
-				g[x + 1, y + 1] := pionAAjouter;
-			IF (y > length(g) - 1) OR (x > length(g) - 1) THEN
-				g[x, y] := pionAAjouter;
+			IF (x <= 1) AND (y <= 1) THEN
+				g[x + 1, y + 1] := pionAAjouter
+			ELSE
+			BEGIN
+				IF (x <= 1) THEN
+					g[x + 1, y + 1] := pionAAjouter;
+				IF (y <= 1) THEN
+					g[x + 1, y + 1] := pionAAjouter;
+			END;
+			IF (y >= length(g) - 3) AND (x >= length(g) - 3) THEN
+				g[x + 1, y + 1] := pionAAjouter
+			ELSE
+			BEGIN
+				IF (y >= length(g) - 3) THEN
+					g[x + 1, y + 1] := pionAAjouter;
+				IF (x >= length(g) - 3) THEN
+					g[x + 1, y + 1] := pionAAjouter;
+			END;
 		END
 		ELSE
 		BEGIN

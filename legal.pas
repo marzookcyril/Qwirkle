@@ -285,11 +285,11 @@ VAR
 		bool : BOOLEAN;
 	BEGIN
 		bool := FALSE;
-		(*writeln('----');
+		writeln('----');
 		writeln('xor ',(x1 = x2) XOR (y1 = y2));
 		writeln('plc ', placer(g,x2,y2,p2));
-		writeln('con ', continu(g,x1,y1,x2,y2,x3,y3));
-		writeln('----');*)
+		writeln('con ', continu(x1,y1,x2,y2,x3,y3));
+		writeln('----');
 		IF (((x1 = x2) XOR (y1 = y2)) AND placer(g,x2,y2,p2) AND continu(x1,y1,x2,y2,x3,y3)) THEN
 		BEGIN
 			bool:= TRUE;

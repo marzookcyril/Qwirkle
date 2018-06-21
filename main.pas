@@ -63,7 +63,7 @@ BEGIN
 	// si les parametres sont vides, on mets les parametres par defaut
 	IF nbrCouleurs      = 0 THEN nbrCouleurs      := 6;
 	IF nbrFormes        = 0 THEN nbrFormes        := 6;
-	IF nbrTuiles        = 0 THEN nbrTuiles        := 5;
+	IF nbrTuiles        = 0 THEN nbrTuiles        := 3;
 
 	IF nbrJoueurHumain + nbrJoueurMachine = 0 THEN
 	BEGIN
@@ -128,6 +128,7 @@ BEGIN
 			nombreDeCoups := 1;
 			t := initTabPos;
 			tabPions := initTabPion;
+			renderScore(allJoueur);
 			renderGrille(g);
 			renderMain(allJoueur[joueurJouant].main);
 			IF renderPopUpWithResponce('Changer votre pioche ? (o/n)') = 'o' THEN
