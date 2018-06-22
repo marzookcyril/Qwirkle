@@ -11,6 +11,8 @@ CONST
 	yTab = 50;
 	xMain = 1000;
 	yMain = 750;
+	xScore = 1000;
+	yScore = 300;
 	
 	TAB_IMAGE: Array[0..35] of String = ('bRond.png','bTrefle.png','bEtoile.png','bTache.png','bCarre.png','bLosange.png','vertRond.png','vertTrefle.png','vertEtoile.png','vertTache.png','vertCarre.png','vertLosange.png','yRond.png','yTrefle.png','yEtoile.png','yTache.png','yCarre.png','yLosange.png','rRond.png','rTrefle.png','rEtoile.png','rTache.png','rCarre.png','rLosange.png','vRond.png','vTrefle.png','vEtoile.png','vTache.png','vCarre.png','vLosange.png','oRond.png','oTrefle.png','oEtoile.png','oTache.png','oCarre.png','oLosange.png');
 	
@@ -18,8 +20,10 @@ CONST
 PROCEDURE renderGrilleUI(g : grille);
 PROCEDURE loadImagePion;
 PROCEDURE renderMainUI(main : tabPion);
-FUNCTION faireJoueurJoueur(g : grille; main : tabPion; isFirst : BOOLEAN) : typeCoup;
+PROCEDURE renderScoreUI(allJoueur : tabJoueur; joueurJouant : INTEGER);
+FUNCTION faireJoueurJoueur(g : grille; main : tabPion; allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN) : typeCoup;
 PROCEDURE clearScreen();
+PROCEDURE afficherText(str : STRING; x,y,t : INTEGER; c : gColor);
 
 IMPLEMENTATION
 VAR
@@ -27,6 +31,8 @@ VAR
 	poubelle : gImage;
 	tick : gImage;
 	reset : gImage;
+	qwirkle : gImage;
+	font1,font2,font3,font4,font5 : PTTF_Font;
 	
 	PROCEDURE clearScreen();
 	BEGIN
@@ -38,8 +44,14 @@ VAR
 		i : INTEGER;
 	BEGIN
 		poubelle := gTexLoad('poubelle.png');
-		tick := gTexLoad('tick.png');
-		reset := gTexLoad('reset.png');
+		tick     := gTexLoad('tick.png');
+		reset    := gTexLoad('reset.png');
+		qwirkle  := gTexLoad('Qwirkle.png');
+		font1    := TTF_OpenFont('police.ttf', 20);
+		font2    := TTF_OpenFont('police.ttf', 30);
+		font3    := TTF_OpenFont('police.ttf', 40);
+		font4    := TTF_OpenFont('police.ttf', 50);
+		font5    := TTF_OpenFont('police.ttf', 60);
 		FOR i := 0 TO length(TAB_IMAGE) - 1 DO
 			TAB_IMAGE_LOAD[i] := gTexLoad('pions/' + TAB_IMAGE[i]);
 	END;
@@ -56,10 +68,66 @@ VAR
 		gEnd;
 	END;
 	
+	PROCEDURE afficherImageRect(image : gImage; x,y,t1,t2 : INTEGER);
+	BEGIN
+		gBeginRects(image);
+			gSetCoordMode(G_UP_LEFT);
+			gSetAlpha(255);
+			gSetScaleWH(t1, t2);
+			gSetCoord(x, y);
+			gSetRotation(0);
+			gAdd;
+		gEnd;
+	END;
+	
+	PROCEDURE afficherText(str : STRING; x,y,t : INTEGER; c : gColor);
+	VAR
+		text : gImage;
+	BEGIN
+		CASE t OF
+			1: text := gTextLoad(str, font1);
+			2: text := gTextLoad(str, font2);
+			3: text := gTextLoad(str, font3);
+			4: text := gTextLoad(str, font4);
+			5: text := gTextLoad(str, font5);
+		END;
+		gBeginRects(text);
+            gSetCoordMode(G_UP_LEFT);
+            gSetCoord(x, y);
+            gSetColor(c);
+            gSetRotation(0);
+            gAdd();
+        gEnd();
+
+	END;
+	
+	FUNCTION createScoreText(joueur : typeJoueur; id : INTEGER) : STRING;
+	BEGIN
+		IF joueur.genre THEN
+			createScoreText := 'Humain n' + inttostr(id) + ': ' + inttostr(joueur.score)
+		ELSE
+			createScoreText := 'AI n' + inttostr(id) + ': ' + inttostr(joueur.score);
+	END;
+	
+	PROCEDURE renderScoreUI(allJoueur : tabJoueur; joueurJouant : INTEGER);
+	VAR
+		i : INTEGER;
+	BEGIN
+		FOR i := 0 TO length(allJoueur) - 1 DO
+		BEGIN
+			IF i = joueurJouant THEN
+				afficherText(createScoreText(allJoueur[i], i + 1), xScore, yScore + i * 30, 2, RED)
+			ELSE
+				afficherText(createScoreText(allJoueur[i], i + 1), xScore, yScore + i * 30, 2, GRAY);
+		END;
+	END;
+	
 	PROCEDURE renderGrilleUI(g : grille);
 	VAR
 		i, j, taille : INTEGER;
 	BEGIN
+		afficherImageRect(qwirkle, 1050, 100, 550, 113);
+		afficherText('par Paul & Cyril!', 1450, 210, 2, DARKGRAY);
 		IF length(g) < 50 THEN
 		BEGIN
 			taille := (40*20) DIV length(g);
@@ -152,7 +220,7 @@ VAR
 		afficherImage(img, sdl_get_mouse_x, sdl_get_mouse_y, 40);
 	END;
 
-	FUNCTION faireJoueurJoueur(g : grille; main : tabPion; isFirst : BOOLEAN) : typeCoup;
+	FUNCTION faireJoueurJoueur(g : grille; main : tabPion; allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN) : typeCoup;
 	VAR
 		taille : INTEGER;
 		hasPlay, renderCursor, aJoueUneFois : BOOLEAN;
@@ -182,10 +250,10 @@ VAR
 		
 			renderGrilleUI(tmpGrille);
 			renderMainUI(tmpMain);
+			renderScoreUI(allJoueur, joueurJouant);
 			afficherImage(tick, xMain + 8 * 40 + 20, yMain + 20, 40);
 			afficherImage(reset, xMain + 10 * 40 + 20, yMain + 20, 40);
 			afficherImage(poubelle, xMain + 9 * 40 + 20, yMain + 20, 40);
-			
 			
 			// fais un rendu du pion sur le curseur
 			IF renderCursor THEN

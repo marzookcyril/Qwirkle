@@ -32,7 +32,7 @@ FUNCTION createArgs : typeArgs;
 VAR
 	i, ii : INTEGER;
 BEGIN
-	createArgs.graphique := True;
+	createArgs.graphique := False;
 	createArgs.couleurs  := 0;
 	createArgs.formes    := 0;
 	createArgs.tuiles    := 0;
@@ -60,12 +60,12 @@ BEGIN
 	
 	IF createArgs.couleurs      = 0 THEN createArgs.couleurs      := 6;
 	IF createArgs.formes        = 0 THEN createArgs.formes        := 6;
-	IF createArgs.tuiles        = 0 THEN createArgs.tuiles        := 3;
+	IF createArgs.tuiles        = 0 THEN createArgs.tuiles        := 6;
 	
 	IF createArgs.humains + createArgs.machines = 0 THEN
 	BEGIN
-		createArgs.humains  := 1;
-		createArgs.machines := 1;
+		createArgs.humains  := 2;
+		createArgs.machines := 0;
 	END;
 	
 	createArgs := createArgs;
@@ -281,6 +281,7 @@ BEGIN
 	nombreDeCoups := 1;
 	
 	clearScreen;
+	renderScoreUI(allJoueur, joueurJouant);
 	renderGrilleUI(g);
 	gFlip;
 	
@@ -318,6 +319,7 @@ BEGIN
 	joueur.score := joueur.score + point(g, tabScore, nombreDeCoups);
 	
 	clearScreen;
+	renderScoreUI(allJoueur, joueurJouant);
 	renderGrilleUI(g);
 	gFlip();
 	
@@ -333,20 +335,27 @@ VAR
 	tabPions : tabPion;
 	joueur : typeJoueur;
 	p : pion;
+	oldGrille : grille;
+	oldMain   : tabPion;
 	pos : position;
 	coups  : typeCoup;
+	erreur, wasFirst : BOOLEAN;
 BEGIN
+	oldGrille := copyGrille(g);
+	oldMain   := copyMain(allJoueur[joueurJouant].main);
+	wasFirst  := isFirst;
 	joueur := allJoueur[joueurJouant];
 	tabPosi   := initTabPos;
 	tabPions  := initTabPion;
 	tabScore  := initTabPos;
 	nombreDeCoups := 1;
+	erreur := False;
 	
 	clearScreen;
 	renderGrilleUI(g);
 	gFlip;
 	
-	coups := faireJoueurJoueur(g, allJoueur[joueurJouant].main, isFirst);
+	coups := faireJoueurJoueur(g, allJoueur[joueurJouant].main, allJoueur, joueurJouant, isFirst);
 	
 	IF length(coups.p) = length(coups.pos) THEN
 	BEGIN
@@ -365,7 +374,9 @@ BEGIN
 				removePionFromMain(joueur.main, p);
 				inc(nombreDeCoups);
 				isFirst := False;
-			END;
+			END
+			ELSE
+				erreur := True;
 		END;
 	END
 	ELSE
@@ -377,15 +388,29 @@ BEGIN
 		END;
 	END;
 	
-	joueur.score := joueur.score + point(g, tabScore, nombreDeCoups);
-	
-	clearScreen;
-	renderGrilleUI(g);
-	gFlip();
-	
-	mettreAJourMain(joueur.main);
-	
-	allJoueur[joueurJouant] := joueur;	
+	IF erreur THEN
+	BEGIN
+		joueur.main := copyMain(oldMain);
+		g := copyGrille(oldGrille);
+		isFirst := wasFirst;
+		clearScreen;
+		afficherText('Tu ne peux pas joueur la...', 650, 425, 4, RED);
+		gFlip;
+		delay(1500);
+		faireJouerHumainModeGraphique(g, allJoueur, joueurJouant, isFirst);
+	END
+	ELSE
+	BEGIN
+		joueur.score := joueur.score + point(g, tabScore, nombreDeCoups);
+		
+		clearScreen;
+		renderGrilleUI(g);
+		gFlip();
+		
+		mettreAJourMain(joueur.main);
+		
+		allJoueur[joueurJouant] := joueur;	
+	END;
 END;
 
 VAR
@@ -440,10 +465,6 @@ BEGIN
 			
 	UNTIL hasWon(g, allJoueur[joueurJouant]) or (antiBoucleInf > 10);
 	
-	clrscr;
-	renderScore(allJoueur);
-	renderGrille(g);
-	
 	antiBoucleInf := 0;
 	
 	FOR i := 0 TO length(allJoueur) - 1 DO
@@ -459,7 +480,11 @@ BEGIN
 	BEGIN
 		WHILE TRUE DO
 		BEGIN
-			renderGrilleUI(g);
+			clearScreen;
+			IF allJoueur[joueurJouant].genre THEN
+				afficherText('Le gagnant est l''humain n ' + inttostr(joueurJouant) + '! gg!', 500, 450, 4, RED)
+			ELSE
+				afficherText('Le gagnant est l''ordi n ' + inttostr(joueurJouant) + '! gg!', 500, 450, 4, RED);
 			gFlip();
 			while (sdl_update = 1) do
 				if (sdl_do_quit) then

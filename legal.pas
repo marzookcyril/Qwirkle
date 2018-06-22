@@ -243,10 +243,12 @@ VAR
 
 	FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
 	BEGIN
+{
 		writeln('-----');
 		writeln('cood ', concordanceGenerale(g,x,y,p));
 		writeln('dupl ', duplicationPion(g,x,y,p));
 		writeln('-----');
+}
 		IF (concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p)) THEN
 		BEGIN
 			placer := TRUE;
@@ -402,7 +404,6 @@ VAR
 		FOR j := 1 TO 4 DO
 		BEGIN
 			etat1 := findEtat(g, x, y, j);
-			writeln(etat1);
 			IF ( etat1[1] = '0' ) THEN
 			BEGIN
 				IF (inttostr(p.couleur) = etat1[3]) OR (inttostr(p.forme) =  etat1[2]) THEN
