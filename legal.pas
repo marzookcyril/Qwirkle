@@ -33,7 +33,7 @@ VAR
 	// dir :    2
 	//        1   3
 	//          4
-	FUNCTION dirValue(dir : INTEGER) : position;
+	FUNCTION dirValue(dir : INTEGER) : position; // on renvoie une position en fonction de la direction choisie
 	VAR
 		tmp : position;
 	BEGIN
@@ -62,7 +62,7 @@ VAR
 		dirValue := tmp;
 	END;
 
-	FUNCTION calculNombreDeVoisin(g : grille; x, y: INTEGER; dirInt : INTEGER) : INTEGER;
+	FUNCTION calculNombreDeVoisin(g : grille; x, y: INTEGER; dirInt : INTEGER) : INTEGER; // On calcule de nombre de voisin dans toutes les directions
 	VAR
 		i : INTEGER;
 		dir : position;
@@ -74,7 +74,7 @@ VAR
 		calculNombreDeVoisin := i;
 	END;
 
-	FUNCTION verifNombreVoisin(g : grille; x, y: INTEGER) : BOOLEAN;
+	FUNCTION verifNombreVoisin(g : grille; x, y: INTEGER) : BOOLEAN; // on verifie ici que le nombre de voisins en ligne et colonne et inferieur a un Qwirkle
 	VAR
 		verif : BOOLEAN;
 	BEGIN
@@ -89,22 +89,22 @@ VAR
 	// CODES :
 	// 000 => free
 	// 404 => error
-	FUNCTION findEtat(g : grille; x,y, dirInt : INTEGER) : STRING;
-	VAR
-		dir, dirBis : position;
+	FUNCTION findEtat(g : grille; x,y, dirInt : INTEGER) : STRING; // on cherche ici a determiner l'etat d'une direction 
+	VAR															  // c est a dire determiner la caracteristique forme ou couleur 
+		dir, dirBis : position;                                   // qui lie les voisins 
 		nbrVoisin, nbrVoisinPeu : INTEGER;
 	BEGIN
 		dir := dirValue(dirInt);
 		nbrVoisin := calculNombreDeVoisin(g, x, y, dirInt);
 		IF nbrVoisin > 1 THEN
 		BEGIN
-			IF g[x + dir.x, y + dir.y].forme = g[x + 2 * dir.x, y + 2 * dir.y].forme THEN
+			IF g[x + dir.x, y + dir.y].forme = g[x + 2 * dir.x, y + 2 * dir.y].forme THEN   // on renvoie la forme exacte dans la direction 
 			BEGIN
 				findEtat :=  'F' + inttostr(g[x + dir.x, y + dir.y].forme) + '0';
 			END
 			ELSE
 			BEGIN
-				IF g[x + dir.x, y + dir.y].couleur = g[x + 2 * dir.x, y + 2 * dir.y].couleur THEN
+				IF g[x + dir.x, y + dir.y].couleur = g[x + 2 * dir.x, y + 2 * dir.y].couleur THEN // on renvoie la couleur exacte dans la direction 
 					findEtat :=  'C' + inttostr(g[x + dir.x, y + dir.y].couleur) + '0'
 				ELSE
 					findEtat := '404';
@@ -116,8 +116,8 @@ VAR
 			BEGIN
 				nbrVoisinPeu := calculNombreDeVoisin(g, x, y, (dirInt + 2) MOD 4);
 				dir := dirValue((dirInt + 2) MOD 4);
-				// le voisin opposé est seul
-				IF (x + dir.x < 0) OR (x + dir.x > length(g) - 1) OR (y + dir.y < 0) OR (y + dir.y > length(g) - 1) THEN
+				// le voisin opposé est seul on renvoie 000 pour dire que tout type de pions peut etre placé
+				IF (x + dir.x < 0) OR (x + dir.x > length(g) - 1) OR (y + dir.y < 0) OR (y + dir.y > length(g) - 1) THEN 
 				BEGIN
 					findEtat := '000';
 				END
@@ -137,7 +137,7 @@ VAR
 				END;
 			END;
 
-			IF nbrVoisin = 1 THEN
+			IF nbrVoisin = 1 THEN // si il ya un seul voisin on renvoie le type exacte du pions en question
 			BEGIN
 				dirBis := dirValue((dirInt + 2) MOD 4);
 				IF (x + dirBis.x < 0) OR (x + dirBis.x > length(g) - 1) OR (y + dirBis.y < 0) OR (y + dirBis.y > length(g) - 1) THEN
@@ -169,7 +169,7 @@ VAR
 		END;
 	END;
 
-	// dir => 0 en ligne, 1 => en colonnne
+	// Dans cette fonction on faitr concorder une ligne entiere et une colonne 
 	FUNCTION sousConcordance(g : grille; x, y, dir : INTEGER) : BOOLEAN;
 	VAR
 		etat1, etat2 : STRING;
@@ -183,20 +183,24 @@ VAR
 			sousConcordance := FALSE;
 	END;
 
+	// on fait concorder les lignes avec les colonnes pour savoir quel sont les caracteristiques du pion qui peut etre place 
 	FUNCTION concordance(g : grille; x, y : INTEGER) : BOOLEAN;
 	BEGIN
 		concordance := sousConcordance(g, x, y, 1) AND sousConcordance(g, x, y, 0);
 	END;
 
+	// on utilise une fonction injective pour pouvoir verifier si un pion est dupliquer pluq rapidement en ne comparemet que deux entiers
 	FUNCTION injection(x, y : INTEGER) :  INTEGER;
 	BEGIN
 		injection := ((x + y) * (x + y + 1)) DIV 2 + y;
 	END;
 
 	// 1 en ligne / 2 en colonne
+	// on verifie que l'on ne relie pas une ligne ou colonne contenant deux fois le meme pion 
+	// et que le pion que lon place n'est pas deja dans la ligne ou colonne 
 	FUNCTION duplicationPion(g : grille; x,y: INTEGER; p : pion) : BOOLEAN;
 	VAR
-		// magie de paul
+		
 		tmp : ARRAY [0..500] OF INTEGER;
 		erreur : boolean;
 		i, ii : INTEGER;
@@ -243,20 +247,15 @@ VAR
 
 	FUNCTION placer(g: grille; x, y : INTEGER; p : pion): BOOLEAN;
 	BEGIN
-{
-		writeln('-----');
-		writeln('cood ', concordanceGenerale(g,x,y,p));
-		writeln('dupl ', duplicationPion(g,x,y,p));
-		writeln('-----');
-}
-		IF (concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p)) THEN
+	IF (concordanceGenerale(g,x,y,p) AND duplicationPion(g,x,y,p)) THEN
 		BEGIN
 			placer := TRUE;
 		END
 		ELSE
 			placer := FALSE;
 	END;
-
+	
+	// on utilise cette fonction placer plusieurs pions pouir eviter de pouvoir les places sur la meme ligne ou colonne sans discontinuité
 	FUNCTION continu(g : grille; x1,y1,x2,y2,x3,y3 : INTEGER): BOOLEAN;
 	VAR
 		cont: BOOLEAN;
@@ -289,19 +288,14 @@ VAR
 		continu := cont;
 	END;
 
-
+	// on verifie ici que le nieme pion que l'on place est bioen sur la meme ligne/colonne 
+	// que ceux placer precedemment et qu'il n'est pas placer en discontinuité
 	FUNCTION plusieursCoups(g: grille; x1,y1,x2,y2,x3,y3 : INTEGER; p1,p2 : pion) : BOOLEAN;
 	VAR
 		bool : BOOLEAN;
 	BEGIN
 		bool := FALSE;
-{
-		writeln('----');
-		writeln('xor ',(x1 = x2) XOR (y1 = y2));
-		writeln('plc ', placer(g,x2,y2,p2));
-		writeln('con ', continu(g, x1,y1,x2,y2,x3,y3));
-		writeln('----');
-}
+
 		IF (((x1 = x2) XOR (y1 = y2)) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2,x3,y3)) THEN
 		BEGIN
 			bool:= TRUE;
@@ -311,7 +305,7 @@ VAR
 		plusieursCoups:= bool;
 	END;
 
-
+	// en fonction du nombre de pion que l'on place on verifie ligne colonne etat et continuité
 	FUNCTION nCoups(g: grille; t : tabPos; p : tabPion; num : INTEGER) : BOOLEAN;
 	BEGIN
 		CASE num OF
@@ -348,6 +342,7 @@ VAR
 		END;
 	END;
 
+	// on initie un tableau a chaque tour qui permet de stocker lespositions des pions que l'on a placé
 	FUNCTION initTabPos(): tabPos;
 	VAR i : INTEGER;
 		t : tabPos;
@@ -360,7 +355,8 @@ VAR
 		END;
 		initTabPos := t;
 	END;
-
+	
+	// on initie un tableau a chaque tour qui permet de stocker les pions que l'on a placé
 	FUNCTION initTabPion(): tabPion;
 	VAR i : INTEGER;
 		t : tabPion;
@@ -374,6 +370,7 @@ VAR
 		initTabPion := t;
 	END;
 
+	// on prend les positions des pions placer en un tour pour faire les test pour les pions d'apres 
 	PROCEDURE choperPos(VAR t : tabPos ; x,y, num : INTEGER);
 	BEGIN
 		t[num-1].x  := x;
@@ -395,6 +392,7 @@ VAR
 		calculNombreDeVoisinColonne := calculNombreDeVoisin(g, x, y, 2) + calculNombreDeVoisin(g, x, y, 4);
 	END;
 
+	// on verifie si on peut placer un pion si il verifie les concordance de chaque direction
 	FUNCTION concordanceGenerale(g: grille ; x,y : INTEGER; p : pion): BOOLEAN;
 	VAR
 		i , j: INTEGER;
@@ -436,6 +434,9 @@ VAR
 			concordanceGenerale := FALSE;
 	END;
 
+
+	// on calcule le nombre de point en fonction du nombre de pions que l'on a placé dans notre tour
+	// sans oublier le bonus lorque l'on réalise un qwirkle 
 	FUNCTION point(g : grille; t : tabPos ; num : INTEGER): INTEGER;
 	VAR
 		i ,points : INTEGER;
