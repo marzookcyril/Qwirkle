@@ -68,6 +68,18 @@ BEGIN
 		createArgs.machines := 0;
 	END;
 	
+	IF ((createArgs.couleurs > 6) OR (createArgs.formes > 6)) AND createArgs.graphique THEN
+	BEGIN
+		writeln('L''interface graphique supporte que 6 formes et 6 couleurs.');
+		Halt (1);
+	END;
+	
+	IF (createArgs.couleurs > 10) OR (createArgs.formes > 10) or (createArgs.tuiles > 10) or (createArgs.humains + createArgs.machines > 10) THEN
+	BEGIN
+		writeln('Votre configuration n''est pas possible. Au maximum, vous pouvez jouer avec 10 tuiles, 10 couleurs, 10 formes et 10 joueurs');
+		Halt (1);
+	END;
+	
 	createArgs := createArgs;
 END;
 
