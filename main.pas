@@ -19,9 +19,9 @@ VAR
 	nbrJoueurHumain, nbrJoueurMachine, nbrCouleurs, nbrFormes, nbrTuiles : INTEGER;
 	allJoueur : tabJoueur;
 	pos : position;
-	g, tmpGrille : grille;
+	g : grille;
 	p : pion;
-	stop, aFiniDeJouer, isFirst, nCoupss : BOOLEAN;
+	aFiniDeJouer, isFirst, nCoupss : BOOLEAN;
 	t,score : tabPos;
 	responce : CHAR;
 	tabPions : tabPion;
@@ -35,8 +35,6 @@ BEGIN
 	nbrTuiles        := 0;
 	nbrJoueurHumain  := 0;
 	nbrJoueurMachine := 0;
-
-	stop := False;
 
 	// on va initialiser le jeu avec les parametres pris en compte
 	FOR i := 0 TO ParamCount - 1 DO
@@ -206,13 +204,9 @@ BEGIN
 			score := initTabPos;
 			tabPions := initTabPion;
 			nombreDeCoups := 1;
-
-			// on recupere tous les coups de l'IA
-			//writeln('----------');
-			//writeln('Je suis la');
+			
 			coupsIA := coupAIPaul(g, allJoueur[joueurJouant].main);
-			//writeln('Je suis laa');
-			//writeln('==========');
+			
 			renderMain(allJoueur[joueurJouant].main);
 			IF coupsIA.pos[0].x <> -1 THEN
 			BEGIN
@@ -231,21 +225,21 @@ BEGIN
 						isFirst := False;
 					END;
 				END;
-			END
-			ELSE
+			END;
+
+			IF point(g, score, nombreDeCoups) = 0 THEN
 			BEGIN
+				inc(antiBoucleInf);
 				FOR i := 0 TO length(allJoueur[joueurJouant].main) - 1 DO
 				BEGIN
 					IF getPiocheSize - 1 >= 0 THEN
 						echangerPion(allJoueur[joueurJouant].main, allJoueur[joueurJouant].main[i]);
 				END;
-			END;
-
-			allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, score, nombreDeCoups);
-			IF point(g, score, nombreDeCoups) = 0 THEN
-				inc(antiBoucleInf)
+			END
 			ELSE
 				antiBoucleInf := 0;
+
+			allJoueur[joueurJouant].score := allJoueur[joueurJouant].score + point(g, score, nombreDeCoups);
 			
 			renderScore(allJoueur);
 			renderGrille(g);

@@ -16,7 +16,7 @@ FUNCTION nCoups(g: grille; t : tabPos; p : tabPion; num : INTEGER) : BOOLEAN;
 FUNCTION initTabPos(): tabPos;
 FUNCTION initTabPion(): tabPion;
 FUNCTION point(g : grille; t : tabPos ; num : INTEGER): INTEGER;
-FUNCTION continu(x1,y1,x2,y2,x3,y3 : INTEGER): BOOLEAN;
+FUNCTION continu(g : grille; x1,y1,x2,y2,x3,y3 : INTEGER): BOOLEAN;
 PROCEDURE choperPos(VAR t : tabPos ; x,y, num : INTEGER);
 PROCEDURE choperPion(VAR t : tabPion ;num : INTEGER; p : pion);
 PROCEDURE initLegal(qwirkle : INTEGER);
@@ -255,25 +255,35 @@ VAR
 			placer := FALSE;
 	END;
 
-	FUNCTION continu(x1,y1,x2,y2,x3,y3 : INTEGER): BOOLEAN;
+	FUNCTION continu(g : grille; x1,y1,x2,y2,x3,y3 : INTEGER): BOOLEAN;
 	VAR
 		cont: BOOLEAN;
+		i : INTEGER;
 	BEGIN
 		cont := FALSE;
-		IF x1 = x2 THEN
+		IF (x1 = x2) THEN
 		BEGIN
-			IF ((y2 > y1 - 6) AND (y2 < y1 + 6)) THEN
+			cont := TRUE;
+			FOR i := min(y1, y2) TO max(y1, y2) - 1 DO
 			BEGIN
-				IF (y2 = y3 + 1) OR (y2 = y3 - 1) THEN
-					cont := TRUE
+				IF (g[x1, i].couleur = 0) AND (i <> y2) THEN
+				BEGIN
+					writeln('trouve');
+					cont := FALSE
+				END;
 			END;
 		END;
-		IF y1 = y2 THEN
+		
+		IF (y1 = y2) THEN
 		BEGIN
-			IF ((x2 > x1 - 6) AND (x2 < x1 + 6)) THEN
+			cont := TRUE;
+			FOR i := min(x1, x2) TO max(x1, x2) DO
 			BEGIN
-				IF (x2 = x3 + 1) OR (x2 = x3 - 1) THEN
-					cont := TRUE
+				IF (g[i, y1].couleur = 0) AND (i <> x2) THEN
+				BEGIN
+					writeln('trouve');
+					cont := FALSE
+				END;
 			END;
 		END;
 		continu := cont;
@@ -285,12 +295,14 @@ VAR
 		bool : BOOLEAN;
 	BEGIN
 		bool := FALSE;
+{
 		writeln('----');
 		writeln('xor ',(x1 = x2) XOR (y1 = y2));
 		writeln('plc ', placer(g,x2,y2,p2));
-		writeln('con ', continu(x1,y1,x2,y2,x3,y3));
+		writeln('con ', continu(g, x1,y1,x2,y2,x3,y3));
 		writeln('----');
-		IF (((x1 = x2) XOR (y1 = y2)) AND placer(g,x2,y2,p2) AND continu(x1,y1,x2,y2,x3,y3)) THEN
+}
+		IF (((x1 = x2) XOR (y1 = y2)) AND placer(g,x2,y2,p2) AND continu(g,x1,y1,x2,y2,x3,y3)) THEN
 		BEGIN
 			bool:= TRUE;
 			
@@ -343,8 +355,8 @@ VAR
 		setLength(t, 5);
 		FOR i := 0 TO 5 Do
 		BEGIN
-			t[i].x := 0;
-			t[i].y := 0;
+			t[i].x := -1;
+			t[i].y := -1;
 		END;
 		initTabPos := t;
 	END;
@@ -434,11 +446,11 @@ VAR
 			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
 				points := points + calculNombreDeVoisinLigne(g, t[0].x, t[0].y) + 1;
 			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = qwirkleSize) THEN
-				points := points + 12;
+				points := points + (qwirkleSize + 1) * 2;
 			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
 				points := points + calculNombreDeVoisinColonne(g, t[0].x, t[0].y) + 1;
 			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) = qwirkleSize) THEN
-				points := points + 12;
+				points := points + (qwirkleSize + 1) * 2;
 		END
 		ELSE
 		BEGIN
@@ -450,12 +462,12 @@ VAR
 					IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) < qwirkleSize) AND (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) > 0) THEN
 						points := points + calculNombreDeVoisinLigne(g, t[i].x, t[i].y) + 1;
 					IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) = qwirkleSize) THEN
-						points := points + 12;
+						points := points + (qwirkleSize + 1) * 2;
 				END;
 				IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
 					points := points + calculNombreDeVoisinColonne(g, t[0].x, t[0].y) + 1;
 				IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) = qwirkleSize) THEN
-					points := points + 12;
+					points := points + (qwirkleSize + 1) * 2;
 			END;
 			IF t[0].y = t[1].y THEN
 			BEGIN
@@ -464,12 +476,12 @@ VAR
 					IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) < qwirkleSize) AND (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) > 0) THEN
 						points := points + calculNombreDeVoisinColonne(g, t[i].x, t[i].y) + 1;
 					IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) = qwirkleSize) THEN
-						points := points + 12;
+						points := points + (qwirkleSize + 1) * 2;
 				END;
 				IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
 					points := points + calculNombreDeVoisinLigne(g, t[0].x, t[0].y) + 1;
 				IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = qwirkleSize) THEN
-					points := points + 12;
+					points := points +  (qwirkleSize + 1) * 2;
 			END;
 		END;
 		point := points;

@@ -20,7 +20,7 @@ VAR
 	i, nombreCoups, lastSize : INTEGER;
 	t, score : tabPos;
 	tabPions : tabPion;
-	finalEtat : BOOLEAN;
+	test : BOOLEAN;
 BEGIN
 	score := initTabPos;
 	IF (NOT joueur.genre AND (coup.pos[0].x <> 0)) OR (joueur.genre) AND (length(coup.pos) <> length(coup.p)) THEN
@@ -39,10 +39,9 @@ BEGIN
 				removePionFromMain(joueur.main, coup.p[i]);
 				inc(nombreCoups);
 				isFirst := False;
-				finalEtat := True;
 			END;
 		END;
-	END
+	END	
 	ELSE
 	BEGIN
 		IF (coup.pos[0].x <> -1) THEN
@@ -63,12 +62,17 @@ BEGIN
 		END
 	END;
 	
+	
+	IF nombreCoups > 1 THEN
+		test := True
+	ELSE
+		test := False;
+
 	joueur.score := joueur.score + point(g, score, nombreCoups);
 
 	IF point(g, score, nombreCoups) = 0 THEN
 	BEGIN
 		inc(antiBoucleInf);
-		finalEtat := False;
 	END
 	ELSE
 	BEGIN
@@ -86,8 +90,8 @@ BEGIN
 		END;
 	END;
 	
-	writeln(finalEtat);
-	mainLoop := finalEtat;
+	writeln('finalEtat',  test);
+	mainLoop := test;
 END;
 
 VAR 
@@ -96,7 +100,8 @@ VAR
 	allJoueur : tabJoueur;
 	g : grille;
 	coup : typeCoup;
-	isFirst, tests : BOOLEAN;
+	isFirst : BOOLEAN;
+	tests : BOOLEAN;
 BEGIN
 	
 	nbrCouleurs := 6;
@@ -156,9 +161,7 @@ BEGIN
 		joueurJouant := joueurJouant MOD (nbrJoueurHumain + nbrJoueurMachine);
 		
 		gClear(WHITE);
-		
-		//mainLoop(g, allJoueur, joueurJouant, antiBoucleInf, isFirst);
-		
+
 		renderGrilleUI(g);
 		
 		REPEAT
@@ -176,7 +179,6 @@ BEGIN
 			writeln('Resultat de mainLoop : ', tests);
 		UNTIL tests;
 		
-		writeln('WTF');
 		isFirst := False;
 		
 		gFlip();
