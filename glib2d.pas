@@ -21,7 +21,7 @@ Type
 
 Const
     (* Screen constants *)
-    TITLE = 'Free Pascal - SDL Window';
+    TITLE = 'Qwirkle - Paul et Cyril';
     G_SCR_W         = 1800;
     G_SCR_H         = 900;
     G_VOID          = 0;

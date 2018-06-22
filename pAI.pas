@@ -197,7 +197,7 @@ VAR
 		// on fait tout comme si il avait ete place
 		tmpGrille := copyGrille(g);
 		tmpMain := copyMain(main);
-		ajouterPion(tmpGrille, arbre^.lastPion[arbre^.down - 1], arbre^.lastPos[arbre^.down - 1].x, arbre^.lastPos[arbre^.down - 1].y, 'T');
+		ajouterPion(tmpGrille, arbre^.lastPion[arbre^.down - 1], arbre^.lastPos[arbre^.down - 1].x, arbre^.lastPos[arbre^.down - 1].y);
 
 		tabCoupPos := copyTabPos(arbre^.lastPos);
 		tabCoupPion := copyMain(arbre^.lastPion);
@@ -292,12 +292,10 @@ VAR
 		arbre := initArbre(g, main, tabMove);
 		
 		//writeln('apres tabMove et arbre');
-		writeln('avant CfullTree');
 		FOR i := 0 TO length(arbre^.sousBranche) - 1 DO
 		BEGIN
 			createFullTree(g, arbre^.sousBranche[i], main);
 		END;
-		writeln('apres fullTree');
 		
 		clearTree(arbre);
 		

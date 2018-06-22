@@ -15,7 +15,7 @@ BEGIN
 	END;
 END;
 
-FUNCTION mainLoop(VAR g : grille; VAR joueur : typeJoueur; coup : typeCoup;VAR  antiBoucleInf :  INTEGER; VAR isFirst : BOOLEAN) : BOOLEAN;
+FUNCTION mainLoop(g : grille; joueur : typeJoueur; coup : typeCoup;  antiBoucleInf : INTEGER; isFirst : BOOLEAN) : BOOLEAN;
 VAR
 	i, nombreCoups, lastSize : INTEGER;
 	t, score : tabPos;
@@ -23,11 +23,13 @@ VAR
 	test : BOOLEAN;
 BEGIN
 	score := initTabPos;
-	IF (NOT joueur.genre AND (coup.pos[0].x <> 0)) OR (joueur.genre) AND (length(coup.pos) <> length(coup.p)) THEN
+	
+	IF (NOT joueur.genre AND (coup.pos[0].x <> 0)) OR (joueur.genre) AND (length(coup.pos) = length(coup.p)) THEN
 	BEGIN
 		t := initTabPos;
 		tabPions := initTabPion;
 		nombreCoups := 1;
+		writeln('taille : ', length(coup.p));
 		FOR i := 0 TO length(coup.p) - 1 DO
 		BEGIN
 			choperPos(t, coup.pos[i].x, coup.pos[i].y, nombreCoups);
@@ -39,6 +41,10 @@ BEGIN
 				removePionFromMain(joueur.main, coup.p[i]);
 				inc(nombreCoups);
 				isFirst := False;
+			END
+			ELSE
+			BEGIN
+				nombreCoups := -10;
 			END;
 		END;
 	END	
@@ -62,8 +68,7 @@ BEGIN
 		END
 	END;
 	
-	
-	IF nombreCoups > 1 THEN
+	IF (nombreCoups > 1) OR isFirst THEN
 		test := True
 	ELSE
 		test := False;
@@ -160,25 +165,18 @@ BEGIN
 		inc(joueurJouant);
 		joueurJouant := joueurJouant MOD (nbrJoueurHumain + nbrJoueurMachine);
 		
-		gClear(WHITE);
+		clearScreen;
 
 		renderGrilleUI(g);
 		
 		REPEAT
-			IF allJoueur[joueurJouant].genre THEN
-			BEGIN
-				coup := faireJoueurJoueur(g, allJoueur[joueurJouant].main);
-				writeln('fin du tour joueur humain');
-			END
-			ELSE
-			BEGIN
-				coup := coupAIPaul(g, allJoueur[joueurJouant].main);
-				writeln('fin du tour joueur AI');
-			END;
+			coup := faireJoueurJoueur(g, allJoueur[joueurJouant].main);
+			writeln('fin du tour joueur humain');
 			tests := mainLoop(g, allJoueur[joueurJouant], coup, antiBoucleInf, isFirst);
+			renderGrille(g);
 			writeln('Resultat de mainLoop : ', tests);
 		UNTIL tests;
-		
+			
 		isFirst := False;
 		
 		gFlip();

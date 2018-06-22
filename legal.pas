@@ -268,7 +268,6 @@ VAR
 			BEGIN
 				IF (g[x1, i].couleur = 0) AND (i <> y2) THEN
 				BEGIN
-					writeln('trouve');
 					cont := FALSE
 				END;
 			END;
@@ -281,7 +280,6 @@ VAR
 			BEGIN
 				IF (g[i, y1].couleur = 0) AND (i <> x2) THEN
 				BEGIN
-					writeln('trouve');
 					cont := FALSE
 				END;
 			END;

@@ -19,6 +19,7 @@ PROCEDURE renderGrilleUI(g : grille);
 PROCEDURE loadImagePion;
 PROCEDURE renderMainUI(main : tabPion);
 FUNCTION faireJoueurJoueur(g : grille; main : tabPion) : typeCoup;
+PROCEDURE clearScreen();
 
 IMPLEMENTATION
 VAR
@@ -128,8 +129,7 @@ VAR
 		resultatGetPos : INTEGER;
 	BEGIN
 		resultatGetPos := getPos(sdl_get_mouse_x, sdl_get_mouse_y, xMain, yMain, xMain + length(main) * 40, yMain + 40, 40).x;
-		
-		IF (resultatGetPos > 0) AND (resultatGetPos < length(main)) THEN
+		IF (resultatGetPos > 0) AND (resultatGetPos <= length(main)) THEN
 			pionDeLaMain := resultatGetPos
 		ELSE
 			pionDeLaMain := -1;
@@ -204,7 +204,7 @@ VAR
 			IF renderCursor AND ((typeCoup = 0) OR (typeCoup = 2)) AND (posGrille(taille, xTab + length(tmpGrille) * taille).x <> -1) AND NOT sdl_get_left_mouse_pressed THEN
 			BEGIN
 				renderCursor := False;
-				ajouterPion(tmpGrille, pionCursor, posGrille(taille, xTab + length(tmpGrille) * taille).x - 1, posGrille(taille, xTab + length(tmpGrille) * taille).y - 1, '');
+				ajouterPion(tmpGrille, pionCursor, posGrille(taille, xTab + length(tmpGrille) * taille).x - 1, posGrille(taille, xTab + length(tmpGrille) * taille).y - 1);
 				setLength(test.p, length(test.p) + 1);
 				test.p[high(test.p)] := pionCursor;
 				setLength(test.pos, length(test.pos) + 1);

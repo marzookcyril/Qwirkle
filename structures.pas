@@ -11,6 +11,15 @@ INTERFACE
 	}
 
 	TYPE
+		typeArgs = RECORD
+			formes : INTEGER;
+			couleurs : INTEGER;
+			humains : INTEGER;
+			machines : INTEGER;
+			tuiles : INTEGER;
+			graphique : BOOLEAN;
+		END;
+	
 		pion = RECORD
 			couleur : INTEGER;
 			forme   : INTEGER;

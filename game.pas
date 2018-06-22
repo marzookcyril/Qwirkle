@@ -2,7 +2,7 @@ UNIT game;
 INTERFACE
 USES crt, sysutils, constants, structures;
 
-PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
+PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER);
 FUNCTION remplirGrille(): grille;
 PROCEDURE initPioche(nbrCouleurs, nbrFormes, nbrTuiles : INTEGER);
 PROCEDURE shufflePioche;
@@ -181,7 +181,7 @@ VAR
 		END;
 	END;
 
-	PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER; joueur : STRING);
+	PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER);
 	BEGIN
 		IF (x <= 1) OR (y <= 1) OR (y >= length(g) - 1) OR (x >= length(g) - 1) THEN
 		BEGIN
