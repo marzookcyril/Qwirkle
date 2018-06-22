@@ -1,5 +1,5 @@
 formes = ('Rond', 'Trefle', 'Etoile', 'Tache', 'Carre', 'Losange')
-couleurs = ('b', 'vert', 'b', 'r', 'v', 'o')
+couleurs = ('b', 'vert', 'y', 'r', 'v', 'o')
 
 final = ''
 

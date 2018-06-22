@@ -32,7 +32,7 @@ FUNCTION createArgs : typeArgs;
 VAR
 	i, ii : INTEGER;
 BEGIN
-	createArgs.graphique := False;
+	createArgs.graphique := True;
 	createArgs.couleurs  := 0;
 	createArgs.formes    := 0;
 	createArgs.tuiles    := 0;
@@ -64,8 +64,8 @@ BEGIN
 	
 	IF createArgs.humains + createArgs.machines = 0 THEN
 	BEGIN
-		createArgs.humains  := 2;
-		createArgs.machines := 0;
+		createArgs.humains  := 1;
+		createArgs.machines := 1;
 	END;
 	
 	createArgs := createArgs;
@@ -346,20 +346,22 @@ BEGIN
 	renderGrilleUI(g);
 	gFlip;
 	
-	coups := faireJoueurJoueur(g, allJoueur[joueurJouant].main);
+	coups := faireJoueurJoueur(g, allJoueur[joueurJouant].main, isFirst);
 	
 	IF length(coups.p) = length(coups.pos) THEN
 	BEGIN
+		writeln(length(coups.p));
 		FOR i := 0 TO length(coups.p) - 1 DO
 		BEGIN
 			p := coups.p[i];
 			pos := coups.pos[i];
-			choperPos(tabPosi, pos.x, pos.y, nombreDeCoups);
+			choperPos(tabPosi, pos.x - 1, pos.y - 1, nombreDeCoups);
 			choperPion(tabPions, nombreDeCoups, p);
-			IF (nCoups(g, tabPosi, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0)) OR isFirst THEN
+			
+			IF (nCoups(g, tabPosi, tabPions, nombreDeCoups) AND (g[pos.x - 1, pos.y - 1].couleur = 0)) OR isFirst THEN
 			BEGIN
-				ajouterPion(g, p, pos.x, pos.y);
-				choperPos(tabScore, pos.x, pos.y, nombreDeCoups);
+				ajouterPion(g, p, pos.x - 1, pos.y - 1);
+				choperPos(tabScore, pos.x - 1, pos.y - 1, nombreDeCoups);
 				removePionFromMain(joueur.main, p);
 				inc(nombreDeCoups);
 				isFirst := False;
@@ -375,7 +377,6 @@ BEGIN
 		END;
 	END;
 	
-	clrScr;
 	joueur.score := joueur.score + point(g, tabScore, nombreDeCoups);
 	
 	clearScreen;
@@ -427,6 +428,7 @@ BEGIN
 			WHILE (sdl_update = 1) DO
 				IF (sdl_do_quit) THEN
 					exit; 
+					
 			IF allJoueur[joueurJouant].genre THEN faireJouerHumainModeGraphique(g, allJoueur, joueurJouant, isFirstToPlay)
 			ELSE								  faireJouerMachineModeGraphique(g, allJoueur, joueurJouant, isFirstToPlay, antiBoucleInf);
 		END
