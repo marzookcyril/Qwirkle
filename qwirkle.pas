@@ -326,6 +326,67 @@ BEGIN
 	allJoueur[joueurJouant] := joueur;	
 END;
 
+PROCEDURE faireJouerHumainModeGraphique(VAR g : grille; VAR allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN);
+VAR
+	nombreDeCoups, i : INTEGER;
+	tabPosi, tabScore : tabPos;
+	tabPions : tabPion;
+	joueur : typeJoueur;
+	p : pion;
+	pos : position;
+	coups  : typeCoup;
+BEGIN
+	joueur := allJoueur[joueurJouant];
+	tabPosi   := initTabPos;
+	tabPions  := initTabPion;
+	tabScore  := initTabPos;
+	nombreDeCoups := 1;
+	
+	clearScreen;
+	renderGrilleUI(g);
+	gFlip;
+	
+	coups := faireJoueurJoueur(g, allJoueur[joueurJouant].main);
+	
+	IF length(coups.p) = length(coups.pos) THEN
+	BEGIN
+		FOR i := 0 TO length(coups.p) - 1 DO
+		BEGIN
+			p := coups.p[i];
+			pos := coups.pos[i];
+			choperPos(tabPosi, pos.x, pos.y, nombreDeCoups);
+			choperPion(tabPions, nombreDeCoups, p);
+			IF (nCoups(g, tabPosi, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0)) OR isFirst THEN
+			BEGIN
+				ajouterPion(g, p, pos.x, pos.y);
+				choperPos(tabScore, pos.x, pos.y, nombreDeCoups);
+				removePionFromMain(joueur.main, p);
+				inc(nombreDeCoups);
+				isFirst := False;
+			END;
+		END;
+	END
+	ELSE
+	BEGIN
+		FOR i := 0 TO length(coups.p) - 1 DO
+		BEGIN
+			IF getPiocheSize - 1 >= 0 THEN
+				echangerPion(joueur.main, coups.p[i]);
+		END;
+	END;
+	
+	clrScr;
+	joueur.score := joueur.score + point(g, tabScore, nombreDeCoups);
+	
+	clearScreen;
+	renderGrilleUI(g);
+	gFlip();
+	
+	mettreAJourMain(joueur.main);
+	
+	allJoueur[joueurJouant] := joueur;	
+END;
+
 VAR
 	gameArgs : typeArgs;
 	g : grille;
@@ -366,7 +427,7 @@ BEGIN
 			WHILE (sdl_update = 1) DO
 				IF (sdl_do_quit) THEN
 					exit; 
-			IF allJoueur[joueurJouant].genre THEN writeln('nop')
+			IF allJoueur[joueurJouant].genre THEN faireJouerHumainModeGraphique(g, allJoueur, joueurJouant, isFirstToPlay)
 			ELSE								  faireJouerMachineModeGraphique(g, allJoueur, joueurJouant, isFirstToPlay, antiBoucleInf);
 		END
 		ELSE // on joue en mode console
