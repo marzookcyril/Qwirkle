@@ -71,13 +71,13 @@ VAR
 		i, rand : INTEGER;
 		tmp : pion;
 	BEGIN
-		IF globalIndexPioche + 1 < gNbrCouleurs * gNbrFormes * gNbrTuiles THEN
+		IF globalIndexPioche + 1 < gNbrCouleurs * gNbrFormes * gNbrTuiles - 1 THEN
 		BEGIN
 			FOR i := 0 TO length(main) - 1 DO
 			BEGIN
 				IF (main[i].couleur = p.couleur) AND (main[i].forme = p.forme)THEN
 				BEGIN
-					rand := random(globalIndexPioche);
+					rand := random(gNbrCouleurs * gNbrFormes * gNbrTuiles - 1 - globalIndexPioche);
 					tmp := main[i];
 					main[i] := globalPioche[rand];
 					globalPioche[rand] := tmp;

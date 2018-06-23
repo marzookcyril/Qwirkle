@@ -153,7 +153,7 @@ VAR
 			END;
 		END
 		ELSE
-			writeln('TROP GRANDE GRILLE');
+			afficherText('GRILLE TROP GRANDE', xTab + 100, yTab + 250, 4, RED);
 	END;
 	
 	PROCEDURE renderMainUI(main : tabPion);

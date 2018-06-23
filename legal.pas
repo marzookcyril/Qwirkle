@@ -439,52 +439,92 @@ VAR
 	// sans oublier le bonus lorque l'on réalise un qwirkle 
 	FUNCTION point(g : grille; t : tabPos ; num : INTEGER): INTEGER;
 	VAR
-		i ,points : INTEGER;
+		i,j ,points : INTEGER;
 	BEGIN
 		points := 0;
-		IF num = 1 THEN
+		IF num = 2 THEN
 		BEGIN
-			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
-				points := points + calculNombreDeVoisinLigne(g, t[0].x, t[0].y) + 1;
-			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = qwirkleSize) THEN
-				points := points + (qwirkleSize + 1) * 2;
-			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
-				points := points + calculNombreDeVoisinColonne(g, t[0].x, t[0].y) + 1;
-			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) = qwirkleSize) THEN
-				points := points + (qwirkleSize + 1) * 2;
+			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < qwirkleSize - 1) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
+				points += calculNombreDeVoisinLigne(g, t[0].x, t[0].y) + 1;
+			IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = qwirkleSize - 1) THEN
+			BEGIN
+				points += qwirkleSize * 2;
+				FOR i := 1 TO calculNombreDeVoisin(g, t[0].x, t[0].y, 1) DO
+					points += calculNombreDeVoisinColonne(g, t[0].x - i, t[0].y);
+				FOR i := 1 TO calculNombreDeVoisin(g, t[0].x, t[0].y, 3) DO
+					points += calculNombreDeVoisinColonne(g, t[0].x + i, t[0].y);
+			END;
+			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < qwirkleSize - 1) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
+				points += calculNombreDeVoisinColonne(g, t[0].x, t[0].y) + 1;
+			IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) >= qwirkleSize - 1) THEN
+			BEGIN
+				points := points + qwirkleSize * 2;
+				FOR i := 1 TO calculNombreDeVoisin(g, t[0].x, t[0].y, 2) DO
+					points += calculNombreDeVoisinLigne(g, t[0].x, t[0].y - i);
+				FOR i := 1 TO calculNombreDeVoisin(g, t[0].x, t[0].y, 4) DO
+					points += calculNombreDeVoisinLigne(g, t[0].x, t[0].y + i);
+			END;
 		END
 		ELSE
 		BEGIN
-			// en colonne
-			IF t[0].x = t[1].x THEN
+			IF num > 2 THEN
 			BEGIN
-				FOR i := 0 TO num - 1 DO
+				// en colonne
+				IF t[0].x = t[1].x THEN
 				BEGIN
-					IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) < qwirkleSize) AND (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) > 0) THEN
-						points := points + calculNombreDeVoisinLigne(g, t[i].x, t[i].y) + 1;
-					IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) = qwirkleSize) THEN
-						points := points + (qwirkleSize + 1) * 2;
+					FOR i := 0 TO num - 1 DO
+					BEGIN
+						IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) < qwirkleSize - 1) AND (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) > 0) THEN
+							points := points + calculNombreDeVoisinLigne(g, t[i].x, t[i].y);
+						IF (calculNombreDeVoisinLigne(g, t[i].x, t[i].y) = qwirkleSize - 1) THEN
+						BEGIN
+							points += qwirkleSize * 2;
+							FOR j := 1 TO calculNombreDeVoisin(g, t[i].x, t[i].y, 2) DO
+								points += calculNombreDeVoisinLigne(g, t[i].x, t[i].y - j);
+							FOR j := 1 TO calculNombreDeVoisin(g, t[i].x, t[i].y, 4) DO
+								points += calculNombreDeVoisinLigne(g, t[i].x, t[i].y + j);
+						END;
+					END;
+					IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < qwirkleSize - 1) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
+						points := points + calculNombreDeVoisinColonne(g, t[0].x, t[0].y) + 1;
+					IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) = qwirkleSize - 1) THEN
+					BEGIN
+						points := points + qwirkleSize * 2;
+						FOR j := 1 TO calculNombreDeVoisin(g, t[0].x, t[0].y, 2) DO
+							points += calculNombreDeVoisinLigne(g, t[0].x, t[0].y - j);
+						FOR j := 1 TO calculNombreDeVoisin(g, t[0].x, t[0].y, 4) DO
+							points += calculNombreDeVoisinLigne(g, t[0].x, t[0].y + j);
+					END;
 				END;
-				IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) > 0) THEN
-					points := points + calculNombreDeVoisinColonne(g, t[0].x, t[0].y) + 1;
-				IF (calculNombreDeVoisinColonne(g, t[0].x, t[0].y) = qwirkleSize) THEN
-					points := points + (qwirkleSize + 1) * 2;
-			END;
-			IF t[0].y = t[1].y THEN
-			BEGIN
-				FOR i := 0 TO num - 1 DO
+				IF t[0].y = t[1].y THEN
 				BEGIN
-					IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) < qwirkleSize) AND (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) > 0) THEN
-						points := points + calculNombreDeVoisinColonne(g, t[i].x, t[i].y) + 1;
-					IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) = qwirkleSize) THEN
-						points := points + (qwirkleSize + 1) * 2;
+					FOR i := 0 TO num - 1 DO
+					BEGIN
+						IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) < qwirkleSize - 1) AND (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) > 0) THEN
+							points := points + calculNombreDeVoisinColonne(g, t[i].x, t[i].y);
+						IF (calculNombreDeVoisinColonne(g, t[i].x, t[i].y) = qwirkleSize - 1) THEN
+						BEGIN
+							points := points + qwirkleSize * 2;
+							FOR j := 1 TO calculNombreDeVoisin(g, t[i].x, t[i].y, 1) DO
+								points += calculNombreDeVoisinColonne(g, t[i].x - j, t[i].y);
+							FOR j := 1 TO calculNombreDeVoisin(g, t[i].x, t[i].y, 3) DO
+								points += calculNombreDeVoisinColonne(g, t[i].x + j, t[i].y);
+						END;
+					END;
+					IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < qwirkleSize - 1) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
+						points := points + calculNombreDeVoisinLigne(g, t[0].x, t[0].y) + 1;
+					IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = qwirkleSize - 1) THEN
+					BEGIN
+						points := points +  qwirkleSize * 2;
+						FOR j := 1 TO calculNombreDeVoisin(g, t[0].x, t[0].y, 1) DO
+							points += calculNombreDeVoisinColonne(g, t[0].x - j, t[0].y);
+						FOR j := 1 TO calculNombreDeVoisin(g, t[0].x, t[0].y, 3) DO
+							points += calculNombreDeVoisinColonne(g, t[0].x + j, t[0].y);
+					END;
 				END;
-				IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) < qwirkleSize) AND (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) > 0) THEN
-					points := points + calculNombreDeVoisinLigne(g, t[0].x, t[0].y) + 1;
-				IF (calculNombreDeVoisinLigne(g, t[0].x, t[0].y) = qwirkleSize) THEN
-					points := points +  (qwirkleSize + 1) * 2;
 			END;
 		END;
 		point := points;
 	END;
+	
 END.

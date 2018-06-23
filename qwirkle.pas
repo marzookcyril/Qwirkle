@@ -2,6 +2,9 @@ PROGRAM Qwirkle;
 
 USES crt, sysutils, game, console2, structures, legal, constants, pAI, UIGraphic, glib2d;
 
+VAR
+	iaBloque : INTEGER = 0;
+
 FUNCTION isFirst(g : grille) : BOOLEAN;
 VAR
 	i, j : INTEGER;
@@ -17,9 +20,21 @@ BEGIN
 	END;
 END;
 
+FUNCTION mainVide(main : tabPion) : INTEGER;
+VAR
+	i : INTEGER;
+BEGIN
+	mainVide := 0;
+	FOR i := 0 TO length(main) - 1 DO
+	BEGIN
+		IF main[i].couleur <> 0 THEN
+			inc(mainVide);
+	END;
+END;
+
 FUNCTION hasWon(g : grille; VAR joueur : typeJoueur) : BOOLEAN;
 BEGIN
-	IF (getPiocheSize = 0) AND (length(joueur.main) = 0) THEN
+	IF (getPiocheSize = 0) AND ((length(joueur.main) = 0) OR (joueur.main[0].couleur = 0)) THEN
 	BEGIN
 		hasWon := True;
 		joueur.score := joueur.score + 6;
@@ -32,7 +47,7 @@ FUNCTION createArgs : typeArgs;
 VAR
 	i, ii : INTEGER;
 BEGIN
-	createArgs.graphique := False;
+	createArgs.graphique := True;
 	createArgs.couleurs  := 0;
 	createArgs.formes    := 0;
 	createArgs.tuiles    := 0;
@@ -64,8 +79,8 @@ BEGIN
 	
 	IF createArgs.humains + createArgs.machines = 0 THEN
 	BEGIN
-		createArgs.humains  := 2;
-		createArgs.machines := 0;
+		createArgs.humains  := 0;
+		createArgs.machines := 2;
 	END;
 	
 	IF ((createArgs.couleurs > 6) OR (createArgs.formes > 6)) AND createArgs.graphique THEN
@@ -125,7 +140,7 @@ BEGIN
 	END;
 END;
 
-PROCEDURE faireJouerMachineModeConsole(VAR g : grille; VAR allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN; VAR antiBoucleInf : INTEGER);
+PROCEDURE faireJouerMachineModeConsole(VAR g : grille; VAR allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN);
 VAR
 	nombreDeCoups, i : INTEGER;
 	tabPosi, tabScore : tabPos;
@@ -156,7 +171,7 @@ BEGIN
 		pos := coupsIA.pos[i];
 		choperPos(tabPosi, pos.x, pos.y, nombreDeCoups);
 		choperPion(tabPions, nombreDeCoups, p);
-		IF (nCoups(g, tabPosi, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0)) OR isFirst THEN
+		IF (nCoups(g, tabPosi, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0) AND ((p.forme <> 0) OR (p.couleur <> 0))) OR isFirst THEN
 		BEGIN
 			ajouterPion(g, p, pos.x, pos.y);
 			choperPos(tabScore, pos.x, pos.y, nombreDeCoups);
@@ -168,7 +183,11 @@ BEGIN
 	
 	IF point(g, tabScore, nombreDeCoups) = 0 THEN
 	BEGIN
-		inc(antiBoucleInf);
+		IF getPiocheSize = 0 THEN
+		BEGIN
+			writeln('L''IA NE PEUT RIEN FAIRE');
+			inc(iaBloque);
+		END;
 		FOR i := 0 TO length(joueur.main) - 1 DO
 		BEGIN
 			IF getPiocheSize - 1 >= 0 THEN
@@ -176,14 +195,15 @@ BEGIN
 		END;
 	END
 	ELSE
-		antiBoucleInf := 0;
+	BEGIN
+		clrScr;
+		joueur.score += point(g, tabScore, nombreDeCoups);
+		renderScore(allJoueur);
+		renderGrille(g);
+
+		mettreAJourMain(joueur.main);
+	END;
 	
-	clrScr;
-	joueur.score := joueur.score + point(g, tabScore, nombreDeCoups);
-	renderScore(allJoueur);
-	renderGrille(g);
-	
-	mettreAJourMain(joueur.main);
 	
 	allJoueur[joueurJouant] := joueur;	
 END;
@@ -276,7 +296,7 @@ BEGIN
 	END;
 END;
 
-PROCEDURE faireJouerMachineModeGraphique(VAR g : grille; VAR allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN; VAR antiBoucleInf : INTEGER);
+PROCEDURE faireJouerMachineModeGraphique(VAR g : grille; VAR allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN);
 VAR
 	nombreDeCoups, i : INTEGER;
 	tabPosi, tabScore : tabPos;
@@ -292,11 +312,13 @@ BEGIN
 	tabScore  := initTabPos;
 	nombreDeCoups := 1;
 	
+{
 	clearScreen;
 	renderScoreUI(allJoueur, joueurJouant);
 	renderGrilleUI(g);
 	gFlip;
 	
+}
 	coupsIA := coupAIPaul(g, allJoueur[joueurJouant].main);
 	
 	FOR i := 0 TO length(coupsIA.p) - 1 DO
@@ -305,7 +327,7 @@ BEGIN
 		pos := coupsIA.pos[i];
 		choperPos(tabPosi, pos.x, pos.y, nombreDeCoups);
 		choperPion(tabPions, nombreDeCoups, p);
-		IF (nCoups(g, tabPosi, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0)) OR isFirst THEN
+		IF (nCoups(g, tabPosi, tabPions, nombreDeCoups) AND (g[pos.x, pos.y].couleur = 0) AND ((p.forme <> 0) OR (p.couleur <> 0))) OR isFirst THEN
 		BEGIN
 			ajouterPion(g, p, pos.x, pos.y);
 			choperPos(tabScore, pos.x, pos.y, nombreDeCoups);
@@ -314,25 +336,26 @@ BEGIN
 			isFirst := False;
 		END;
 	END;
-	
+
 	IF point(g, tabScore, nombreDeCoups) = 0 THEN
 	BEGIN
-		inc(antiBoucleInf);
+		IF getPiocheSize = 0 THEN
+		BEGIN
+			writeln('L''IA NE PEUT RIEN FAIRE');
+			inc(iaBloque);
+		END;
 		FOR i := 0 TO length(joueur.main) - 1 DO
 		BEGIN
-			IF getPiocheSize - 1 >= 0 THEN
+			IF getPiocheSize - 1 > 0 THEN
 				echangerPion(joueur.main, joueur.main[i]);
 		END;
-	END
-	ELSE
-		antiBoucleInf := 0;
-	
-	clrScr;
+	END;
+		
 	joueur.score := joueur.score + point(g, tabScore, nombreDeCoups);
 	
 	clearScreen;
-	renderScoreUI(allJoueur, joueurJouant);
 	renderGrilleUI(g);
+	renderScoreUI(allJoueur, joueurJouant);
 	gFlip();
 	
 	mettreAJourMain(joueur.main);
@@ -395,7 +418,7 @@ BEGIN
 	BEGIN
 		FOR i := 0 TO length(coups.p) - 1 DO
 		BEGIN
-			IF getPiocheSize - 1 >= 0 THEN
+			IF getPiocheSize - 1 > 0 THEN
 				echangerPion(joueur.main, coups.p[i]);
 		END;
 	END;
@@ -429,12 +452,12 @@ VAR
 	gameArgs : typeArgs;
 	g : grille;
 	allJoueur : tabJoueur;
-	joueurJouant, antiBoucleInf, i : INTEGER;
+	joueurJouant, scoreTemp, i : INTEGER;
 	isFirstToPlay : BOOLEAN;
 BEGIN
 	gameArgs := createArgs;
 	initPioche(gameArgs.couleurs, gameArgs.formes, gameArgs.tuiles);
-	initLegal(gameArgs.formes - 1);
+	initLegal(gameArgs.formes);
 	initJoueur(gameArgs.humains, gameArgs.machines);
 	
 	g := remplirGrille;
@@ -444,7 +467,6 @@ BEGIN
 	
 	allJoueur := createJoueur(gameArgs.humains, gameArgs.machines);
 	joueurJouant := -1;
-	antiBoucleInf := 0;
 	
 	IF gameArgs.graphique THEN
 	BEGIN
@@ -467,24 +489,26 @@ BEGIN
 					exit; 
 					
 			IF allJoueur[joueurJouant].genre THEN faireJouerHumainModeGraphique(g, allJoueur, joueurJouant, isFirstToPlay)
-			ELSE								  faireJouerMachineModeGraphique(g, allJoueur, joueurJouant, isFirstToPlay, antiBoucleInf);
+			ELSE								  faireJouerMachineModeGraphique(g, allJoueur, joueurJouant, isFirstToPlay);
 		END
 		ELSE // on joue en mode console
 		BEGIN
 			IF allJoueur[joueurJouant].genre THEN faireJouerHumainModeConsole(g, allJoueur, joueurJouant, isFirstToPlay)
-			ELSE								  faireJouerMachineModeConsole(g, allJoueur, joueurJouant, isFirstToPlay, antiBoucleInf);
+			ELSE								  faireJouerMachineModeConsole(g, allJoueur, joueurJouant, isFirstToPlay);
 		END;
 			
-	UNTIL hasWon(g, allJoueur[joueurJouant]) or (antiBoucleInf > 10);
+	UNTIL hasWon(g, allJoueur[joueurJouant]) OR (iaBloque > 4);
+	// il y a des moments où les IA sont à leur limite et ne peuvent plus jouer...
 	
-	antiBoucleInf := 0;
+	writeln('FIN DE LA PARTIE');
+	scoreTemp := 0;
 	
 	FOR i := 0 TO length(allJoueur) - 1 DO
 	BEGIN
-		IF allJoueur[i].score > antiBoucleInf THEN
+		IF allJoueur[i].score > scoreTemp THEN
 		BEGIN
 			joueurJouant := i;
-			antiBoucleInf := allJoueur[i].score;
+			scoreTemp := allJoueur[i].score;
 		END;	
 	END;
 	
@@ -494,9 +518,10 @@ BEGIN
 		BEGIN
 			clearScreen;
 			IF allJoueur[joueurJouant].genre THEN
-				afficherText('Le gagnant est l''humain n ' + inttostr(joueurJouant) + '! gg!', 500, 450, 4, RED)
+				afficherText('Le gagnant est l''humain n ' + inttostr(joueurJouant) + '! gg! (score:' + inttostr(scoreTemp) + ')', 500, 450, 4, RED)
 			ELSE
-				afficherText('Le gagnant est l''ordi n ' + inttostr(joueurJouant) + '! gg!', 500, 450, 4, RED);
+				afficherText('Le gagnant est l''ordi n ' + inttostr(joueurJouant) + '! gg! (score:' + inttostr(scoreTemp) + ')', 500, 450, 4, RED);
+				
 			gFlip();
 			while (sdl_update = 1) do
 				if (sdl_do_quit) then
