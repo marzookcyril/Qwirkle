@@ -1,6 +1,6 @@
 UNIT pAI;
 INTERFACE
-USES legal, console, crt, sysutils, structures, constants, game;
+USES legal, crt, sysutils, structures, constants, game;
 
 TYPE
 	tabPossibleMovePosition = ARRAY OF position;
@@ -20,9 +20,8 @@ FUNCTION findAllPosibleMove(g : grille; main : tabPion) : tabPossibleMovePositio
 
 IMPLEMENTATION
 VAR
-	bestScore, counter : INTEGER;
+	bestScore : INTEGER;
 	bestBranche : typeCoup;
-	iter : int64;
 
 	FUNCTION caseJouable(g : GRILLE; x,y : INTEGER) : BOOLEAN;
 	VAR
@@ -187,7 +186,7 @@ VAR
 	VAR
 		i, j, x, y : INTEGER;
 		tmpMain : tabPion;
-		tmpGrille, tmp2Grille : grille;
+		tmpGrille : grille;
 		tabCoupPos : tabPos;
 		tabCoupPion : tabPion;
 		tmpBranche : ptrbranche;
@@ -281,9 +280,8 @@ VAR
 	FUNCTION coupAIPaul(g : grille; main : tabPion) : typeCoup;
 	VAR
 		tabMove : tabPossibleMovePosition;
-		i, counter : INTEGER;
-		p : pion;
-		arbre, tmp : ptrBranche;
+		i : INTEGER;
+		arbre : ptrBranche;
 		tmpFinal : typeCoup;
 	BEGIN
 		bestScore := -10;

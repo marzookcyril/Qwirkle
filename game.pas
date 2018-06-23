@@ -9,7 +9,6 @@ PROCEDURE shufflePioche;
 FUNCTION creerMain: tabPion;
 PROCEDURE removePionFromMain(VAR main : tabPion; p : pion);
 PROCEDURE echangerPion(VAR main : tabPion; p : pion);
-PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
 FUNCTION piocher : pion;
 FUNCTION getPiocheSize : INTEGER;
 FUNCTION maxPiocheSize : INTEGER;
@@ -24,8 +23,6 @@ IMPLEMENTATION
 VAR
 	globalPioche : typePioche;
 	globalIndexPioche : INTEGER;
-	globalHumain : INTEGER;
-	globalMachine : INTEGER;
 	gNbrCouleurs, gNbrFormes, gNbrTuiles : INTEGER;
 
 	PROCEDURE delayy(s : INTEGER);
@@ -245,12 +242,6 @@ VAR
 				indexToRemove := i;
 		END;
 		main := removeFromArray(main, indexToRemove);
-	END;
-
-	PROCEDURE initJoueur(nbrJoueurHumain, nbrJoueurMachine : INTEGER);
-	BEGIN
-		globalHumain  := nbrJoueurHumain;
-		globalMachine := nbrJoueurMachine;
 	END;
 
 	FUNCTION piocher : pion;

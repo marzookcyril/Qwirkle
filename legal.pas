@@ -203,7 +203,7 @@ VAR
 		
 		tmp : ARRAY [0..500] OF INTEGER;
 		erreur : boolean;
-		i, ii : INTEGER;
+		i : INTEGER;
 		tmpGrille : grille;
 	BEGIN
 		tmpGrille := copyGrille(g);

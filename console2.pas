@@ -154,7 +154,8 @@ VAR
 			clrscr;
 			renderGrille(g);
 			hasChoosePionToPlay := False;
-			renderMainNoLigneAfter('Choissisez votre pion : ', main);
+			renderTextWithBordure('Choissisez votre pion : ');
+			renderMainNoLigneAfter('F pour choisir', main);
 			
 			write('|');
 			FOR i := 0 TO selector * 2  - 1 DO write(' ');
@@ -202,6 +203,7 @@ VAR
 			clrscr;
 			lastGrille[posX, posY] := PION_ROUGE;
 			renderGrille(lastGrille);
+			renderTextWillFullBordure('fleche pour deplacement, F finir');
 			renderMain(main);
 			
 			ch := readkey();
@@ -238,7 +240,8 @@ VAR
 		
 			hasFinished := False;
 			hasChoose   := False;
-			renderMainNoLigneAfter('Choissisez pion a echanger : ', main);
+			renderTextWithBordure('Choissisez pion a echanger : ');
+			renderMainNoLigneAfter('ENTER pour choisir, F pour finir', main);
 			
 			write('|');
 			FOR i := 0 TO (tailleGrille) DO
@@ -333,8 +336,7 @@ VAR
 	
 	PROCEDURE renderScore (joueur : tabJoueur);
 	VAR
-		score : STRING;
-		i, j : INTEGER;
+		i : INTEGER;
 	BEGIN
 		renderLigne(tailleGrille * 2 + 3);
 		

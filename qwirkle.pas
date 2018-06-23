@@ -47,7 +47,7 @@ FUNCTION createArgs : typeArgs;
 VAR
 	i, ii : INTEGER;
 BEGIN
-	createArgs.graphique := True;
+	createArgs.graphique := False;
 	createArgs.couleurs  := 0;
 	createArgs.formes    := 0;
 	createArgs.tuiles    := 0;
@@ -75,12 +75,12 @@ BEGIN
 	
 	IF createArgs.couleurs      = 0 THEN createArgs.couleurs      := 6;
 	IF createArgs.formes        = 0 THEN createArgs.formes        := 6;
-	IF createArgs.tuiles        = 0 THEN createArgs.tuiles        := 6;
+	IF createArgs.tuiles        = 0 THEN createArgs.tuiles        := 3;
 	
 	IF createArgs.humains + createArgs.machines = 0 THEN
 	BEGIN
-		createArgs.humains  := 0;
-		createArgs.machines := 2;
+		createArgs.humains  := 2;
+		createArgs.machines := 0;
 	END;
 	
 	IF ((createArgs.couleurs > 6) OR (createArgs.formes > 6)) AND createArgs.graphique THEN
@@ -266,7 +266,7 @@ BEGIN
 				choperPos(tabScore, pos.x, pos.y, nombreDeCoups);
 				isFirst := False;
 				
-				IF renderPopUpWithResponce('Un autre pion ?') = 'o' THEN
+				IF renderPopUpWithResponce('Un autre pion ? (o/n)') = 'o' THEN
 				BEGIN
 					hasPlayed := False;
 					inc(nombreDeCoups);
@@ -277,7 +277,7 @@ BEGIN
 			ELSE
 			BEGIN
 				renderTextWithBordure('Pas possible de jouer la');
-				IF renderPopUpWithResponce('Un autre pion ?') = 'o' THEN
+				IF renderPopUpWithResponce('Un autre pion ? (o/n)') = 'o' THEN
 					hasPlayed := False
 				ELSE
 					hasPlayed := True;
@@ -458,7 +458,6 @@ BEGIN
 	gameArgs := createArgs;
 	initPioche(gameArgs.couleurs, gameArgs.formes, gameArgs.tuiles);
 	initLegal(gameArgs.formes);
-	initJoueur(gameArgs.humains, gameArgs.machines);
 	
 	g := remplirGrille;
 	
