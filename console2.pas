@@ -19,13 +19,18 @@ FUNCTION multiplePionSelector(g : grille; main : tabPion) : tabPion;
 IMPLEMENTATION
 VAR
 	tailleGrille, selector : INTEGER;
-
-	PROCEDURE initConsole(g : grille);
+	
+	
+	
+	// on initialise la grille avec le selector
+	PROCEDURE initConsole(g : grille); 
 	BEGIN
 		tailleGrille := length(g);
 		selector := 1;
 	END;
-
+	
+	
+	// ici on met la grille a l'interieur d'un cadrillage 
 	PROCEDURE renderLigne(taille : INTEGER);
 	VAR
 		i : INTEGER;
@@ -37,7 +42,8 @@ VAR
 		END;
 		writeln('+');
 	END;
-
+	
+	// on affiche le pion a partir des constantes qui correspondent aux formes et couleurs
 	PROCEDURE renderPion(p : pion);
 	BEGIN
 		TextColor(p.couleur);
@@ -46,6 +52,7 @@ VAR
 		TextColor(7);
 	END;
 
+	
 	PROCEDURE renderLigneNumero(taille : INTEGER);
 	VAR
 		i : INTEGER;
@@ -94,7 +101,8 @@ VAR
 		END;
 		renderLigne(length(g) * 2 + 3);
 	END;
-
+	
+	// on affiche la main en dessous de la grille 
 	PROCEDURE renderPionInMain(main : tabPion);
 	VAR
 		i : INTEGER;
@@ -105,6 +113,7 @@ VAR
 		END;
 	END;
 	
+	// avec cette procedure on affiche les differents text a l'interieur du cadrillage
 	PROCEDURE renderTextWithBordure(text : STRING);
 	VAR
 		i : INTEGER;
@@ -120,6 +129,7 @@ VAR
 		writeln('|');
 	END;
 	
+	
 	PROCEDURE renderTextWillFullBordure(text : STRING);
 	BEGIN
 		renderLigne(tailleGrille * 2 + 3);
@@ -127,6 +137,7 @@ VAR
 		renderLigne(tailleGrille * 2 + 3);
 	END;
 	
+	// affiche la main 
 	PROCEDURE renderMainNoLigneAfter(text : STRING; main : tabPion);
 	VAR
 		i : INTEGER;
@@ -144,6 +155,7 @@ VAR
 		writeln('|');
 	END;
 	
+	// fonction qui permet de choisir un pion dans la main a l'aide des touches du claviers
 	FUNCTION mainSelector(g : grille; main : tabPion) : pion;
 	VAR
 		i : INTEGER;
@@ -185,6 +197,7 @@ VAR
 		renderLigne(tailleGrille * 2 + 3);
 	END;
 
+	//fonction qui permet de prendre la position du selector dans la grille pour placer le pion 
 	FUNCTION posSelector(g : grille; main : tabPion) : position;
 	VAR
 		posX, posY : INTEGER;
@@ -222,6 +235,7 @@ VAR
 		setLength(lastGrille2, 0, 0);
 	END;
 
+	// fonction qui permet de selectionner plusieurs pions dans la main pour les echanger 
 	FUNCTION multiplePionSelector(g : grille; main : tabPion) : tabPion;
 	VAR
 		i : INTEGER;
@@ -285,6 +299,7 @@ VAR
 		multiplePionSelector := finalTab;
 	END;
 	
+	// fonction qui affiche le nombre de point des joueurs a gauche de la grille 
 	PROCEDURE renderLigneScore(joueur : tabJoueur; a,b : INTEGER);
 	VAR
 		i : INTEGER;
@@ -326,6 +341,7 @@ VAR
 		writeln('|');
 	END;
 	
+	// permet d'afficher du texte par dessus la grille 
 	FUNCTION renderPopUpWithResponce(text : STRING) : CHAR;
 	BEGIN
 		renderLigne(tailleGrille * 2 + 3);

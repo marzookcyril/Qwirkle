@@ -5,6 +5,7 @@ USES crt, sysutils, game, console2, structures, legal, constants, pAI, UIGraphic
 VAR
 	iaBloque : INTEGER = 0;
 
+// permet de placer le premier pion pour le premier joueur 
 FUNCTION isFirst(g : grille) : BOOLEAN;
 VAR
 	i, j : INTEGER;
@@ -20,6 +21,8 @@ BEGIN
 	END;
 END;
 
+
+// permet de verifier si la main est vide et combien de pion il manque 
 FUNCTION mainVide(main : tabPion) : INTEGER;
 VAR
 	i : INTEGER;
@@ -32,6 +35,8 @@ BEGIN
 	END;
 END;
 
+
+// on etablie les conditions pour que le jeu s'arrête et désigner le gagnant 
 FUNCTION hasWon(g : grille; VAR joueur : typeJoueur) : BOOLEAN;
 BEGIN
 	IF (getPiocheSize = 0) AND ((length(joueur.main) = 0) OR (joueur.main[0].couleur = 0)) THEN
@@ -43,6 +48,8 @@ BEGIN
 		hasWon := False;
 END;
 
+
+// on gere les different argument nombre de couleurs, forme, ia ou joueur contre joueur.... 
 FUNCTION createArgs : typeArgs;
 VAR
 	i, ii : INTEGER;
@@ -98,6 +105,8 @@ BEGIN
 	createArgs := createArgs;
 END;
 
+
+// on crée et initialise toute les caracteriostiques d'un joueur , sa main , son score, son tour 
 FUNCTION createJoueur (humain, machine : INTEGER) : tabJoueur;
 VAR
 	i : INTEGER;
@@ -125,6 +134,7 @@ BEGIN
 	END;
 END;
 
+// on rajoute un pion dans la main quand le joueur a place un pion au tour précédent 
 PROCEDURE mettreAJourMain(VAR main : tabPion);
 VAR
 	lastSize, i : INTEGER;
@@ -140,6 +150,8 @@ BEGIN
 	END;
 END;
 
+
+// permet de faire jouer l'ia avec la console dans le terminal
 PROCEDURE faireJouerMachineModeConsole(VAR g : grille; VAR allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN);
 VAR
 	nombreDeCoups, i : INTEGER;
@@ -208,6 +220,7 @@ BEGIN
 	allJoueur[joueurJouant] := joueur;	
 END;
 
+// permet de faire jouer un joueur humain et geres toutes ses caractérisque son score , maj de sa main ,ses points ...
 PROCEDURE faireJouerHumainModeConsole(VAR g : grille;VAR allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN);
 VAR
 	hasPlayed : BOOLEAN;
@@ -296,6 +309,8 @@ BEGIN
 	END;
 END;
 
+
+// permet de faire jouer l'ia mais en mode gli2d
 PROCEDURE faireJouerMachineModeGraphique(VAR g : grille; VAR allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN);
 VAR
 	nombreDeCoups, i : INTEGER;
@@ -363,6 +378,8 @@ BEGIN
 	allJoueur[joueurJouant] := joueur;	
 END;
 
+
+// de même faire jouer le mode joueur humaiun avec l'interface graphique 
 PROCEDURE faireJouerHumainModeGraphique(VAR g : grille; VAR allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN);
 VAR
 	nombreDeCoups, i : INTEGER;
@@ -516,6 +533,7 @@ BEGIN
 		WHILE TRUE DO
 		BEGIN
 			clearScreen;
+			// on determine les gagnants : 
 			IF allJoueur[joueurJouant].genre THEN
 				afficherText('Le gagnant est l''humain n ' + inttostr(joueurJouant) + '! gg! (score:' + inttostr(scoreTemp) + ')', 500, 450, 4, RED)
 			ELSE
@@ -528,6 +546,7 @@ BEGIN
 		END;
 	END
 	ELSE
+	// donc ici  la partie est fini on affiche le gagnant
 		renderPopUpWithResponce('Fin de la partie, le gagnant est : ' + inttostr(joueurJouant));
 	clrscr;
 END.

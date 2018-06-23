@@ -56,6 +56,7 @@ VAR
 			TAB_IMAGE_LOAD[i] := gTexLoad('pions/' + TAB_IMAGE[i]);
 	END;
 	
+	// on affiche l'image a une position donné 
 	PROCEDURE afficherImage(image : gImage; x,y,t : INTEGER);
 	BEGIN
 		gBeginRects(image);
@@ -68,6 +69,7 @@ VAR
 		gEnd;
 	END;
 	
+	//  on affiche l'image en tant que rectangle a une position donné 
 	PROCEDURE afficherImageRect(image : gImage; x,y,t1,t2 : INTEGER);
 	BEGIN
 		gBeginRects(image);
@@ -80,6 +82,7 @@ VAR
 		gEnd;
 	END;
 	
+	// permet d'afficher un texte d'une couleur et a position donné 
 	PROCEDURE afficherText(str : STRING; x,y,t : INTEGER; c : gColor);
 	VAR
 		text : gImage;
@@ -101,6 +104,7 @@ VAR
 
 	END;
 	
+	// on affiche ici le scire sous forme de texte 
 	FUNCTION createScoreText(joueur : typeJoueur; id : INTEGER) : STRING;
 	BEGIN
 		IF joueur.genre THEN
@@ -109,6 +113,7 @@ VAR
 			createScoreText := 'AI n' + inttostr(id) + ': ' + inttostr(joueur.score);
 	END;
 	
+	// on utlise la fonction precedente pour afficher le scire des joueurs 
 	PROCEDURE renderScoreUI(allJoueur : tabJoueur; joueurJouant : INTEGER);
 	VAR
 		i : INTEGER;
@@ -122,6 +127,7 @@ VAR
 		END;
 	END;
 	
+	// on affiche la grille tout en rendanr les cases rouges si on passe la souris dessus 
 	PROCEDURE renderGrilleUI(g : grille);
 	VAR
 		i, j, taille : INTEGER;
@@ -156,6 +162,7 @@ VAR
 			afficherText('GRILLE TROP GRANDE', xTab + 100, yTab + 250, 4, RED);
 	END;
 	
+	// on afficge les pions a partir des images dans le dossier pions 
 	PROCEDURE renderMainUI(main : tabPion);
 	VAR
 		i : INTEGER;
@@ -168,6 +175,7 @@ VAR
 		END;
 	END;
 	
+	// on prend les position du pions que l'on glisse dans la grille 
 	FUNCTION getPos(x,y,xMin,yMin,xMax,yMax,t : INTEGER) : position;
 	BEGIN
 		IF (x > xMin) AND (x < xMax) AND (y > yMin) AND (y < yMax) THEN
@@ -182,6 +190,7 @@ VAR
 		END;
 	END;
 
+	//  permet de supprimer le pion selectione 
 	FUNCTION boutonSupprimer : BOOLEAN;
 	BEGIN
 		boutonSupprimer := (getPos(sdl_get_mouse_x, sdl_get_mouse_y, xMain + 9 * 40, yMain, xMain + 10 * 40, yMain + 40, 40).x = 1);
@@ -220,6 +229,7 @@ VAR
 		afficherImage(img, sdl_get_mouse_x, sdl_get_mouse_y, 40);
 	END;
 
+	// fait tourner le joueur contre joueur danc de glib2d
 	FUNCTION faireJoueurJoueur(g : grille; main : tabPion; allJoueur : tabJoueur; joueurJouant : INTEGER; isFirst : BOOLEAN) : typeCoup;
 	VAR
 		taille : INTEGER;

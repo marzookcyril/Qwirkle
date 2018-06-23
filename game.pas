@@ -25,11 +25,13 @@ VAR
 	globalIndexPioche : INTEGER;
 	gNbrCouleurs, gNbrFormes, gNbrTuiles : INTEGER;
 
+	// on bloque le terminal pour une durée s 
 	PROCEDURE delayy(s : INTEGER);
 	BEGIN
 		delay(s);
 	END;
 
+	// on copie la grille pour pouvoir faire les test necessaire au placement des pions 
 	FUNCTION copyGrille(a : grille) : grille;
 	VAR
 		i, j : INTEGER;
@@ -52,7 +54,8 @@ VAR
 		writeln(text);
 		readln();
 	END;
-
+	
+	//on determine la taille de la pioche en fonction du nombre de forme et de couleur 
 	FUNCTION getPiocheSize : INTEGER;
 	BEGIN
 		getPiocheSize := gNbrFormes * gNbrTuiles * gNbrCouleurs - globalIndexPioche;
@@ -63,6 +66,7 @@ VAR
 		maxPiocheSize := gNbrFormes * gNbrTuiles * gNbrCouleurs;
 	END;
 
+	// procedure qui permet d'echanger un pion de notre main et le remettre dans la pioche 
 	PROCEDURE echangerPion(VAR main : tabPion; p : pion);
 	VAR
 		i, rand : INTEGER;
@@ -82,7 +86,8 @@ VAR
 			END;
 		END;
 	END;
-
+	
+	// on initialise la pioche 
 	PROCEDURE initPioche(nbrCouleurs, nbrFormes, nbrTuiles : INTEGER);
 	VAR
 		piocheIndex, i, j, k : INTEGER;
@@ -108,7 +113,9 @@ VAR
 			END;
 		END;
 	END;
-
+	
+	
+	// cela permet de mettre un pion dans la pioche et en prendre un autre 
 	PROCEDURE swap(a,b : INTEGER);
 	VAR
 		tmp : pion;
@@ -118,6 +125,7 @@ VAR
 		globalPioche[b] := tmp;
 	END;
 
+	// on copie la main pour pouvoir faire les test necessaire au placement de plusieurs pions 
 	FUNCTION copyMain(main : tabPion) : tabPion;
 	VAR
 		i : INTEGER;
@@ -129,6 +137,7 @@ VAR
 		copyMain := tmp;
 	END;
 	
+	// on copie les positions des pions a placer 
 	FUNCTION copyTabPos(main : tabPos) : tabPos;
 	VAR
 		i : INTEGER;
@@ -140,6 +149,7 @@ VAR
 		copyTabPos := tmp;
 	END;
 
+	// ici on enleve de la main le pion que l'on a placé
 	PROCEDURE swapLastMain(VAR main : tabPion; a: INTEGER);
 	VAR
 		tmp : pion;
@@ -149,6 +159,7 @@ VAR
 		main[length(main) - 1] := tmp;
 	END;
 
+	// on melange la pioche 
 	PROCEDURE shufflePioche;
 	VAR
 		i : INTEGER;
@@ -178,6 +189,7 @@ VAR
 		END;
 	END;
 
+	// on ajoute le pion en verifiant que le selector donne une position dans la grille 
 	PROCEDURE ajouterPion(VAR g : grille; pionAAjouter : pion; x,y : INTEGER);
 	BEGIN
 		IF (x <= 1) OR (y <= 1) OR (y >= length(g) - 1) OR (x >= length(g) - 1) THEN
@@ -207,7 +219,8 @@ VAR
 			g[x,y] := pionAAjouter;
 		END;
 	END;
-
+	
+	// on initie la grille avec des pions vide
 	FUNCTION remplirGrille(): grille;
 	VAR
 		i , j    : INTEGER;
@@ -232,6 +245,7 @@ VAR
 		removeFromArray := main;
 	END;
 
+	// on enleve un pion de la main 
 	PROCEDURE removePionFromMain(VAR main : tabPion; p : pion);
 	VAR
 		i, indexToRemove : INTEGER;
@@ -244,6 +258,7 @@ VAR
 		main := removeFromArray(main, indexToRemove);
 	END;
 
+	//permet de mettre un autre pion dans la main 
 	FUNCTION piocher : pion;
 	BEGIN
 		IF globalIndexPioche < gNbrCouleurs * gNbrFormes * gNbrTuiles THEN
@@ -255,6 +270,7 @@ VAR
 			piocher := PION_NULL;
 	END;
 
+	// on creer la main en piochant a chaque tour de boucle 
 	FUNCTION creerMain: tabPion;
 	VAR
 		main : tabPion;
